@@ -21,7 +21,7 @@
                 <div class="row g-3 mb-3">
                     <form-group-multi-check
                         id="edit_form_backend_crossfade_type"
-                        class="col-md-7"
+                        class="col-md-6"
                         :field="r$.backend_config.crossfade_type"
                         :options="crossfadeOptions"
                         stacked
@@ -30,15 +30,29 @@
                         :description="$gettext('Choose a method to use when transitioning from one song to another. Smart Mode considers the volume of the two tracks when fading for a smoother effect, but requires more CPU resources.')"
                     />
 
-                    <form-group-field
-                        id="edit_form_backend_crossfade"
-                        class="col-md-5"
-                        :field="r$.backend_config.crossfade"
-                        input-type="number"
-                        :input-attrs="{ min: '0.0', max: '30.0', step: '0.1' }"
-                        :label="$gettext('Crossfade Duration (Seconds)')"
-                        :description="$gettext('Number of seconds to overlap songs.')"
-                    />
+                    <div class="col-md-6">
+                        <div class="row g-3">
+                            <form-group-field
+                                id="edit_form_backend_crossfade"
+                                class="col-12"
+                                :field="r$.backend_config.crossfade"
+                                input-type="number"
+                                :input-attrs="{ min: '0.0', max: '30.0', step: '0.1' }"
+                                :label="$gettext('Crossfade Duration (Seconds)')"
+                                :description="$gettext('Number of seconds to overlap songs.')"
+                            />
+
+                            <form-group-field
+                                id="edit_form_backend_cross_length"
+                                class="col-12"
+                                :field="r$.backend_config.cross_length"
+                                input-type="number"
+                                :input-attrs="{ min: '0.0', max: '30.0', step: '0.1' }"
+                                :label="$gettext('Cross Length / Blend Duration (Seconds)')"
+                                :description="$gettext('Liquidsoap blend duration. Leave blank to default to 1.5x crossfade duration.')"
+                            />
+                        </div>
+                    </div>
                 </div>
 
                 <div

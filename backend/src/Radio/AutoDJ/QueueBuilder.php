@@ -1050,6 +1050,10 @@ final class QueueBuilder implements EventSubscriberInterface
         if (PlaylistRemoteTypes::Stream === $remoteType) {
             // Annotate a hard-coded "duration" parameter to avoid infinite play for scheduled playlists.
             $duration = $this->scheduler->getPlaylistScheduleDuration($playlist);
+            if ($duration <= 0) {
+                // MCP-3085 & MCP-3092: Chunk indeterminate stream relays so priority schedules and interrupting tracks can take over.
+                $duration = max(60, $playlist->station->backend_config->autodj_queue_length * 60);
+            }
             return [$playlist->remote_url, $duration];
         }
 

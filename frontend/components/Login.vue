@@ -136,6 +136,16 @@
                 </p>
             </div>
         </div>
+
+        <div
+            v-if="currentQuote"
+            class="text-center mt-3 px-3 py-2 text-white-50 small quote-container"
+        >
+            <em>"{{ currentQuote.text }}"</em>
+            <span v-if="currentQuote.author" class="d-block mt-1 opacity-75">
+                — {{ currentQuote.author }}
+            </span>
+        </div>
     </div>
 </template>
 
@@ -147,6 +157,35 @@ import useWebAuthn, {
 import { useAxios } from "~/vendor/axios.ts";
 import IconIcEmail from "~icons/ic/baseline-email";
 import IconIcVpnKey from "~icons/ic/baseline-vpn-key";
+
+const quotes = [
+    {
+        text: "Radio is the theater of the mind; television is the theater of the mindless.",
+        author: "Steve Allen",
+    },
+    {
+        text: "Where words fail, music speaks.",
+        author: "Hans Christian Andersen",
+    },
+    {
+        text: "Radio is the most intimate medium of all.",
+        author: "Norman Corwin",
+    },
+    {
+        text: "Broadcasting is the magic of sharing stories and connection through sound.",
+        author: "Merlin Suite",
+    },
+    {
+        text: "Music is the universal language of mankind.",
+        author: "Henry Wadsworth Longfellow",
+    },
+    {
+        text: "One good thing about music, when it hits you, you feel no pain.",
+        author: "Bob Marley",
+    },
+];
+
+const currentQuote = ref(quotes[Math.floor(Math.random() * quotes.length)]);
 
 const props = defineProps<{
     hideProductName: boolean;

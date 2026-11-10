@@ -214,13 +214,22 @@ final class StationBackendConfiguration extends AbstractArrayEntity
         );
     }
 
+    #[OA\Property(
+        description: "The cross length/blend duration for Liquidsoap (seconds). If not specified, defaults to 1.5x crossfade."
+    )]
+    public ?float $cross_length = null {
+        set (float|string|null $value) => ($value !== null && $value !== '')
+            ? round(max(0.1, Types::float($value)), 1)
+            : null;
+    }
+
     public function getCrossfadeDuration(): float
     {
         $crossfade = $this->crossfade;
         $crossfadeType = $this->getCrossfadeTypeEnum();
 
         if (CrossfadeModes::Disabled !== $crossfadeType && $crossfade > 0) {
-            return round($crossfade * 1.5, 2);
+            return $this->cross_length ?? round($crossfade * 1.5, 2);
         }
 
         return 0;

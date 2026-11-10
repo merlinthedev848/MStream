@@ -2482,6 +2482,11 @@ export interface StationBackendConfiguration {
     /** @format float */
     crossfade?: number;
     /**
+     * The cross length/blend duration for Liquidsoap (seconds). If not specified, defaults to 1.5x crossfade.
+     * @format float
+     */
+    cross_length?: number | null;
+    /**
      * The dB level above which a track is considered 'loud' ('high' parameter in 'cross.smart').
      * @format float
      */

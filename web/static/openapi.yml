@@ -10227,6 +10227,11 @@ components:
         crossfade:
           type: number
           format: float
+        cross_length:
+          description: "The cross length/blend duration for Liquidsoap (seconds). If not specified, defaults to 1.5x crossfade."
+          type: number
+          format: float
+          nullable: true
         crossfade_smart_high:
           description: "The dB level above which a track is considered 'loud' ('high' parameter in 'cross.smart')."
           type: number

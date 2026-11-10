@@ -67,6 +67,7 @@ export const useAdminStationsForm = defineStore("form-admin-stations", () => {
         backend_config: {
             crossfade_type: CrossfadeModes.Normal,
             crossfade: 2,
+            cross_length: null,
             crossfade_smart_high: -15,
             crossfade_smart_medium: -32,
             crossfade_smart_margin: 8,
@@ -165,6 +166,7 @@ export const useAdminStationsForm = defineStore("form-admin-stations", () => {
                     fields.backend_type,
                     fields.backend_config.crossfade_type,
                     fields.backend_config.crossfade,
+                    fields.backend_config.cross_length,
                     fields.backend_config.crossfade_smart_high,
                     fields.backend_config.crossfade_smart_medium,
                     fields.backend_config.crossfade_smart_margin,
