@@ -1,0 +1,41 @@
+@use "sass:math";
+
+.modal-content {
+  border-radius: var(--bs-card-border-radius, 1rem) !important;
+  border: 1px solid var(--mstream-card-border) !important;
+  background: var(--mstream-card-bg) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  color: var(--mstream-card-text-color);
+
+  .modal-header {
+    border-bottom: 1px solid var(--mstream-card-header-border);
+    padding: 1.25rem 1.5rem;
+
+    .modal-title {
+      font-weight: 700;
+      letter-spacing: -0.015em;
+      color: var(--mstream-card-title-color);
+    }
+  }
+
+  .modal-footer {
+    border-top: 1px solid var(--mstream-card-header-border);
+    background: var(--mstream-card-buttons-bg);
+    border-bottom-left-radius: var(--bs-card-border-radius, 1rem);
+    border-bottom-right-radius: var(--bs-card-border-radius, 1rem);
+    padding: 1rem 1.5rem;
+  }
+}
+
+.modal-body {
+  padding: 1.5rem;
+
+  nav.nav-tabs {
+    background: var(--bs-tertiary-bg);
+
+    margin: (0-$modal-inner-padding) (0-$modal-inner-padding) 0 (0-$modal-inner-padding);
+    padding: math.div($modal-inner-padding, 2) $modal-inner-padding 0 $modal-inner-padding;
+  }
+}

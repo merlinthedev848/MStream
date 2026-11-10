@@ -1,0 +1,1 @@
+import{r as e}from"./hasOwn-Dno49rUr.js";function t(t){return e(t)?NaN:Number(t)}export{t};

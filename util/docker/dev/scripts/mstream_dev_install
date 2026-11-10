@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+echo "MStream Dev Install"
+
+mstream_install "$@"
+
+gosu mstream npm ci --include=dev

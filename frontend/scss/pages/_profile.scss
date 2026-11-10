@@ -1,0 +1,58 @@
+// Station Profile Page Modern Overhaul
+
+#profile-nowplaying {
+  .btn-xl {
+    font-size: 2.75rem;
+    color: #818cf8 !important;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    filter: drop-shadow(0 2px 8px rgba(99, 102, 241, 0.35));
+
+    &:hover {
+      color: #a5b4fc !important;
+      transform: scale(1.08);
+      filter: drop-shadow(0 0 16px rgba(99, 102, 241, 0.65));
+    }
+
+    &:active {
+      transform: scale(0.96);
+    }
+  }
+
+  img.rounded {
+    border-radius: 0.75rem !important;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+    transition: transform 0.2s ease;
+
+    &:hover {
+      transform: scale(1.04);
+    }
+  }
+
+  .media-heading {
+    color: #ffffff;
+    font-weight: 700;
+  }
+}
+
+#profile {
+  .card {
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+      pointer-events: none;
+    }
+  }
+}

@@ -1,0 +1,1 @@
+import{Lt as e,pt as t}from"./ApiInterfaces-DAAtUQKN.js";import{t as n}from"./_plugin-vue_export-helper-BDNMzG2s.js";var r={},i={type:`submit`,style:{position:`absolute`,left:`-9999px`,width:`1px`,height:`1px`},tabindex:`-1`,"aria-hidden":`true`};function a(n,r){return e(),t(`input`,i)}var o=n(r,[[`render`,a]]);export{o as t};

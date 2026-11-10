@@ -1,0 +1,6 @@
+blank_issues_enabled : false
+
+contact_links :
+  - name : MStream Discussion Page
+    url : https://github.com/merlinthedev848/MStream/discussions
+    about : Community discussions, questions, and feature suggestions for MStream.

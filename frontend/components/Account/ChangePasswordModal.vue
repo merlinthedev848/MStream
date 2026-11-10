@@ -1,0 +1,126 @@
+<template>
+    <modal-form
+        ref="$modal"
+        size="md"
+        centered
+        :title="$gettext('Change Password')"
+        :disable-save-button="r$.$invalid"
+        @submit="onSubmit"
+        @hidden="clearContents"
+    >
+        <form-group-field
+            id="form_current_password"
+            :field="r$.current_password"
+            input-type="password"
+            autofocus
+            :label="$gettext('Current Password')"
+            :input-attrs="{
+                autocomplete: 'current-password'
+            }"
+            class="mb-3"
+        />
+
+        <form-group-field
+            id="form_new_password"
+            :field="r$.new_password"
+            input-type="password"
+            :label="$gettext('New Password')"
+            :input-attrs="{
+                autocomplete: 'new-password'
+            }"
+            class="mb-3"
+        />
+
+        <form-group-field
+            id="form_confirm_new_password"
+            :field="r$.new_password2"
+            input-type="password"
+            :input-attrs="{
+                autocomplete: 'new-password'
+            }"
+            :label="$gettext('Confirm New Password')"
+        />
+
+        <template #save-button-name>
+            {{ $gettext('Change Password') }}
+        </template>
+    </modal-form>
+</template>
+
+<script setup lang="ts">
+import { required, sameAs } from "@regle/rules";
+import { ref, useTemplateRef } from "vue";
+import ModalForm from "~/components/Common/ModalForm.vue";
+import FormGroupField from "~/components/Form/FormGroupField.vue";
+import { useApiRouter } from "~/functions/useApiRouter.ts";
+import { HasRelistEmit } from "~/functions/useBaseEditModal.ts";
+import { useResettableRef } from "~/functions/useResettableRef.ts";
+import { useAxios } from "~/vendor/axios";
+import { useTranslate } from "~/vendor/gettext";
+import { isValidPassword, useAppRegle } from "~/vendor/regle.ts";
+
+const emit = defineEmits<HasRelistEmit>();
+
+const { getApiUrl } = useApiRouter();
+const changePasswordUrl = getApiUrl("/frontend/account/password");
+
+const { $gettext } = useTranslate();
+
+const { record: form, reset: resetFormRef } = useResettableRef({
+    current_password: "",
+    new_password: "",
+    new_password2: "",
+});
+
+const { r$ } = useAppRegle(
+    form,
+    {
+        current_password: { required },
+        new_password: { required, isValidPassword },
+        new_password2: {
+            required,
+            sameAs: sameAs(
+                () => form.value.new_password,
+                $gettext("New Password"),
+            ),
+        },
+    },
+    {},
+);
+
+const error = ref(null);
+
+const clearContents = () => {
+    resetFormRef();
+    r$.$reset();
+
+    error.value = null;
+};
+
+const $modal = useTemplateRef("$modal");
+
+const open = () => {
+    clearContents();
+    $modal.value?.show();
+};
+
+const { axios } = useAxios();
+
+const onSubmit = async () => {
+    const { valid, data: postData } = await r$.$validate();
+    if (!valid) {
+        return;
+    }
+
+    try {
+        await axios.put(changePasswordUrl.value, postData);
+    } finally {
+        $modal.value?.hide();
+        emit("relist");
+    }
+};
+
+defineExpose({
+    open,
+});
+</script>

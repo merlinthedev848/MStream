@@ -1,0 +1,1 @@
+import{t as e}from"./toNumber-DDNiEXU_.js";function t(t){return t?(t=e(t),t===1/0||t===-1/0?(t<0?-1:1)*Number.MAX_VALUE:t===t?t:0):t===0?t:0}function n(e){let n=t(e),r=n%1;return r?n-r:n}export{t as n,n as t};

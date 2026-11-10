@@ -1,0 +1,1 @@
+import{lt as e}from"./ApiInterfaces-DAAtUQKN.js";import{t}from"./useClientItemProvider-DOKP8H07.js";function n(n,r,i){let a=e(()=>n.data?.value??[]),o=e(()=>n.isFetching.value);return t(a,o,e=>{typeof r==`function`&&r(e)},async(e=!1)=>{typeof i==`function`?await i(e):await n.refetch()})}export{n as t};

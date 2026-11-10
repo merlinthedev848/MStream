@@ -1,0 +1,58 @@
+name : "Bug Report"
+description : "Report an error you're encountering with your MStream installation."
+labels : [ needs investigation ]
+body :
+  - type : markdown
+    attributes :
+      value : |
+        Thank you for reporting an issue to us!
+         - This template is only to be used for bug/error reports.
+         - Always check your logs before submitting!
+  - type : dropdown
+    id : installation_method
+    attributes :
+      label : "Installation Method"
+      description : "How did you install MStream?"
+      options :
+        - 1-Line Turnkey Automated Installer
+        - Docker Compose Manual Setup
+    validations :
+      required : true
+  - type : dropdown
+    id : release_channel
+    attributes :
+      label : "MStream Release Channel"
+      description : "What release channel are you using?"
+      options :
+        - Rolling Release (latest)
+        - Stable
+    validations :
+      required : true
+  - type : markdown
+    attributes :
+      value : |
+        **Note:** Check the [changelog](CHANGELOG.md) for a full list of the latest changes.
+  - type : input
+    id : current_version
+    attributes :
+      label : "Current MStream Version"
+      description : "What version of MStream are you currently running? You can find this in the footer of most pages."
+      placeholder : "latest or Rolling Release"
+  - type : markdown
+    attributes :
+      value : |
+        **Note:** If you're not running the latest version, you may find that your issue has already been fixed in a newer version. You should follow our [updating instructions](https://github.com/merlinthedev848/MStream) first before continuing.
+  - type : textarea
+    id : what-happened
+    attributes :
+      label : What happened?
+      description : Let us know the full details of the bug, along with what behavior was expected.
+      placeholder : Tell us what you see!
+    validations :
+      required : true
+  - type : textarea
+    id : logs
+    attributes :
+      label : Relevant log output
+      description : Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      render : shell

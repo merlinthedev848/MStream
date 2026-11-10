@@ -1,0 +1,3 @@
+0 * * * * * * mstream_cli mstream:sync:run
+0 30 */6 * * * * temp_cleanup
+0 15 23 * * * * mstream_update_blocklist

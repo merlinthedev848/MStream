@@ -1,0 +1,1 @@
+import{n as e,r as t,t as n}from"./luxon-BmWa10Dr.js";import{k as r}from"./ApiInterfaces-DAAtUQKN.js";function i(){let{localeWithDashes:i,timeConfig:a}=r();return t.defaultLocale=i,{DateTime:n,Duration:e,timestampToRelative:e=>typeof e==`number`?n.fromSeconds(e).toRelative({...a})??``:``}}export{i as t};

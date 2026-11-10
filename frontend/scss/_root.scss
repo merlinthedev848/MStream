@@ -1,0 +1,63 @@
+:root,
+[data-bs-theme="light"] {
+  --public-page-bg: url('~/img/hexbg.webp');
+  --scrollbar-color: #{$gray-400};
+  --mstream-header-bg: linear-gradient(135deg, #0f172a 0%, #1e1b4b 35%, #312e81 70%, #4338ca 100%);
+  --mstream-card-bg: #ffffff;
+  --mstream-card-border: #e2e8f0;
+  --mstream-card-header-bg: #f8fafc;
+  --mstream-card-header-border: #e2e8f0;
+  --mstream-card-title-color: #0f172a;
+  --mstream-card-text-color: #334155;
+  --mstream-card-table-th-bg: #f8fafc;
+  --mstream-card-table-th-color: #64748b;
+  --mstream-card-table-td-border: #f1f5f9;
+  --mstream-card-table-td-color: #1e293b;
+  --mstream-card-table-hover: #f1f5f9;
+  --mstream-card-buttons-bg: #f8fafc;
+  --mstream-card-buttons-border: #e2e8f0;
+  --mstream-card-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.06), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  --bs-card-border-radius: 1rem;
+  --bs-border-radius: 0.6rem;
+  --bs-card-spacer-y: 1.25rem;
+  --bs-card-spacer-x: 1.25rem;
+}
+
+@include color-mode(dark, true) {
+  color-scheme: unset;
+  body {
+    color-scheme: dark;
+  }
+  iframe {
+    // Workaround for Bootstrap 5.3 weirdness with embeds.
+    color-scheme: light;
+  }
+
+  --public-page-bg: url('~/img/hexbg_dark.webp');
+  --scrollbar-color: #334155;
+  --bs-info-bg-subtle: #312e81;
+  --bs-info-text-emphasis: #c7d2fe;
+  --mstream-header-bg: linear-gradient(135deg, #020617 0%, #0a0f1d 40%, #111827 75%, #1e1b4b 100%);
+  --mstream-card-bg: linear-gradient(160deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%);
+  --mstream-card-border: rgba(255, 255, 255, 0.08);
+  --mstream-card-header-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%);
+  --mstream-card-header-border: rgba(255, 255, 255, 0.07);
+  --mstream-card-title-color: #ffffff;
+  --mstream-card-text-color: #e2e8f0;
+  --mstream-card-table-th-bg: rgba(0, 0, 0, 0.2);
+  --mstream-card-table-th-color: #94a3b8;
+  --mstream-card-table-td-border: rgba(255, 255, 255, 0.04);
+  --mstream-card-table-td-color: #e2e8f0;
+  --mstream-card-table-hover: rgba(255, 255, 255, 0.03);
+  --mstream-card-buttons-bg: rgba(0, 0, 0, 0.18);
+  --mstream-card-buttons-border: rgba(255, 255, 255, 0.06);
+  --mstream-card-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.45), 0 2px 8px -2px rgba(0, 0, 0, 0.25);
+  --bs-card-bg: #111827;
+  --bs-body-bg: #090d16;
+  --bs-secondary-bg: #1f2937;
+  --bs-tertiary-bg: #0d131f;
+
+  .table-striped {
+    --bs-table-striped-bg: rgba(255, 255, 255, 0.018);
+  }
+}

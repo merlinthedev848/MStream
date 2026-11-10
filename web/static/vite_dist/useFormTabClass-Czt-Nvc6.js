@@ -1,0 +1,1 @@
+import{lt as e,vn as t}from"./ApiInterfaces-DAAtUQKN.js";var n=n=>e(()=>{let{$dirty:e,$invalid:r}=t(n);return e&&r?`text-danger`:``});export{n as t};

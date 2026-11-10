@@ -1,0 +1,1 @@
+import{c as e,j as t}from"./ApiInterfaces-DAAtUQKN.js";function n(){let{permissions:n}=t();return{userAllowed:t=>{try{return n.global.indexOf(e.All)!==-1||n.global.indexOf(t)!==-1}catch{return!1}}}}export{n as t};

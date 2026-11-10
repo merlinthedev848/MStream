@@ -1,0 +1,1 @@
+function e(e){if(!e)return``;let t=[];return e.split(` `).forEach(e=>{t.push(e.toUpperCase())}),t.join(` `)}function t(t,n=null){return t===null?``:t===`flac`||n===null?e(t):`${n}kbps ${e(t)}`}export{t};

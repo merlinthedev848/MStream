@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+cd /var/mstream/www
+exec php backend/bin/installer "$@"

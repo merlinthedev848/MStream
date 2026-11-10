@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+if [ "$(whoami)" != 'mstream' ]; then
+    exec gosu mstream mstream_cli "$@"
+fi
+
+cd /var/mstream/www
+exec php backend/bin/console "$@"

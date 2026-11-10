@@ -1,0 +1,1 @@
+import{Lt as e,an as t,pt as n,ut as r}from"./ApiInterfaces-DAAtUQKN.js";var i={viewBox:`0 0 24 24`,class:`icon`,fill:`currentColor`,focusable:`false`,"aria-hidden":`true`,width:`1.2em`,height:`1.2em`};function a(t,a){return e(),n(`svg`,i,[...a[0]||=[r(`path`,{fill:`currentColor`,d:`M6 6h12v12H6z`},null,-1)]])}var o=t({name:`ic-baseline-stop`,render:a});export{o as t};
