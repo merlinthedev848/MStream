@@ -1,0 +1,1 @@
+import{r as e}from"./layout-Hz1_A40t.js";import{M as t,N as n}from"./query-D77dZequ.js";function r(r,i){let{confirmDelete:a}=e(),{notifySuccess:o}=n(),{axios:s}=t();return{doDelete:async e=>{let{value:t}=await a({title:r});if(t){let{data:t}=await s.delete(e);o(t.message),typeof i==`function`&&i(t)}}}}export{r as t};

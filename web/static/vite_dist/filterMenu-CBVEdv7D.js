@@ -1,0 +1,1 @@
+var e=e=>e.map(e=>{let t={...e};return`visible`in e&&e.visible&&!e.visible()||`items`in e&&e.items&&(t.items=e.items.map(e=>`visible`in e&&e.visible&&!e.visible()?null:{...e}).filter(e=>e!==null),t.items.length===0)?null:t}).filter(e=>e!==null);export{e as t};

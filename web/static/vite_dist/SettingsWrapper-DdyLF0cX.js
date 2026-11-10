@@ -1,0 +1,1 @@
+import{Rt as e,bt as t,ft as n,un as r}from"./ApiInterfaces-BkweXF0e.js";import{t as i}from"./delay-CCH6L4zT.js";import{t as a}from"./Settings-3FqAH-BQ.js";var o=t({__name:`SettingsWrapper`,setup(t){let o=r(!1),s=async()=>{o.value=!0,await i(2e3),window.location.reload()};return(t,r)=>(e(),n(a,{loading:o.value,onSaved:s},null,8,[`loading`]))}});export{o as default};

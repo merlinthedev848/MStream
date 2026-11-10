@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+if [ `whoami` != 'mstream' ]; then
+    exec gosu mstream app_startup
+fi
+
+# Wait for initial DB and cache services to become available
+uptime_wait redis || exit 1
+uptime_wait db || exit 1
+
+# Start PHP-FPM, Centrifugo, and Nginx immediately so HTTP/HTTPS (port 80/443) binds and listens on 0.0.0.0 right away
+supervisorctl start php-fpm
+supervisorctl start centrifugo
+sleep 1
+supervisorctl start nginx
+uptime_wait nginx || true
+
+# Run initial app setup and database migrations non-destructively
+mstream_cli mstream:setup --init || true
+mstream_cli mstream:acme:get-certificate || true
+
+# Start remaining background workers, crons, and station processes
+supervisorctl start all
+
+exit 0

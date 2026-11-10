@@ -1,0 +1,91 @@
+import { RegleFieldStatus } from "@regle/core";
+import { reactiveComputed } from "@vueuse/core";
+import { computed, UnwrapNestedRefs, WritableComputedRef } from "vue";
+
+export type ModelFormField =
+    | string
+    | number
+    | boolean
+    | Array<any>
+    | null
+    | undefined;
+
+export type ValidatedField<T = ModelFormField> = RegleFieldStatus<T>;
+
+export type FormFieldProps<T = ModelFormField> = {
+    required?: boolean;
+} & (
+    | {
+          modelValue: T;
+          field?: never;
+      }
+    | {
+          field: ValidatedField<T>;
+          modelValue?: never;
+      }
+);
+
+export type FormFieldEmits<T = ModelFormField> = (
+    e: "update:modelValue",
+    value: T,
+) => void;
+
+export function useFormField<T = ModelFormField>(
+    initialProps: FormFieldProps<T>,
+    emit: FormFieldEmits<T>,
+) {
+    const props = reactiveComputed(() => ({
+        required: false,
+        ...initialProps,
+    })) as FormFieldProps<T>;
+
+    const model: WritableComputedRef<T, T> = computed({
+        get() {
+            return props.field !== undefined
+                ? (props.field.$value as T)
+                : props.modelValue;
+        },
+        set(newValue) {
+            if (props.field) {
+                props.field.$value = newValue as UnwrapNestedRefs<T>;
+                props.field.$touch();
+            } else {
+                emit("update:modelValue", newValue);
+            }
+        },
+    });
+
+    const fieldClass = computed(() => {
+        if (!props.field) {
+            return null;
+        }
+
+        if (!props.field.$dirty) {
+            return null;
+        }
+
+        return props.field.$error ? "is-invalid" : "is-valid";
+    });
+
+    const isRequired = computed(() => {
+        if (props.required) {
+            return props.required;
+        }
+
+        if (props.field === undefined) {
+            return false;
+        }
+
+        if ("$rules" in props.field) {
+            return !!props.field.$rules?.required?.$active;
+        }
+
+        return false;
+    });
+
+    return {
+        model,
+        fieldClass,
+        isRequired,
+    };
+}

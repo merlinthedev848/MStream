@@ -1,0 +1,10 @@
+services:
+  installer:
+    container_name: mstream_installer
+    image: '${MSTREAM_IMAGE:-ghcr.io/merlinthedev848/mstream}:${MSTREAM_VERSION:-latest}'
+    volumes:
+      - './:/installer'
+    restart: 'no'
+    entrypoint: mstream_install
+    command: install
+    privileged: true

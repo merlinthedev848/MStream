@@ -1,0 +1,1 @@
+import{Tt as e,zt as t}from"./ApiInterfaces-BkweXF0e.js";var n=Symbol();function r(e){t(n,e)}function i(){let t=e(n);return{vLightbox:e=>{e.addEventListener(`click`,n=>{if(t!==void 0){n.preventDefault();let r=e.getAttribute(`href`);r!==null&&t.value?.show(r)}})}}}export{r as n,i as t};

@@ -1,0 +1,63 @@
+header.navbar {
+  background: var(--mstream-header-bg);
+  min-height: $header-nav-height;
+  padding: 0.75rem 1.5rem;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.35);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+  color: $white !important;
+
+  .navbar-brand {
+    font-size: 2.25rem;
+    letter-spacing: -1.2px;
+    line-height: 1;
+    font-weight: 300;
+    align-items: baseline;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    padding: 0;
+
+    b, strong {
+      font-weight: 700;
+      color: #ffffff;
+      text-shadow: 0 0 12px rgba(99, 102, 241, 0.6);
+    }
+
+    small {
+      padding-left: .75rem;
+      font-size: 1.25rem;
+      letter-spacing: normal;
+      opacity: 0.85;
+    }
+  }
+
+  @include media-breakpoint-down(sm) {
+    & {
+      position: relative;
+    }
+
+    .navbar-brand {
+      font-size: 2rem;
+
+      small {
+        font-size: 1rem;
+      }
+    }
+  }
+
+  body:not(.has-sidebar) & #navbar-toggle {
+    display: none !important;
+  }
+
+  .navbar-toggler {
+    border: 0;
+    line-height: 1rem;
+  }
+
+  .dropdown-menu {
+    .dropdown-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+  }
+}

@@ -1,0 +1,34 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Controller\Api\Admin\Vue;
+
+use App\Controller\SingleActionInterface;
+use App\Entity\Api\Admin\Vue\CustomFieldProps;
+use App\Http\Response;
+use App\Http\ServerRequest;
+use App\Media\Enums\MetadataTags;
+use Psr\Http\Message\ResponseInterface;
+
+final class CustomFieldsAction implements SingleActionInterface
+{
+    public function __invoke(
+        ServerRequest $request,
+        Response $response,
+        array $params
+    ): ResponseInterface {
+        return $response->withJson(
+            new CustomFieldProps(
+                autoAssignTypes: MetadataTags::getNames(),
+                autoAssignAliases: array_map(
+                    static fn(MetadataTags $tag): string => $tag->value,
+                    [
+                        ...MetadataTags::getAliases(),
+                        ...MetadataTags::getVorbisCommentAliases(),
+                    ]
+                ),
+            )
+        );
+    }
+}

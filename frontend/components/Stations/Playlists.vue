@@ -1,0 +1,652 @@
+<template>
+    <section
+        class="card"
+        role="region"
+        aria-labelledby="hdr_playlists"
+    >
+        <div class="card-header text-bg-primary">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h2
+                        id="hdr_playlists"
+                        class="card-title"
+                    >
+                        {{ $gettext('Playlists') }}
+                    </h2>
+                </div>
+                <div class="col-md-6 text-end">
+                    <time-zone />
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <tabs
+                content-class="mt-3"
+                destroy-on-hide
+            >
+                <tab
+                    id="all_playlists"
+                    :label="$gettext('All Playlists')"
+                >
+                    <div class="card-body-flush">
+                        <div class="card-body buttons d-flex justify-content-between">
+                            <add-button
+                                :text="$gettext('Add Playlist')"
+                                @click="doCreate"
+                            />
+
+                            <div class="d-flex gap-2">
+                                <a
+                                    class="btn btn-secondary"
+                                    :href="exportPlaylistsConfigUrl"
+                                    target="_blank"
+                                >
+                                    <icon-bi-cloud-download/>
+                                    {{ $gettext('Export') }}
+                                </a>
+                                <button
+                                    type="button"
+                                    class="btn btn-secondary"
+                                    @click="doImportPlaylistConfig"
+                                >
+                                    <icon-bi-cloud-upload/>
+                                    {{ $gettext('Import') }}
+                                </button>
+                            </div>
+                        </div>
+
+                        <data-table
+                            id="station_playlists"
+                            paginated
+                            :fields="fields"
+                            :filters="filters"
+                            :provider="listItemProvider"
+                            detailed
+                        >
+                            <template #cell(name)="row">
+                                <h5 class="m-0">
+                                    {{ row.item.name }}
+                                </h5>
+                                <p v-if="row.item.description" class="text-muted mb-1">
+                                    {{ row.item.description }}
+                                </p>
+                                <div class="badges">
+                                    <span
+                                        v-if="row.item.is_jingle"
+                                        class="badge text-bg-primary"
+                                    >
+                                        {{ $gettext('Jingle Mode') }}
+                                    </span>
+                                    <span
+                                        v-if="row.item.order === 'sequential'"
+                                        class="badge text-bg-info"
+                                    >
+                                        {{ $gettext('Sequential') }}
+                                    </span>
+                                    <span
+                                        v-if="row.item.include_in_on_demand"
+                                        class="badge text-bg-info"
+                                    >
+                                        {{ $gettext('On-Demand') }}
+                                    </span>
+                                    <span
+                                        v-if="row.item.schedule_items.length > 0"
+                                        class="badge text-bg-info"
+                                    >
+                                        {{ $gettext('Scheduled') }}
+                                    </span>
+                                    <span
+                                        v-if="!row.item.is_enabled"
+                                        class="badge text-bg-danger"
+                                    >
+                                        {{ $gettext('Disabled') }}
+                                    </span>
+                                </div>
+                            </template>
+                            <template #cell(source)="{ item }">
+                                <span class="badge text-bg-secondary d-inline-flex align-items-center gap-1">
+                                    <playlist-source-icon
+                                        :source="item.source"
+                                        :size="IconSize.Small"
+                                    />
+                                    <template v-if="item.source === 'songs'">
+                                        {{ $gettext('Song-based') }}
+                                    </template>
+                                    <template v-else-if="item.source === 'playlists'">
+                                        {{ $gettext('Playlist Group') }}
+                                    </template>
+                                    <template v-else-if="item.source === 'requests'">
+                                        {{ $gettext('Request Queue') }}
+                                    </template>
+                                    <template v-else>
+                                        {{ $gettext('Remote URL') }}
+                                    </template>
+                                </span>
+                            </template>
+                            <template #cell(scheduling)="{ item }">
+                                <template v-if="!item.is_enabled">
+                                    {{ $gettext('Disabled') }}
+                                </template>
+                                <template v-else-if="item.source === 'remote_url'">
+                                    {{ $gettext('Remote URL') }}
+                                </template>
+                                <template v-else-if="item.type === 'default'">
+                                    {{ $gettext('General Rotation') }}<br>
+                                    {{ $gettext('Weight') }}: {{ item.weight }}
+                                </template>
+                                <template v-else-if="item.type === 'once_per_x_songs'">
+                                    {{
+                                        $gettext(
+                                            'Once per %{songs} Songs',
+                                            {songs: item.play_per_songs}
+                                        )
+                                    }}
+                                </template>
+                                <template v-else-if="item.type === 'once_per_x_minutes'">
+                                    {{
+                                        $gettext(
+                                            'Once per %{minutes} Minutes',
+                                            {minutes: item.play_per_minutes}
+                                        )
+                                    }}
+                                </template>
+                                <template v-else-if="item.type === 'once_per_hour'">
+                                    {{
+                                        $gettext(
+                                            'Once per Hour (at %{minute})',
+                                            {minute: item.play_per_hour_minute}
+                                        )
+                                    }}
+                                </template>
+                                <template v-else>
+                                    {{ $gettext('Custom') }}
+                                </template>
+                            </template>
+                            <template #cell(num_entries)="row">
+                                <template v-if="row.item.source === 'songs'">
+                                    <router-link
+                                        :to="{
+                                            name: 'stations:files:index',
+                                            params: {
+                                                path: 'playlist:'+row.item.short_name
+                                            }
+                                        }"
+                                    >
+                                        {{ row.item.num_songs }}
+                                    </router-link>
+
+                                    ({{ formatLength(row.item.total_length) }})
+                                </template>
+                                <template v-else-if="row.item.source === 'playlists'">
+                                    <button
+                                        v-if="row.item.playlists.length > 0"
+                                        type="button"
+                                        class="btn btn-link"
+                                        @click="doShowMembers(row.item.links.self)"
+                                    >
+                                        {{ row.item.playlists.length }}
+                                    </button>
+                                    <template v-else>
+                                        {{ row.item.playlists.length }}
+                                    </template>
+                                </template>
+                                <template v-else>
+                                    &nbsp;
+                                </template>
+                            </template>
+                            <template #cell(groups)="row">
+                                <button
+                                    v-if="row.item.playlist_groups.length > 0"
+                                    type="button"
+                                    class="btn btn-link"
+                                    @click="doShowMemberships(row.item.links.self)"
+                                >
+                                    {{ row.item.playlist_groups.length }}
+                                </button>
+                                <template v-else>
+                                    &nbsp;
+                                </template>
+                            </template>
+                            <template #cell(actions)="{ item, isActive, toggleDetails }">
+                                <div class="btn-group btn-group-sm">
+                                    <button
+                                        type="button"
+                                        class="btn btn-primary"
+                                        @click="doEdit(item.links.self)"
+                                    >
+                                        {{ $gettext('Edit') }}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="btn btn-danger"
+                                        @click="doDelete(item.links.self)"
+                                    >
+                                        {{ $gettext('Delete') }}
+                                    </button>
+
+                                    <button
+                                        class="btn btn-sm btn-secondary"
+                                        type="button"
+                                        @click="toggleDetails()"
+                                    >
+                                        <icon-bi-contract v-if="isActive"/>
+                                        <icon-bi-expand v-else/>
+
+                                        {{ $gettext('More') }}
+                                    </button>
+                                </div>
+                            </template>
+                            <template #detail="{ item }">
+                                <div
+                                    class="buttons"
+                                    style="line-height: 2.5;"
+                                >
+                                    <button
+                                        v-if="item.links.order && item.source !== 'playlists'"
+                                        type="button"
+                                        class="btn btn-sm btn-primary"
+                                        @click="doReorder(item.links.order)"
+                                    >
+                                        {{ $gettext('Reorder') }}
+                                    </button>
+                                    <button
+                                        v-if="item.links.order && item.source === 'playlists'"
+                                        type="button"
+                                        class="btn btn-sm btn-primary"
+                                        @click="doGroupReorder(item.links.members, item.playlists)"
+                                    >
+                                        {{ $gettext('Reorder') }}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="btn btn-sm"
+                                        :class="(item.is_enabled) ? 'btn-warning' : 'btn-success'"
+                                        @click="doModify(item.links.toggle)"
+                                    >
+                                        {{ (item.is_enabled) ? $gettext('Disable') : $gettext('Enable') }}
+                                    </button>
+                                    <button
+                                        v-if="item.links.empty"
+                                        type="button"
+                                        class="btn btn-sm btn-danger"
+                                        @click="doEmpty(item.links.empty)"
+                                    >
+                                        {{ $gettext('Empty') }}
+                                    </button>
+                                    <button
+                                        v-if="item.links.reshuffle"
+                                        type="button"
+                                        class="btn btn-sm btn-secondary"
+                                        @click="doModify(item.links.reshuffle)"
+                                    >
+                                        {{ $gettext('Reshuffle') }}
+                                    </button>
+                                    <button
+                                        v-if="item.links.import"
+                                        type="button"
+                                        class="btn btn-sm btn-secondary"
+                                        @click="doImport(item.links.import)"
+                                    >
+                                        {{ $gettext('Import from PLS/M3U') }}
+                                    </button>
+                                    <button
+                                        v-if="item.links.queue"
+                                        type="button"
+                                        class="btn btn-sm btn-secondary"
+                                        @click="doQueue(item.links.queue)"
+                                    >
+                                        {{ $gettext('Playback Queue') }}
+                                    </button>
+                                    <button
+                                        v-if="item.links.applyto"
+                                        type="button"
+                                        class="btn btn-sm btn-secondary"
+                                        @click="doApplyTo(item.links.applyto)"
+                                    >
+                                        {{ $gettext('Apply to Folders') }}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="btn btn-sm btn-secondary"
+                                        @click="doClone(item.name, item.links.clone, item.source === 'playlists')"
+                                    >
+                                        {{ $gettext('Duplicate') }}
+                                    </button>
+
+                                    <template v-if="item.source !== 'playlists'">
+                                        <a
+                                            v-for="format in ['pls', 'm3u']"
+                                            :key="format"
+                                            class="btn btn-sm btn-secondary"
+                                            :href="item.links.export[format]"
+                                            target="_blank"
+                                        >
+                                            {{
+                                                $gettext(
+                                                    'Export %{format}',
+                                                    {format: format.toUpperCase()}
+                                                )
+                                            }}
+                                        </a>
+                                    </template>
+
+                                    <a
+                                        v-if="item.links.export_config"
+                                        class="btn btn-sm btn-secondary"
+                                        :href="item.links.export_config"
+                                        target="_blank"
+                                    >
+                                        {{ $gettext('Export JSON') }}
+                                    </a>
+                                </div>
+                            </template>
+                        </data-table>
+                    </div>
+                </tab>
+                <playlist-grouping-tab
+                    ref="$playlistGroupingTab"
+                    :list-url="listUrl"
+                />
+                <schedule-view-tab
+                    ref="$scheduleTab"
+                    :schedule-url="scheduleUrl"
+                    @click="doCalendarClick"
+                />
+            </tabs>
+        </div>
+    </section>
+
+    <edit-modal
+        ref="$editModal"
+        :create-url="listUrl"
+        @relist="() => relist()"
+        @needs-restart="() => mayNeedRestart()"
+    />
+    <reorder-modal ref="$reorderModal" />
+    <playlist-group-reorder-modal
+        ref="$groupReorderModal"
+        @relist="() => relist()"
+    />
+    <queue-modal ref="$queueModal" />
+    <import-modal
+        ref="$importModal"
+        @relist="() => relist()"
+    />
+    <import-playlist-config-modal
+        ref="$importPlaylistConfigModal"
+        :import-url="importPlaylistsConfigUrl"
+        @relist="() => relist()"
+    />
+    <clone-modal
+        ref="$cloneModal"
+        @relist="() => relist()"
+        @needs-restart="() => mayNeedRestart()"
+    />
+    <apply-to-modal
+        ref="$applyToModal"
+        @relist="() => relist()"
+    />
+</template>
+
+<script setup lang="ts">
+import { EventApi } from "@fullcalendar/vue3";
+import { toRefs } from "@vueuse/core";
+import { useTemplateRef } from "vue";
+import AddButton from "~/components/Common/AddButton.vue";
+import DataTable, {
+    DataTableField,
+    DataTableFilter,
+} from "~/components/Common/DataTable.vue";
+import Tab from "~/components/Common/Tab.vue";
+import Tabs from "~/components/Common/Tabs.vue";
+import { useNotify } from "~/components/Common/Toasts/useNotify.ts";
+import PlaylistSourceIcon from "~/components/Stations/Common/PlaylistSourceIcon.vue";
+import ScheduleViewTab from "~/components/Stations/Common/ScheduleViewTab.vue";
+import TimeZone from "~/components/Stations/Common/TimeZone.vue";
+import ApplyToModal from "~/components/Stations/Playlists/ApplyToModal.vue";
+import CloneModal from "~/components/Stations/Playlists/CloneModal.vue";
+import EditModal from "~/components/Stations/Playlists/EditModal.vue";
+import ImportModal from "~/components/Stations/Playlists/ImportModal.vue";
+import ImportPlaylistConfigModal from "~/components/Stations/Playlists/ImportPlaylistConfigModal.vue";
+import PlaylistGroupingTab from "~/components/Stations/Playlists/PlaylistGroupingTab.vue";
+import PlaylistGroupReorderModal from "~/components/Stations/Playlists/PlaylistGroupReorderModal.vue";
+import { usePlaylistOptions } from "~/components/Stations/Playlists/playlistOptions.ts";
+import QueueModal from "~/components/Stations/Playlists/QueueModal.vue";
+import ReorderModal from "~/components/Stations/Playlists/ReorderModal.vue";
+import {
+    PlaylistGroupAllowedRequests,
+    StationPlaylistGroup,
+} from "~/entities/ApiInterfaces.ts";
+import { QueryKeys, queryKeyWithStation } from "~/entities/Queries.ts";
+import {
+    StationPlaylistEnriched,
+    StationPlaylistGroupMemberEnriched,
+} from "~/entities/StationPlaylist.ts";
+import { useApiItemProvider } from "~/functions/dataTable/useApiItemProvider.ts";
+import { IconSize } from "~/functions/icons.ts";
+import { useApiRouter } from "~/functions/useApiRouter.ts";
+import useConfirmAndDelete from "~/functions/useConfirmAndDelete";
+import { useFormatLength } from "~/functions/useFormatLength.ts";
+import { DataTableFilterType } from "~/functions/useHasDatatable.ts";
+import useHasEditModal from "~/functions/useHasEditModal";
+import { useMayNeedRestart } from "~/functions/useMayNeedRestart";
+import { useStationData } from "~/functions/useStationQuery.ts";
+import { useAxios } from "~/vendor/axios";
+import { useTranslate } from "~/vendor/gettext";
+import IconBiContract from "~icons/bi/chevron-contract";
+import IconBiExpand from "~icons/bi/chevron-expand";
+import IconBiCloudDownload from "~icons/bi/cloud-download";
+import IconBiCloudUpload from "~icons/bi/cloud-upload";
+
+const { getStationApiUrl } = useApiRouter();
+const listUrl = getStationApiUrl("/playlists");
+const scheduleUrl = getStationApiUrl("/playlists/schedule");
+const exportPlaylistsConfigUrl = getStationApiUrl("/playlists/export-config");
+const importPlaylistsConfigUrl = getStationApiUrl("/playlists/import-config");
+
+const { $gettext } = useTranslate();
+
+const fields: DataTableField[] = [
+    {
+        key: "name",
+        isRowHeader: true,
+        label: $gettext("Playlist"),
+        sortable: true,
+    },
+    { key: "source", label: $gettext("Source"), sortable: false },
+    { key: "scheduling", label: $gettext("Scheduling"), sortable: false },
+    { key: "num_entries", label: $gettext("# Entries"), sortable: false },
+    { key: "groups", label: $gettext("Groups"), sortable: false },
+    {
+        key: "actions",
+        label: $gettext("Actions"),
+        sortable: false,
+        class: "shrink",
+    },
+];
+
+const { sourceOptions, typeOptions, orderOptions } = usePlaylistOptions();
+
+const filters: DataTableFilter[] = [
+    {
+        key: "source",
+        label: $gettext("Source"),
+        type: DataTableFilterType.Select,
+        options: sourceOptions,
+        multiple: true,
+    },
+    {
+        key: "type",
+        label: $gettext("Playlist Type"),
+        type: DataTableFilterType.Select,
+        options: typeOptions,
+        multiple: true,
+    },
+    {
+        key: "order",
+        label: $gettext("Song Playback Order"),
+        type: DataTableFilterType.Select,
+        options: orderOptions,
+        multiple: true,
+    },
+];
+
+const listItemProvider = useApiItemProvider(
+    listUrl,
+    queryKeyWithStation([QueryKeys.StationPlaylists]),
+);
+
+const formatLength = useFormatLength();
+
+const $scheduleTab = useTemplateRef("$scheduleTab");
+
+const relist = () => {
+    void listItemProvider.refresh();
+    $scheduleTab.value?.refresh();
+};
+
+const $editModal = useTemplateRef("$editModal");
+const { doCreate, doEdit } = useHasEditModal($editModal);
+
+const doShowMembers = (url: string) => {
+    $editModal.value?.editMembers(url);
+};
+
+const doShowMemberships = (url: string) => {
+    $editModal.value?.editMemberships(url);
+};
+
+const doCalendarClick = (event: EventApi) => {
+    doEdit(event.extendedProps.edit_url);
+};
+
+const $reorderModal = useTemplateRef("$reorderModal");
+
+const doReorder = (url: string) => {
+    $reorderModal.value?.open(url);
+};
+
+const $groupReorderModal = useTemplateRef("$groupReorderModal");
+
+const doGroupReorder = async (
+    membersUrl: string,
+    playlists: StationPlaylistGroup[],
+): Promise<void> => {
+    const { data } = await axios.get(listUrl.value, {
+        params: { rowCount: -1 },
+    });
+
+    const allPlaylists: StationPlaylistEnriched[] = data.rows ?? [];
+    const playlistMap = new Map(
+        allPlaylists.map((playlist) => [playlist.id, playlist]),
+    );
+
+    const enrichedMembers: StationPlaylistGroupMemberEnriched[] = playlists
+        .map((member) => {
+            const weight = member.weight ?? 0;
+            const consecutivePlays = member.consecutive_plays ?? 0;
+            const full = playlistMap.get(member.id);
+            return full
+                ? {
+                      ...full,
+                      weight: weight,
+                      consecutive_plays: consecutivePlays,
+                      play_full_cycle: member.play_full_cycle ?? false,
+                      preserve_queue_on_recursive_reset:
+                          member.preserve_queue_on_recursive_reset ?? false,
+                      allowed_requests:
+                          member.allowed_requests ??
+                          PlaylistGroupAllowedRequests.Any,
+                  }
+                : {
+                      ...member,
+                      name: member.name ?? "",
+                      weight: weight,
+                      consecutive_plays: consecutivePlays,
+                      play_full_cycle: member.play_full_cycle ?? false,
+                      preserve_queue_on_recursive_reset:
+                          member.preserve_queue_on_recursive_reset ?? false,
+                      allowed_requests:
+                          member.allowed_requests ??
+                          PlaylistGroupAllowedRequests.Any,
+                      source: "",
+                      order: "",
+                      num_songs: 0,
+                      is_enabled: true,
+                      playlists: [],
+                  };
+        })
+        .sort((a, b) => a.weight - b.weight);
+
+    $groupReorderModal.value?.open(membersUrl, enrichedMembers);
+};
+
+const $queueModal = useTemplateRef("$queueModal");
+
+const doQueue = (url: string) => {
+    $queueModal.value?.open(url);
+};
+
+const $importModal = useTemplateRef("$importModal");
+
+const doImport = (url: string) => {
+    $importModal.value?.open(url);
+};
+
+const $importPlaylistConfigModal = useTemplateRef("$importPlaylistConfigModal");
+
+const doImportPlaylistConfig = () => {
+    $importPlaylistConfigModal.value?.open();
+};
+
+const $cloneModal = useTemplateRef("$cloneModal");
+
+const doClone = (name: string, url: string, isGroup: boolean) => {
+    $cloneModal.value?.open(name, url, isGroup);
+};
+
+const $applyToModal = useTemplateRef("$applyToModal");
+
+const doApplyTo = (url: string) => {
+    $applyToModal.value?.open(url);
+};
+
+const { mayNeedRestart: originalMayNeedRestart } = useMayNeedRestart();
+
+const stationData = useStationData();
+const { useManualAutoDj } = toRefs(stationData);
+
+const mayNeedRestart = () => {
+    if (!useManualAutoDj.value) {
+        return;
+    }
+
+    originalMayNeedRestart();
+};
+
+const { notifySuccess } = useNotify();
+const { axios } = useAxios();
+
+const doModify = async (url: string) => {
+    const { data } = await axios.put(url);
+
+    mayNeedRestart();
+
+    notifySuccess(data.message);
+    relist();
+};
+
+const { doDelete } = useConfirmAndDelete($gettext("Delete Playlist?"), () => {
+    relist();
+    mayNeedRestart();
+});
+
+const { doDelete: doEmpty } = useConfirmAndDelete(
+    $gettext("Clear all media from playlist?"),
+    () => {
+        relist();
+        mayNeedRestart();
+    },
+);
+</script>

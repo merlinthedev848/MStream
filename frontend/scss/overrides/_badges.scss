@@ -1,0 +1,7 @@
+@use "sass:map";
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: map.get($spacers, 1);
+}

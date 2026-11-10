@@ -1,0 +1,1 @@
+import{ut as e}from"./ApiInterfaces-BkweXF0e.js";import{t}from"./useClientItemProvider-BQ6vciqq.js";function n(n,r,i){let a=e(()=>n.data?.value??[]),o=e(()=>n.isFetching.value);return t(a,o,e=>{typeof r==`function`&&r(e)},async(e=!1)=>{typeof i==`function`?await i(e):await n.refetch()})}export{n as t};

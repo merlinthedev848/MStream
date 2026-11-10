@@ -1,0 +1,1 @@
+import{t as e}from"./identity-Dfvzj6n2.js";import{t}from"./range-CYTESHT1.js";import{i as n}from"./hasOwn-Dno49rUr.js";function r(r,i=e){if(!r)return r;typeof i!=`function`&&(i=e);let a=n(r)?t(0,r.length):Object.keys(r);for(let e=0;e<a.length;e++){let t=a[e],n=r[t];if(i(n,t,r)===!1)break}return r}export{r as t};

@@ -1,0 +1,1 @@
+import{L as e}from"./ApiInterfaces-BkweXF0e.js";function t(t,n){let[r,i]=e(t,n);return[r,()=>{let e=i();if(!e)throw Error(`Missing injection state!`);return e}]}export{t};

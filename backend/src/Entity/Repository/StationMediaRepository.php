@@ -1,0 +1,492 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Entity\Repository;
+
+use App\Container\LoggerAwareTrait;
+use App\Doctrine\Repository;
+use App\Entity\Song;
+use App\Entity\Station;
+use App\Entity\StationMedia;
+use App\Entity\StationMediaCustomField;
+use App\Entity\StorageLocation;
+use App\Exception\NotFoundException;
+use App\Flysystem\ExtendedFilesystemInterface;
+use App\Media\AlbumArt;
+use App\Media\Enums\MetadataTags;
+use App\Media\MetadataInterface;
+use App\Media\MetadataManager;
+use App\Media\RemoteAlbumArt;
+use App\Service\AudioWaveform;
+use App\Utilities\Types;
+use Doctrine\ORM\QueryBuilder;
+use Exception;
+use Generator;
+use League\Flysystem\FilesystemException;
+
+use const JSON_PRETTY_PRINT;
+use const JSON_UNESCAPED_SLASHES;
+
+/**
+ * @extends Repository<StationMedia>
+ */
+final class StationMediaRepository extends Repository
+{
+    use LoggerAwareTrait;
+
+    protected string $entityClass = StationMedia::class;
+
+    public function __construct(
+        private readonly MetadataManager $metadataManager,
+        private readonly RemoteAlbumArt $remoteAlbumArt,
+        private readonly CustomFieldRepository $customFieldRepo,
+        private readonly StationPlaylistMediaRepository $spmRepo,
+        private readonly StorageLocationRepository $storageLocationRepo,
+    ) {
+    }
+
+    public function findForStation(int|string $id, Station $station): ?StationMedia
+    {
+        if (!is_numeric($id) && StationMedia::UNIQUE_ID_LENGTH === strlen($id)) {
+            $media = $this->findByUniqueId($id, $station);
+            if ($media instanceof StationMedia) {
+                return $media;
+            }
+        }
+
+        $storageLocation = $this->getStorageLocation($station);
+
+        /** @var StationMedia|null $media */
+        $media = $this->repository->findOneBy(
+            [
+                'storage_location' => $storageLocation,
+                'id' => $id,
+            ]
+        );
+
+        return $media;
+    }
+
+    public function requireForStation(int|string $id, Station $station): StationMedia
+    {
+        $record = $this->findForStation($id, $station);
+        if (null === $record) {
+            throw NotFoundException::generic();
+        }
+        return $record;
+    }
+
+    /**
+     * @param string $path
+     * @param Station|StorageLocation $source
+     *
+     */
+    public function findByPath(
+        string $path,
+        Station|StorageLocation $source
+    ): ?StationMedia {
+        $storageLocation = $this->getStorageLocation($source);
+
+        /** @var StationMedia|null $media */
+        $media = $this->repository->findOneBy(
+            [
+                'storage_location' => $storageLocation,
+                'path' => $path,
+            ]
+        );
+
+        return $media;
+    }
+
+    public function iteratePaths(array $paths, Station|StorageLocation $source): Generator
+    {
+        $storageLocation = $this->getStorageLocation($source);
+
+        foreach ($paths as $path) {
+            $media = $this->findByPath($path, $storageLocation);
+            if ($media instanceof StationMedia) {
+                yield $path => $media;
+            }
+        }
+    }
+
+    /**
+     * @param string $uniqueId
+     * @param Station|StorageLocation $source
+     *
+     */
+    public function findByUniqueId(
+        string $uniqueId,
+        Station|StorageLocation $source
+    ): ?StationMedia {
+        $storageLocation = $this->getStorageLocation($source);
+
+        /** @var StationMedia|null $media */
+        $media = $this->repository->findOneBy(
+            [
+                'storage_location' => $storageLocation,
+                'unique_id' => $uniqueId,
+            ]
+        );
+
+        return $media;
+    }
+
+    public function requireByUniqueId(
+        string $uniqueId,
+        Station|StorageLocation $source
+    ): StationMedia {
+        $record = $this->findByUniqueId($uniqueId, $source);
+        if (null === $record) {
+            throw NotFoundException::generic();
+        }
+        return $record;
+    }
+
+    private function getStorageLocation(Station|StorageLocation $source): StorageLocation
+    {
+        if ($source instanceof Station) {
+            return $source->media_storage_location;
+        }
+
+        return $source;
+    }
+
+    /**
+     * Process metadata information from media file.
+     *
+     * @param StationMedia $media
+     * @param string $filePath
+     * @param ExtendedFilesystemInterface|null $fs
+     */
+    public function loadFromFile(
+        StationMedia $media,
+        string $filePath,
+        ?ExtendedFilesystemInterface $fs = null
+    ): void {
+        // Load metadata from supported files.
+        $metadata = $this->metadataManager->read($filePath);
+
+        $media->fromMetadata($metadata);
+        $media->size = filesize($filePath) ?: 0;
+
+        // Persist the media record for later custom field operations.
+        $this->em->persist($media);
+
+        // Clear existing auto-assigned custom fields.
+        $fieldCollection = $media->custom_fields;
+        foreach ($fieldCollection as $existingCustomField) {
+            /** @var StationMediaCustomField $existingCustomField */
+            if (!empty($existingCustomField->field->auto_assign)) {
+                $this->em->remove($existingCustomField);
+                $fieldCollection->removeElement($existingCustomField);
+            }
+        }
+
+        $knownTags = $metadata->getKnownTags();
+        $extraTags = $metadata->getExtraTags();
+
+        foreach ($this->customFieldRepo->getAutoAssignableFields() as $autoAssign => $customField) {
+            $autoAssign = (string) $autoAssign;
+            $tagEnum = MetadataTags::getTag($autoAssign);
+
+            $value = $tagEnum !== null
+                ? ($knownTags[$tagEnum->value] ?? null)
+                : ($extraTags[mb_strtolower($autoAssign)] ?? null);
+
+            if ($value === null || $value === '') {
+                continue;
+            }
+
+            $customFieldRow = new StationMediaCustomField($media, $customField);
+            $customFieldRow->value = $value;
+
+            $this->em->persist($customFieldRow);
+
+            $fieldCollection->add($customFieldRow);
+        }
+
+        $artwork = $metadata->getArtwork();
+
+        if (empty($artwork) && $this->remoteAlbumArt->enableForMedia()) {
+            $artwork = $this->remoteAlbumArt->getArtwork($media);
+        }
+
+        if (!empty($artwork)) {
+            try {
+                $this->writeAlbumArt($media, $artwork, $fs);
+            } catch (Exception $exception) {
+                $this->logger->error(
+                    sprintf(
+                        'Album Artwork for "%s" could not be processed: "%s"',
+                        $filePath,
+                        $exception->getMessage()
+                    ),
+                    $exception->getTrace()
+                );
+            }
+        }
+
+        // Attempt to derive title and artist from filename.
+        $artist = $media->artist;
+        $title = $media->title;
+
+        if (null === $artist || null === $title) {
+            $filename = pathinfo($media->path, PATHINFO_FILENAME);
+            $filename = str_replace('_', ' ', $filename);
+
+            $songObj = Song::createFromText($filename);
+            $media->setSong($songObj);
+        }
+
+        // Generate a song_id hash based on the track
+        $media->updateMetaFields();
+    }
+
+    public function updateAlbumArt(
+        StationMedia $media,
+        string $rawArtString
+    ): bool {
+        $fs = $this->getFilesystem($media);
+
+        $metadata = $media->toMetadata();
+        $metadata->setArtwork($this->writeAlbumArt($media, $rawArtString, $fs));
+
+        return $this->writeMetadata($media, $metadata, $fs);
+    }
+
+    public function writeAlbumArt(
+        StationMedia $media,
+        string $rawArtString,
+        ?ExtendedFilesystemInterface $fs = null
+    ): string {
+        $fs ??= $this->getFilesystem($media);
+
+        $albumArtPath = StationMedia::getArtPath($media->unique_id);
+        $albumArtString = AlbumArt::resize($rawArtString);
+
+        $fs->write($albumArtPath, $albumArtString);
+
+        $media->art_updated_at = time();
+        $this->em->persist($media);
+
+        return $albumArtString;
+    }
+
+    public function removeAlbumArt(
+        StationMedia $media,
+        ?ExtendedFilesystemInterface $fs = null
+    ): void {
+        $fs ??= $this->getFilesystem($media);
+
+        $currentAlbumArtPath = StationMedia::getArtPath($media->unique_id);
+        $fs->delete($currentAlbumArtPath);
+
+        $media->art_updated_at = 0;
+
+        $metadata = $media->toMetadata();
+        $metadata->removeArtwork();
+        $this->writeMetadata($media, $metadata, $fs);
+
+        $this->em->persist($media);
+        $this->em->flush();
+    }
+
+    public function writeToFile(
+        StationMedia $media,
+        ?ExtendedFilesystemInterface $fs = null
+    ): bool {
+        $fs ??= $this->getFilesystem($media);
+
+        $metadata = $media->toMetadata();
+
+        $artPath = StationMedia::getArtPath($media->unique_id);
+        if ($fs->fileExists($artPath)) {
+            $metadata->setFallbackArtwork($fs->read($artPath));
+        }
+
+        return $this->writeMetadata($media, $metadata, $fs);
+    }
+
+    public function updateWaveform(
+        StationMedia $media,
+        ?ExtendedFilesystemInterface $fs = null
+    ): void {
+        $fs ??= $this->getFilesystem($media);
+        $fs->withLocalFile(
+            $media->path,
+            function ($path) use ($media, $fs): void {
+                $this->writeWaveform($media, $path, $fs);
+            }
+        );
+    }
+
+    public function writeWaveform(
+        StationMedia $media,
+        string $path,
+        ?ExtendedFilesystemInterface $fs = null
+    ): void {
+        $waveformData = AudioWaveform::getWaveformFor($path);
+        $this->saveWaveformData($media, $waveformData, $fs);
+    }
+
+    public function saveWaveformData(
+        StationMedia $media,
+        array $waveformData,
+        ?ExtendedFilesystemInterface $fs = null
+    ): void {
+        $fs ??= $this->getFilesystem($media);
+
+        $waveformPath = StationMedia::getWaveformPath($media->unique_id);
+        $fs->write(
+            $waveformPath,
+            json_encode(
+                $waveformData,
+                JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR
+            )
+        );
+    }
+
+    /**
+     * @param StationMedia $media
+     * @param bool $deleteFile Whether to remove the media file itself (disabled for batch operations).
+     * @param ExtendedFilesystemInterface|null $fs
+     *
+     * @return array<int, int> Affected playlist records (id => id)
+     */
+    public function remove(
+        StationMedia $media,
+        bool $deleteFile = false,
+        ?ExtendedFilesystemInterface $fs = null
+    ): array {
+        $fs ??= $this->getFilesystem($media);
+
+        // Clear related media.
+        foreach ($media->getRelatedFilePaths() as $relatedFilePath) {
+            try {
+                $fs->delete($relatedFilePath);
+            } catch (FilesystemException) {
+                // Skip
+            }
+        }
+
+        if ($deleteFile) {
+            try {
+                $fs->delete($media->path);
+            } catch (FilesystemException) {
+                // Skip
+            }
+        }
+
+        $affectedPlaylists = $this->spmRepo->clearPlaylistsFromMedia($media);
+
+        $this->em->remove($media);
+        $this->em->flush();
+
+        return $affectedPlaylists;
+    }
+
+    public function clearComputedAutoCue(
+        ?StorageLocation $storageLocation = null,
+        ?string $path = null
+    ): int {
+        $clearQuery = $this->createClearComputedAutoCueQuery();
+
+        if ($storageLocation !== null) {
+            $clearQuery->andWhere('sm.storage_location = :storageLocation')
+                ->setParameter('storageLocation', $storageLocation);
+        }
+
+        if ($path !== null) {
+            $clearQuery->andWhere('sm.path LIKE :path')
+                ->setParameter('path', "{$path}%");
+        }
+
+        return Types::int($clearQuery->getQuery()->execute());
+    }
+
+    /**
+     * @param string[] $paths
+     */
+    public function clearComputedAutoCueForPaths(
+        StorageLocation $storageLocation,
+        array $paths
+    ): int {
+        if ($paths === []) {
+            return 0;
+        }
+
+        $clearQuery = $this->createClearComputedAutoCueQuery()
+            ->andWhere('sm.storage_location = :storageLocation')
+            ->andWhere('sm.path IN (:paths)')
+            ->setParameter('storageLocation', $storageLocation)
+            ->setParameter('paths', $paths);
+
+        return Types::int($clearQuery->getQuery()->execute());
+    }
+
+    private function getFilesystem(StationMedia $media): ExtendedFilesystemInterface
+    {
+        return $this->storageLocationRepo->getAdapter($media->storage_location)
+            ->getFilesystem();
+    }
+
+    private function writeMetadata(
+        StationMedia $media,
+        MetadataInterface $metadata,
+        ExtendedFilesystemInterface $fs
+    ): bool {
+        $media->updateMetaFields();
+
+        $written = $this->writeTagsToStorage($media, $metadata, $fs);
+
+        if ($written) {
+            // Keep record newer than file so tags are not read back over it
+            $media->mtime = time() + 5;
+        }
+
+        return $written;
+    }
+
+    private function writeTagsToStorage(
+        StationMedia $media,
+        MetadataInterface $metadata,
+        ExtendedFilesystemInterface $fs
+    ): bool {
+        try {
+            return $fs->withLocalFile(
+                $media->path,
+                function (string $path) use ($media, $metadata, $fs): bool {
+                    if (!$this->metadataManager->write($metadata, $path)) {
+                        return false;
+                    }
+
+                    if (!$fs->isLocal()) {
+                        $fs->upload($path, $media->path);
+                    }
+
+                    return true;
+                }
+            ) === true;
+        } catch (FilesystemException $e) {
+            $this->logger->error(
+                'Cannot write metadata to storage.',
+                [
+                    'path' => $media->path,
+                    'exception' => $e,
+                ]
+            );
+
+            return false;
+        }
+    }
+
+    private function createClearComputedAutoCueQuery(): QueryBuilder
+    {
+        return $this->em->createQueryBuilder()
+            ->update(StationMedia::class, 'sm')
+            ->set('sm.computed_auto_cue_raw', 'null')
+            ->where('sm.computed_auto_cue_raw IS NOT NULL');
+    }
+}

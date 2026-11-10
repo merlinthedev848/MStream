@@ -1,0 +1,1 @@
+import{ut as e,yn as t}from"./ApiInterfaces-BkweXF0e.js";var n=n=>e(()=>{let{$dirty:e,$invalid:r}=t(n);return e&&r?`text-danger`:``});export{n as t};

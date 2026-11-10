@@ -1,0 +1,1 @@
+import{t as e}from"./cloneDeep-VBySJYGu.js";import{_n as t,un as n}from"./ApiInterfaces-BkweXF0e.js";function r(r){let i=n(e(t(r)));return{record:i,reset:()=>{i.value=e(t(r))}}}export{r as t};

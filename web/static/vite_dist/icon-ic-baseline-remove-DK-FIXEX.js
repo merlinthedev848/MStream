@@ -1,0 +1,1 @@
+import{Rt as e,dt as t,mt as n,on as r}from"./ApiInterfaces-BkweXF0e.js";var i={viewBox:`0 0 24 24`,class:`icon`,fill:`currentColor`,focusable:`false`,"aria-hidden":`true`,width:`1.2em`,height:`1.2em`};function a(r,a){return e(),n(`svg`,i,[...a[0]||=[t(`path`,{fill:`currentColor`,d:`M19 13H5v-2h14z`},null,-1)]])}var o=r({name:`ic-baseline-remove`,render:a});export{o as t};

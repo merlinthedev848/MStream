@@ -1,0 +1,1 @@
+function e(e){let t=Math.floor(Math.log(e)/Math.log(1024));return`${(e/1024**t).toFixed(2)} ${[`B`,`kB`,`MB`,`GB`,`TB`][t]}`}export{e as t};
