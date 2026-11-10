@@ -1,16 +1,15 @@
 {
-  "name": "azuracast/azuracast",
+  "name": "merlinbx/merlinbx",
   "type": "project",
-  "description": "The AzuraCast self-hosted web radio station management suite.",
+  "description": "The Merlin BX self-hosted web radio station management suite.",
   "license": "AGPL-3.0-or-later",
   "authors": [
     {
-      "name": "Buster Neece",
-      "email": "buster@busterneece.com"
+      "name": "Merlin BX Contributors"
     }
   ],
   "require": {
-    "php": "^8.5",
+    "php": "^8.4 || ^8.5",
     "ext-PDO": "*",
     "ext-ctype": "*",
     "ext-curl": "*",
@@ -112,7 +111,8 @@
     "symfony/polyfill-php82": "1.99",
     "symfony/polyfill-php83": "1.99",
     "symfony/polyfill-php84": "1.99",
-    "symfony/polyfill-php85": "1.99"
+    "symfony/polyfill-php85": "1.99",
+    "symfony/polyfill-php86": "1.99"
   },
   "require-dev": {
     "codeception/codeception": "^5.3.2",

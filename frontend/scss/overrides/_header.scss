@@ -1,31 +1,32 @@
 header.navbar {
-  background-image: url('~/img/header_bg.webp'), linear-gradient(90deg, #0a6fc2 0%, #2196f3 100%);
-  background-position: top left, center;
-  background-repeat: no-repeat;
-  background-size: 500px 100px, cover;
-
+  background: var(--merlin-header-bg);
   min-height: $header-nav-height;
-  padding: 1rem;
+  padding: 0.75rem 1.5rem;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.35);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 
   color: $white !important;
 
   .navbar-brand {
-    font-size: 3rem;
-    letter-spacing: -2px;
+    font-size: 2.25rem;
+    letter-spacing: -1.2px;
     line-height: 1;
-    font-weight: normal;
+    font-weight: 300;
     align-items: baseline;
-    text-shadow: 0 0 2px #000;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     padding: 0;
 
-    b {
-      font-weight: bold;
+    b, strong {
+      font-weight: 700;
+      color: #ffffff;
+      text-shadow: 0 0 12px rgba(99, 102, 241, 0.6);
     }
 
     small {
       padding-left: .75rem;
-      font-size: 1.5rem;
+      font-size: 1.25rem;
       letter-spacing: normal;
+      opacity: 0.85;
     }
   }
 

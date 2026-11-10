@@ -7,6 +7,7 @@ namespace App\Entity\Repository;
 use App\Doctrine\Repository;
 use App\Entity\Interfaces\SplitTokenEntityInterface;
 use App\Security\SplitToken;
+use InvalidArgumentException;
 
 /**
  * @template TEntity of SplitTokenEntityInterface
@@ -22,7 +23,11 @@ abstract class AbstractSplitTokenRepository extends Repository
      */
     public function authenticate(string $key): ?SplitTokenEntityInterface
     {
-        $userSuppliedToken = SplitToken::fromKeyString($key);
+        try {
+            $userSuppliedToken = SplitToken::fromKeyString($key);
+        } catch (InvalidArgumentException) {
+            return null;
+        }
 
         $tokenEntity = $this->repository->find($userSuppliedToken->identifier);
 

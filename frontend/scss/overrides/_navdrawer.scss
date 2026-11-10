@@ -96,8 +96,10 @@
     align-items: center;
     width: 100%;
 
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 500;
+    border-radius: 0.5rem;
+    transition: all 0.15s ease-in-out;
 
     line-height: 1;
     padding: .75rem 1rem;
@@ -105,8 +107,9 @@
     color: var(--bs-body-color);
 
     & > .navdrawer-nav-icon {
-      font-size: 1.5rem;
+      font-size: 1.4rem;
       margin-right: .75rem;
+      transition: transform 0.15s ease-in-out;
     }
 
     &:focus {
@@ -115,11 +118,18 @@
 
     &.active,
     &:active {
-      color: var(--bs-primary);
+      color: #6366f1;
+      background: rgba(99, 102, 241, 0.12);
+      font-weight: 600;
+
+      & > .navdrawer-nav-icon {
+        color: #6366f1;
+      }
     }
 
-    &:hover {
+    &:hover:not(.active) {
       background-color: var(--bs-secondary-bg);
+      transform: translateX(2px);
     }
 
     &.disabled {

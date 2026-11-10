@@ -11,17 +11,23 @@ final class PlaylistParser
      */
     public static function getSongs(string $playlistRaw): array
     {
-        // Process as full PLS if the header is present.
-        if (str_starts_with($playlistRaw, '[playlist]')) {
-            $parsedPlaylist = (array)parse_ini_string($playlistRaw, true, INI_SCANNER_RAW);
+        $trimmedRaw = trim($playlistRaw);
 
-            return array_filter(
-                $parsedPlaylist['playlist'],
-                static function ($key) {
-                    return str_starts_with(strtolower($key), 'file');
-                },
-                ARRAY_FILTER_USE_KEY
-            );
+        // Process as full PLS if the header is present.
+        if (str_starts_with($trimmedRaw, '[playlist]')) {
+            $parsedPlaylist = parse_ini_string($trimmedRaw, true, INI_SCANNER_RAW);
+
+            if (is_array($parsedPlaylist) && isset($parsedPlaylist['playlist']) && is_array($parsedPlaylist['playlist'])) {
+                return array_values(
+                    array_filter(
+                        $parsedPlaylist['playlist'],
+                        static function ($key) {
+                            return str_starts_with(strtolower((string)$key), 'file');
+                        },
+                        ARRAY_FILTER_USE_KEY
+                    )
+                );
+            }
         }
 
         // Process as a simple list of files or M3U-style playlist.
@@ -34,11 +40,13 @@ final class PlaylistParser
         if (false === $lines) {
             return [];
         }
-        return array_filter(
-            array_map('trim', $lines),
-            static function ($line) {
-                return $line[0] !== '#';
-            }
+        return array_values(
+            array_filter(
+                array_map('trim', $lines),
+                static function ($line) {
+                    return $line !== '' && $line[0] !== '#';
+                }
+            )
         );
     }
 }

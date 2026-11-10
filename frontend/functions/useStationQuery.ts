@@ -12,7 +12,14 @@ import { useAxios } from "~/vendor/axios.ts";
 
 export const useStationId = (): ComputedRef<number | null> => {
     const route = useRoute();
-    return computed(() => Number(route?.params?.station_id) ?? null);
+    return computed(() => {
+        const id = route?.params?.station_id;
+        if (id === undefined || id === null || id === "") {
+            return null;
+        }
+        const num = Number(id);
+        return Number.isNaN(num) ? null : num;
+    });
 };
 
 const blankStationGlobals: VueStationGlobals = {

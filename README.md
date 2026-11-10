@@ -1,18 +1,8 @@
 ![](https://github.com/AzuraCast/AzuraCast/raw/main/resources/azuracast.png)![](https://static.scarf.sh/a.png?x-pxid=d5169ead-cdcf-482c-ab64-c7137d3f8769)
 
-# AzuraCast: A Simple, Self-Hosted Web Radio Management Suite
+# Merlin BX: A Simple, Self-Hosted Web Radio Management Suite
 
-[![Build Status](https://github.com/azuracast/azuracast/workflows/Build,%20Test%20and%20Publish/badge.svg)](https://github.com/AzuraCast/AzuraCast/actions)
-[![Latest Stable Release](https://img.shields.io/packagist/v/azuracast/azuracast.svg?label=latest+stable+version)]()
-[![AGPL-3.0 License](https://img.shields.io/github/license/azuracast/azuracast.svg)]()
-[![Ethical Open Source](https://img.shields.io/badge/open-ethical-%234baaaa)](https://ethicalsource.dev/)
-[![Mastodon Follow](https://img.shields.io/mastodon/follow/113766260463173065?domain=https%3A%2F%2Ffloss.social&style=social)](https://floss.social/@AzuraCast)
-[![BlueSky Follow](https://img.shields.io/bluesky/followers/azuracast.com)](https://bsky.app/profile/azuracast.com)
-[![Built with Depot](https://img.shields.io/badge/built_with-Depot-%2346A75A?labelColor=%23191719)](https://depot.dev/?utm_source=AzuraCast)
-
-![](https://www.azuracast.com/img/ScreenshotTour.gif)
-
-AzuraCast is an Internet radio station "in a box"; it is a full-featured, self-contained and self-hostable software
+Merlin BX is an Internet radio station "in a box"; it is a full-featured, self-contained and self-hostable software
 suite, distributed using Docker, that contains a full free and open-source web radio software stack and a powerful but
 intuitive and accessible web interface (and well-documented API) to manage your stations.
 

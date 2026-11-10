@@ -52,65 +52,67 @@ final class Scheduler
             }
         );
 
-        $now ??= Time::nowUtc();
+        try {
+            $now ??= Time::nowUtc();
 
-        if (!$this->isPlaylistScheduledToPlayNow($playlist, $now)) {
-            $this->logger->debug('Playlist is not scheduled to play now.');
+            if (!$this->isPlaylistScheduledToPlayNow($playlist, $now)) {
+                $this->logger->debug('Playlist is not scheduled to play now.');
+                return false;
+            }
+
+            $shouldPlay = true;
+
+            switch ($playlist->type) {
+                case PlaylistTypes::OncePerHour:
+                    $shouldPlay = $this->shouldPlaylistPlayNowPerHour($playlist, $now);
+
+                    $this->logger->debug(
+                        sprintf(
+                            'Once-per-hour playlist %s been played yet this hour.',
+                            $shouldPlay ? 'HAS NOT' : 'HAS'
+                        )
+                    );
+                    break;
+
+                case PlaylistTypes::OncePerXSongs:
+                    $playPerSongs = $playlist->play_per_songs;
+                    $shouldPlay = !$this->queueRepo->isPlaylistRecentlyPlayed($playlist, $playPerSongs);
+
+                    $this->logger->debug(
+                        sprintf(
+                            'Once-per-X-songs playlist %s been played within the last %d song(s).',
+                            $shouldPlay ? 'HAS NOT' : 'HAS',
+                            $playPerSongs
+                        )
+                    );
+                    break;
+
+                case PlaylistTypes::OncePerXMinutes:
+                    $playPerMinutes = $playlist->play_per_minutes;
+                    $shouldPlay = !$this->wasPlaylistPlayedInLastXMinutes($playlist, $now, $playPerMinutes);
+
+                    $this->logger->debug(
+                        sprintf(
+                            'Once-per-X-minutes playlist %s been played within the last %d minute(s).',
+                            $shouldPlay ? 'HAS NOT' : 'HAS',
+                            $playPerMinutes
+                        )
+                    );
+                    break;
+
+                case PlaylistTypes::Advanced:
+                    $this->logger->debug('Playlist is "Advanced" type and is not managed by the AutoDJ.');
+                    $shouldPlay = false;
+                    break;
+
+                case PlaylistTypes::Standard:
+                    break;
+            }
+
+            return $shouldPlay;
+        } finally {
             $this->logger->popProcessor();
-            return false;
         }
-
-        $shouldPlay = true;
-
-        switch ($playlist->type) {
-            case PlaylistTypes::OncePerHour:
-                $shouldPlay = $this->shouldPlaylistPlayNowPerHour($playlist, $now);
-
-                $this->logger->debug(
-                    sprintf(
-                        'Once-per-hour playlist %s been played yet this hour.',
-                        $shouldPlay ? 'HAS NOT' : 'HAS'
-                    )
-                );
-                break;
-
-            case PlaylistTypes::OncePerXSongs:
-                $playPerSongs = $playlist->play_per_songs;
-                $shouldPlay = !$this->queueRepo->isPlaylistRecentlyPlayed($playlist, $playPerSongs);
-
-                $this->logger->debug(
-                    sprintf(
-                        'Once-per-X-songs playlist %s been played within the last %d song(s).',
-                        $shouldPlay ? 'HAS NOT' : 'HAS',
-                        $playPerSongs
-                    )
-                );
-                break;
-
-            case PlaylistTypes::OncePerXMinutes:
-                $playPerMinutes = $playlist->play_per_minutes;
-                $shouldPlay = !$this->wasPlaylistPlayedInLastXMinutes($playlist, $now, $playPerMinutes);
-
-                $this->logger->debug(
-                    sprintf(
-                        'Once-per-X-minutes playlist %s been played within the last %d minute(s).',
-                        $shouldPlay ? 'HAS NOT' : 'HAS',
-                        $playPerMinutes
-                    )
-                );
-                break;
-
-            case PlaylistTypes::Advanced:
-                $this->logger->debug('Playlist is "Advanced" type and is not managed by the AutoDJ.');
-                $shouldPlay = false;
-                break;
-
-            case PlaylistTypes::Standard:
-                break;
-        }
-
-        $this->logger->popProcessor();
-        return $shouldPlay;
     }
 
     public function isPlaylistScheduledToPlayNow(

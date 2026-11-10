@@ -2,6 +2,12 @@
 [data-bs-theme="light"] {
   --public-page-bg: url('~/img/hexbg.webp');
   --scrollbar-color: #{$gray-400};
+  --merlin-header-bg: linear-gradient(135deg, #0f172a 0%, #1e1b4b 35%, #312e81 70%, #4338ca 100%);
+  --merlin-card-border: #e2e8f0;
+  --bs-card-border-radius: 0.75rem;
+  --bs-border-radius: 0.5rem;
+  --bs-card-spacer-y: 1.25rem;
+  --bs-card-spacer-x: 1.25rem;
 }
 
 @include color-mode(dark, true) {
@@ -15,11 +21,15 @@
   }
 
   --public-page-bg: url('~/img/hexbg_dark.webp');
-  --scrollbar-color: #{$gray-800};
-  --bs-info-bg-subtle: #bbdefb;
-  --bs-info-text-emphasis: #2C363D;
+  --scrollbar-color: #334155;
+  --bs-info-bg-subtle: #312e81;
+  --bs-info-text-emphasis: #c7d2fe;
+  --merlin-header-bg: linear-gradient(135deg, #020617 0%, #0f172a 40%, #1e1b4b 75%, #312e81 100%);
+  --merlin-card-border: #334155;
+  --bs-card-bg: #1e293b;
+  --bs-body-bg: #0f172a;
 
   .table-striped {
-    --bs-table-striped-bg: #2b2e37;
+    --bs-table-striped-bg: #182234;
   }
 }

@@ -23,7 +23,7 @@
             class="navbar-brand ms-0 me-auto"
             :to="{ name: 'dashboard' }"
         >
-            azura<strong>cast</strong>
+            merlin<strong>bx</strong>
             <small v-if="instanceName">{{ instanceName }}</small>
         </router-link>
 

@@ -97,6 +97,8 @@ final class Liquidsoap extends AbstractLocalAdapter
                 'x-liquidsoap-api-key' => $station->adapter_api_key,
             ],
             'body' => $commandStr,
+            'timeout' => 5.0,
+            'connect_timeout' => 2.0,
         ]);
 
         $responseBody = trim($response->getBody()->getContents());

@@ -29,6 +29,7 @@ const $audio = useTemplateRef("$audio");
 
 const hls = ref<Hls | null>(null);
 const bc = ref<BroadcastChannel | null>(null);
+let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
 watch(logVolume, (newVol) => {
     if ($audio.value !== null) {
@@ -43,6 +44,11 @@ watch(isMuted, (newMuted) => {
 });
 
 const stop = () => {
+    if (reconnectTimer !== null) {
+        clearTimeout(reconnectTimer);
+        reconnectTimer = null;
+    }
+
     if ($audio.value !== null) {
         $audio.value.pause();
         $audio.value.src = "";
@@ -87,7 +93,7 @@ const play = () => {
                 console.log(
                     "Network interrupted stream. Automatically reconnecting shortly...",
                 );
-                setTimeout(() => {
+                reconnectTimer = setTimeout(() => {
                     play();
                 }, 5000);
             }
@@ -132,13 +138,20 @@ const play = () => {
                 // Firefox caches the downloaded stream, this causes playback issues.
                 // Giving the browser a new url on each start bypasses the old cache/buffer
                 if (navigator.userAgent.includes("Firefox")) {
-                    $audio.value.src += `?refresh=${Date.now()}`;
+                    const sep = $audio.value.src.includes("?") ? "&" : "?";
+                    $audio.value.src += `${sep}refresh=${Date.now()}`;
                 }
             }
         }
 
         $audio.value.load();
-        $audio.value.play();
+        $audio.value.play().catch((err: unknown) => {
+            console.warn(
+                "Audio playback failed or was blocked by autoplay policy:",
+                err,
+            );
+            stop();
+        });
 
         if (bc.value) {
             bc.value.postMessage("played");

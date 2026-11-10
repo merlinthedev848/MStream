@@ -74,7 +74,7 @@ class User implements Stringable, IdentifiableEntityInterface
             $hash = $reflProp->getRawValue($this);
 
             if (password_verify($password, $hash)) {
-                if (password_needs_rehash($this->auth_password, PASSWORD_ARGON2ID)) {
+                if (password_needs_rehash($hash, PASSWORD_ARGON2ID)) {
                     $this->auth_password = $password;
                 }
                 return true;

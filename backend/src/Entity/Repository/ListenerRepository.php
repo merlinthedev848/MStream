@@ -71,7 +71,7 @@ final class ListenerRepository extends Repository
                 FROM App\Entity\Listener l
                 WHERE l.station = :station
                 AND l.timestamp_start <= :time_end
-                AND l.timestamp_end >= :time_start
+                AND (l.timestamp_end IS NULL OR l.timestamp_end >= :time_start)
             DQL
         )->setParameter('station', $station)
             ->setParameter('time_end', $end)

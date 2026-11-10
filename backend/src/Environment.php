@@ -44,9 +44,9 @@ final class Environment
 
     public const string LANG = 'LANG';
 
-    public const string RELEASE_CHANNEL = 'AZURACAST_VERSION';
+    public const string RELEASE_CHANNEL = 'MERLIN_BX_VERSION';
 
-    public const string SFTP_PORT = 'AZURACAST_SFTP_PORT';
+    public const string SFTP_PORT = 'MERLIN_BX_SFTP_PORT';
 
     public const string AUTO_ASSIGN_PORT_MIN = 'AUTO_ASSIGN_PORT_MIN';
     public const string AUTO_ASSIGN_PORT_MAX = 'AUTO_ASSIGN_PORT_MAX';
@@ -176,7 +176,7 @@ final class Environment
     {
         return Types::string(
             $this->data[self::APP_NAME] ?? null,
-            'AzuraCast',
+            'Merlin BX',
             true
         );
     }
@@ -242,14 +242,15 @@ final class Environment
 
     public function getReleaseChannelEnum(): ReleaseChannel
     {
-        return ReleaseChannel::tryFrom(Types::string($this->data[self::RELEASE_CHANNEL] ?? null))
+        $version = $this->data[self::RELEASE_CHANNEL] ?? $this->data['AZURACAST_VERSION'] ?? null;
+        return ReleaseChannel::tryFrom(Types::string($version))
             ?? ReleaseChannel::default();
     }
 
     public function getSftpPort(): int
     {
         return Types::int(
-            $this->data[self::SFTP_PORT] ?? null,
+            $this->data[self::SFTP_PORT] ?? $this->data['AZURACAST_SFTP_PORT'] ?? null,
             2022
         );
     }
