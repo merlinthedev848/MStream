@@ -120,6 +120,8 @@ export const useAdminStationsForm = defineStore("form-admin-stations", () => {
         max_bitrate: 0,
         max_mounts: 0,
         max_hls_streams: 0,
+        customer_name: "",
+        max_traffic_mb: 0,
         radio_base_dir: "",
     });
 
@@ -232,6 +234,8 @@ export const useAdminStationsForm = defineStore("form-admin-stations", () => {
                     fields.max_bitrate,
                     fields.max_mounts,
                     fields.max_hls_streams,
+                    fields.customer_name,
+                    fields.max_traffic_mb,
                     fields.radio_base_dir,
                 ],
             }),

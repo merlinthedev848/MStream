@@ -512,6 +512,28 @@ final class Station implements Stringable, IdentifiableEntityInterface
         }
     }
 
+    #[
+        OA\Property(
+            description: "Hosting customer / account label shown in Media Services (not a reseller tree).",
+            example: "Acme Radio"
+        ),
+        ORM\Column(length: 200, nullable: true),
+        Serializer\Groups([EntityGroupsInterface::GROUP_ADMIN, EntityGroupsInterface::GROUP_ALL])
+    ]
+    public ?string $customer_name = null {
+        set => $this->customer_name = $this->truncateNullableString($value, 200);
+    }
+
+    #[
+        OA\Property(
+            description: "Monthly traffic quota in megabytes. 0 means unlimited. Used for package display; metering is best-effort.",
+            example: 10240
+        ),
+        ORM\Column(type: 'integer', nullable: false, options: ['default' => 0]),
+        Serializer\Groups([EntityGroupsInterface::GROUP_ADMIN, EntityGroupsInterface::GROUP_ALL])
+    ]
+    public int $max_traffic_mb = 0;
+
     /**
      * @var ConfigData|null
      */

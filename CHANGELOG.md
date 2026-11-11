@@ -5,6 +5,14 @@ release channel, you can take advantage of these new features and fixes.
 
 ## New Features/Changes
 
+- **MediaCP-class commercial hosting parity (audio)**:
+    - In-console Schedule nav (public schedule moved under Public Page); fixed Streams / Getting Started / Suspend copy.
+    - Jingles + Commercials filters, Create From Preset (Station ID, Commercial Break, External Feed), External Feeds
+      overview panel, and `is_jingle` playlist list filter.
+    - Media Services: customer column, connections `@ bitrate`, bulk Suspend/Restart/Delete, Hosting Packages admin UI.
+    - Station `customer_name` + `max_traffic_mb` package fields (billing API + Admin Limits); Overview Traffic quota cell.
+    - Profile GET strips ports/listener quotas for non-fleet operators (matches existing PUT strip).
+
 - **Non-exclusive General Rotation schedules**: Scheduled General Rotation playlists can optionally mix by weight with
   other General Rotation playlists instead of exclusively replacing them. Enable
   "Include in general rotation while scheduled (non-exclusive)" on the playlist Advanced tab. Default behavior stays

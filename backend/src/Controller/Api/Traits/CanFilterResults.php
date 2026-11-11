@@ -55,14 +55,28 @@ trait CanFilterResults
         $parameter = "filter_{$key}";
         $isSingleValue = count($values) === 1;
 
+        // Cast 0/1 string filters to ints so Doctrine boolean/tinyint columns match.
+        $parameterValue = $isSingleValue
+            ? self::castEqualsFilterValue($values[0])
+            : array_map(self::castEqualsFilterValue(...), $values);
+
         return $queryBuilder->andWhere(
             $isSingleValue
                 ? "{$filter->field} = :{$parameter}"
                 : "{$filter->field} IN (:{$parameter})"
         )->setParameter(
             $parameter,
-            $isSingleValue ? $values[0] : $values
+            $parameterValue
         );
+    }
+
+    private static function castEqualsFilterValue(string $value): string|int
+    {
+        if ('0' === $value || '1' === $value) {
+            return (int)$value;
+        }
+
+        return $value;
     }
 
     /**

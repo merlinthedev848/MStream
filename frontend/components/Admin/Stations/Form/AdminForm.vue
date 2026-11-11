@@ -51,6 +51,25 @@
             />
         </div>
 
+        <div class="row g-3 mb-3">
+            <form-group-field
+                id="edit_form_customer_name"
+                class="col-md-6"
+                :field="r$.customer_name"
+                :label="$gettext('Customer')"
+                :description="$gettext('Hosting customer label shown in Media Services.')"
+            />
+
+            <form-group-field
+                id="edit_form_max_traffic_mb"
+                class="col-md-6"
+                :field="r$.max_traffic_mb"
+                :label="$gettext('Traffic Quota (MB)')"
+                :description="$gettext('Monthly traffic package limit. 0 means unlimited. Metering is best-effort.')"
+                input-number
+            />
+        </div>
+
         <loading :loading="storageLocationsLoading">
             <div class="row g-3">
                 <form-group-select

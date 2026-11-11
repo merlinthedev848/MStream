@@ -151,12 +151,32 @@ export function useStationsMenu() {
                 station.value.features.media,
         },
         {
+            key: "commercials",
+            label: $gettext("Commercials"),
+            icon: () => IconIcQueueMusic,
+            url: {
+                name: "stations:playlists:index",
+                query: {
+                    filter: "commercial",
+                },
+            },
+            visible: () =>
+                userAllowedForStation(StationPermissions.Media) &&
+                station.value.features.media,
+        },
+        {
             key: "schedule",
             label: $gettext("Schedule"),
             icon: () => IconIcSchedule,
-            url: station.value.publicScheduleUrl,
-            external: true,
-            visible: () => station.value.enablePublicPages,
+            url: {
+                name: "stations:playlists:index",
+                query: {
+                    tab: "schedule_view",
+                },
+            },
+            visible: () =>
+                userAllowedForStation(StationPermissions.Media) &&
+                station.value.features.media,
         },
         {
             key: "public_page",
@@ -176,6 +196,13 @@ export function useStationsMenu() {
                     key: "public_player",
                     label: $gettext("Public Player"),
                     url: station.value.publicPageUrl,
+                    external: true,
+                    visible: () => station.value.enablePublicPages,
+                },
+                {
+                    key: "public_schedule",
+                    label: $gettext("Public Schedule"),
+                    url: station.value.publicScheduleUrl,
                     external: true,
                     visible: () => station.value.enablePublicPages,
                 },

@@ -22,19 +22,53 @@
 
         <div class="card-body">
             <tabs
+                v-model="activeTab"
                 content-class="mt-3"
                 destroy-on-hide
             >
                 <tab
                     id="all_playlists"
-                    :label="$gettext('All Playlists')"
+                    :label="playlistsTabLabel"
                 >
                     <div class="card-body-flush">
-                        <div class="card-body buttons d-flex justify-content-between">
-                            <add-button
-                                :text="$gettext('Add Playlist')"
-                                @click="doCreate"
-                            />
+                        <div
+                            v-if="presetBanner"
+                            class="alert alert-info mb-3"
+                            role="status"
+                        >
+                            {{ presetBanner }}
+                        </div>
+                        <div class="card-body buttons d-flex justify-content-between flex-wrap gap-2">
+                            <div class="d-flex flex-wrap gap-2">
+                                <add-button
+                                    :text="$gettext('Add Playlist')"
+                                    @click="doCreate"
+                                />
+                                <div class="btn-group">
+                                    <button
+                                        type="button"
+                                        class="btn btn-outline-primary dropdown-toggle"
+                                        data-bs-toggle="dropdown"
+                                        aria-expanded="false"
+                                    >
+                                        {{ $gettext('Create From Preset') }}
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li
+                                            v-for="preset in playlistPresets"
+                                            :key="preset.id"
+                                        >
+                                            <button
+                                                type="button"
+                                                class="dropdown-item"
+                                                @click="doCreateFromPreset(preset.id)"
+                                            >
+                                                {{ preset.label }}
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
 
                             <div class="d-flex gap-2">
                                 <a
@@ -61,6 +95,7 @@
                             paginated
                             :fields="fields"
                             :filters="filters"
+                            :initial-filters="initialFilters"
                             :provider="listItemProvider"
                             detailed
                         >
@@ -409,7 +444,8 @@
 <script setup lang="ts">
 import { EventApi } from "@fullcalendar/vue3";
 import { toRefs } from "@vueuse/core";
-import { useTemplateRef } from "vue";
+import { computed, ref, useTemplateRef, watch } from "vue";
+import { useRoute } from "vue-router";
 import AddButton from "~/components/Common/AddButton.vue";
 import DataTable, {
     DataTableField,
@@ -427,6 +463,10 @@ import EditModal from "~/components/Stations/Playlists/EditModal.vue";
 import ImportModal from "~/components/Stations/Playlists/ImportModal.vue";
 import ImportPlaylistConfigModal from "~/components/Stations/Playlists/ImportPlaylistConfigModal.vue";
 import PlaylistGroupingTab from "~/components/Stations/Playlists/PlaylistGroupingTab.vue";
+import {
+    usePlaylistPresets,
+    type PlaylistPresetId,
+} from "~/components/Stations/Playlists/playlistPresets.ts";
 import PlaylistGroupReorderModal from "~/components/Stations/Playlists/PlaylistGroupReorderModal.vue";
 import { usePlaylistOptions } from "~/components/Stations/Playlists/playlistOptions.ts";
 import QueueModal from "~/components/Stations/Playlists/QueueModal.vue";
@@ -497,6 +537,51 @@ const fields: DataTableField[] = [
 ];
 
 const { sourceOptions, typeOptions, orderOptions } = usePlaylistOptions();
+const { playlistPresets, applyPreset } = usePlaylistPresets();
+
+const route = useRoute();
+
+const activeTab = ref(
+    route.query.tab === "schedule_view" ? "schedule_view" : "all_playlists",
+);
+
+watch(
+    () => route.query.tab,
+    (tab) => {
+        activeTab.value =
+            tab === "schedule_view" ? "schedule_view" : "all_playlists";
+    },
+);
+
+const jingleFilterActive = computed(
+    () =>
+        route.query.filter === "jingle" ||
+        route.query.filter === "commercial",
+);
+
+const playlistsTabLabel = computed(() => {
+    if (route.query.filter === "commercial") {
+        return $gettext("Commercials & IDs");
+    }
+    if (route.query.filter === "jingle") {
+        return $gettext("Jingles");
+    }
+    return $gettext("All Playlists");
+});
+
+const presetBanner = computed(() => {
+    if (route.query.filter === "commercial") {
+        return $gettext(
+            "Commercials and station IDs use jingle mode (no Now Playing spam) plus once-per or interrupt scheduling. Use Create From Preset to start.",
+        );
+    }
+    if (route.query.filter === "jingle") {
+        return $gettext(
+            "Jingle-mode playlists hide metadata from Now Playing and webhooks. Add station IDs or bumpers here, or use Create From Preset.",
+        );
+    }
+    return null;
+});
 
 const filters: DataTableFilter[] = [
     {
@@ -520,7 +605,24 @@ const filters: DataTableFilter[] = [
         options: orderOptions,
         multiple: true,
     },
+    {
+        key: "is_jingle",
+        label: $gettext("Jingle Mode"),
+        type: DataTableFilterType.Select,
+        options: [
+            { value: "1", text: $gettext("Jingles only") },
+            { value: "0", text: $gettext("Music only") },
+        ],
+        multiple: false,
+    },
 ];
+
+const initialFilters = computed((): Record<string, string> => {
+    if (jingleFilterActive.value) {
+        return { is_jingle: "1" };
+    }
+    return {} as Record<string, string>;
+});
 
 const listItemProvider = useApiItemProvider(
     listUrl,
@@ -538,6 +640,19 @@ const relist = () => {
 
 const $editModal = useTemplateRef("$editModal");
 const { doCreate, doEdit } = useHasEditModal($editModal);
+
+const doCreateFromPreset = (presetId: PlaylistPresetId) => {
+    // create() resets the form, then overlay the commercial preset values.
+    doCreate();
+    applyPreset(presetId);
+};
+
+watch(
+    () => route.query.filter,
+    () => {
+        void listItemProvider.refresh();
+    },
+);
 
 const doShowMembers = (url: string) => {
     $editModal.value?.editMembers(url);

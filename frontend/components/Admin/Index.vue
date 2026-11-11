@@ -15,6 +15,14 @@
                 }}
             </p>
 
+            <template v-if="canManageFleet">
+                <h2 class="outside-card-header mb-1">
+                    {{ $gettext('Media Services') }}
+                </h2>
+
+                <station-fleet-panel />
+            </template>
+
             <div class="row row-of-cards">
                 <div class="col-sm-12 col-lg-4">
                     <menu-block :items="menuItems.slice(0, 1)"/>
@@ -27,75 +35,69 @@
                 </div>
             </div>
 
-            <template v-if="canManageFleet">
+            <template v-if="canViewHostMetrics">
                 <h2 class="outside-card-header mb-1">
-                    {{ $gettext('Media Services') }}
+                    {{ $gettext('Host Metrics') }}
                 </h2>
 
-                <station-fleet-panel />
+                <div class="row row-of-cards">
+                    <div class="col-sm-12 col-lg-6 col-xl-6">
+                        <loading
+                            :loading="isLoading"
+                            lazy
+                        >
+                            <memory-stats-panel
+                                v-if="stats && stats.memory"
+                                :memory-stats="stats.memory"
+                            />
+                        </loading>
+                    </div>
+
+                    <div class="col-sm-12 col-lg-6 col-xl-6">
+                        <loading
+                            :loading="isLoading"
+                            lazy
+                        >
+                            <disk-usage-panel
+                                v-if="stats && stats.disk"
+                                :disk-stats="stats.disk"
+                            />
+                        </loading>
+                    </div>
+                </div>
+
+                <div class="row row-of-cards">
+                    <div class="col-sm-12 col-lg-8 col-xl-6">
+                        <loading
+                            :loading="isLoading"
+                            lazy
+                        >
+                            <cpu-stats-panel
+                                v-if="stats && stats.cpu"
+                                :cpu-stats="stats.cpu"
+                            />
+                        </loading>
+                    </div>
+
+                    <div class="col-sm-12 col-lg-4 col-xl-6">
+                        <services-panel />
+                    </div>
+                </div>
+
+                <div class="row row-of-cards">
+                    <div class="col">
+                        <loading
+                            :loading="isLoading"
+                            lazy
+                        >
+                            <network-stats-panel
+                                v-if="stats && stats.network"
+                                :network-stats="stats.network"
+                            />
+                        </loading>
+                    </div>
+                </div>
             </template>
-
-            <h2 class="outside-card-header mb-1">
-                {{ $gettext('Host Metrics') }}
-            </h2>
-
-            <div class="row row-of-cards">
-                <div class="col-sm-12 col-lg-6 col-xl-6">
-                    <loading
-                        :loading="isLoading"
-                        lazy
-                    >
-                        <memory-stats-panel
-                            v-if="stats && stats.memory"
-                            :memory-stats="stats.memory"
-                        />
-                    </loading>
-                </div>
-
-                <div class="col-sm-12 col-lg-6 col-xl-6">
-                    <loading
-                        :loading="isLoading"
-                        lazy
-                    >
-                        <disk-usage-panel
-                            v-if="stats && stats.disk"
-                            :disk-stats="stats.disk"
-                        />
-                    </loading>
-                </div>
-            </div>
-
-            <div class="row row-of-cards">
-                <div class="col-sm-12 col-lg-8 col-xl-6">
-                    <loading
-                        :loading="isLoading"
-                        lazy
-                    >
-                        <cpu-stats-panel
-                            v-if="stats && stats.cpu"
-                            :cpu-stats="stats.cpu"
-                        />
-                    </loading>
-                </div>
-
-                <div class="col-sm-12 col-lg-4 col-xl-6">
-                    <services-panel />
-                </div>
-            </div>
-
-            <div class="row row-of-cards">
-                <div class="col">
-                    <loading
-                        :loading="isLoading"
-                        lazy
-                    >
-                        <network-stats-panel
-                            v-if="stats && stats.network"
-                            :network-stats="stats.network"
-                        />
-                    </loading>
-                </div>
-            </div>
         </div>
     </dashboard-no-sidebar>
 </template>
@@ -128,6 +130,7 @@ const menuItems = useAdminMenu();
 
 const { userAllowed } = useUserAllowed();
 const canManageFleet = userAllowed(GlobalPermissions.Stations);
+const canViewHostMetrics = userAllowed(GlobalPermissions.Stations);
 
 const { axiosSilent } = useAxios();
 

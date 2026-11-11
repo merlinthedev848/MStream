@@ -45,6 +45,7 @@ final class GetDashboardAction implements SingleActionInterface
             maxListeners: (int)($station->frontend_config->max_listeners ?? 0),
             maxMounts: $station->max_mounts,
             maxHlsStreams: $station->max_hls_streams,
+            maxTrafficMb: $station->max_traffic_mb,
             enablePublicPages: $station->enable_public_page,
             publicPageUrl: $router->named(
                 routeName: 'public:index',

@@ -10,6 +10,8 @@
 
             <service-quota-panel />
 
+            <external-feed-panel />
+
             <template v-if="stationData.hasStarted">
                 <profile-now-playing/>
 
@@ -57,6 +59,7 @@ import ProfileNowPlaying from "~/components/Stations/Profile/NowPlayingPanel.vue
 import ProfilePublicPages from "~/components/Stations/Profile/PublicPagesPanel.vue";
 import ProfileRequests from "~/components/Stations/Profile/RequestsPanel.vue";
 import ProfileSchedule from "~/components/Stations/Profile/SchedulePanel.vue";
+import ExternalFeedPanel from "~/components/Stations/Profile/ExternalFeedPanel.vue";
 import ServiceQuotaPanel from "~/components/Stations/Profile/ServiceQuotaPanel.vue";
 import ProfileStreamers from "~/components/Stations/Profile/StreamersPanel.vue";
 import ProfileStreams from "~/components/Stations/Profile/StreamsPanel.vue";

@@ -129,6 +129,14 @@ export function useAdminMenu() {
                     visible: () => userAllowed(GlobalPermissions.Stations),
                 },
                 {
+                    key: "billing",
+                    label: $gettext("Hosting Packages"),
+                    url: {
+                        name: "admin:billing:index",
+                    },
+                    visible: () => userAllowed(GlobalPermissions.All),
+                },
+                {
                     key: "custom_fields",
                     label: $gettext("Custom Fields"),
                     url: {

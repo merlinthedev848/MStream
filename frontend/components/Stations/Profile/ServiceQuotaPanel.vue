@@ -100,12 +100,37 @@
 
                 <div class="service-quota-cell">
                     <div class="service-quota-label">
+                        {{ $gettext('Traffic') }}
+                    </div>
+                    <div class="service-quota-value broadcast-mono">
+                        {{ trafficLabel }}
+                    </div>
+                    <div
+                        v-if="trafficPercent !== null"
+                        class="progress h-15 mt-2"
+                        role="progressbar"
+                        :aria-valuenow="trafficPercent"
+                        aria-valuemin="0"
+                        aria-valuemax="100"
+                    >
+                        <div
+                            class="progress-bar text-bg-secondary"
+                            :style="{ width: trafficPercent + '%' }"
+                        />
+                    </div>
+                    <div class="service-quota-meta">
+                        {{ $gettext('Package limit (MB / month)') }}
+                    </div>
+                </div>
+
+                <div class="service-quota-cell">
+                    <div class="service-quota-label">
                         {{ $gettext('Status') }}
                     </div>
                     <div class="mt-1">
                         <span
                             v-if="!stationData.isEnabled"
-                            class="badge text-bg-secondary"
+                            class="badge broadcast-tally-standby"
                         >
                             {{ $gettext('SUSPENDED') }}
                         </span>
@@ -269,5 +294,22 @@ const storageBarClass = computed(() => {
         return "text-bg-warning";
     }
     return "text-bg-primary";
+});
+
+const trafficLabel = computed(() => {
+    const max = stationData.value.maxTrafficMb;
+    if (max > 0) {
+        // Best-effort package display until byte metering lands.
+        return `— / ${max}`;
+    }
+    return "—";
+});
+
+const trafficPercent = computed(() => {
+    const max = stationData.value.maxTrafficMb;
+    if (max <= 0) {
+        return null;
+    }
+    return 0;
 });
 </script>

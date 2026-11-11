@@ -44,6 +44,10 @@ final readonly class StationGlobals
         public int $maxMounts,
         #[OA\Property]
         public int $maxHlsStreams,
+        #[OA\Property(
+            description: 'Monthly traffic quota in megabytes (0 = unlimited).',
+        )]
+        public int $maxTrafficMb,
         #[OA\Property]
         public bool $enablePublicPages,
         #[OA\Property]

@@ -82,6 +82,11 @@ export default function useAdminRoutes(): RouteRecordRaw[] {
                     name: "admin:stations:index",
                 },
                 {
+                    path: "billing",
+                    component: () => import("~/components/Admin/Billing.vue"),
+                    name: "admin:billing:index",
+                },
+                {
                     path: "custom_fields",
                     component: () =>
                         import("~/components/Admin/CustomFields.vue"),

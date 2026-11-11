@@ -1883,6 +1883,7 @@ export interface VueStationGlobals {
     maxListeners: number;
     maxMounts: number;
     maxHlsStreams: number;
+    maxTrafficMb: number;
     enablePublicPages: boolean;
     publicPageUrl: string;
     enableOnDemand: boolean;
@@ -2483,6 +2484,16 @@ export type Station = HasAutoIncrementId & {
      * @example 3
      */
     max_hls_streams?: number;
+    /**
+     * Hosting customer / account label shown in Media Services.
+     * @example "Acme Radio"
+     */
+    customer_name?: string | null;
+    /**
+     * Monthly traffic quota in megabytes. 0 means unlimited.
+     * @example 10240
+     */
+    max_traffic_mb?: number;
     branding_config?: StationBrandingConfiguration;
 };
 

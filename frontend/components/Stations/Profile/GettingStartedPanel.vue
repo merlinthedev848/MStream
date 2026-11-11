@@ -72,13 +72,39 @@
                         <div class="getting-started-step-title">
                             {{ $gettext('Share your stream') }}
                         </div>
-                        <p class="getting-started-step-text mb-0">
-                            {{
-                                $gettext(
-                                    'Copy a listener link from Streams below once tracks are on the air.',
-                                )
-                            }}
-                        </p>
+                        <template v-if="stationData.hasStarted">
+                            <p class="getting-started-step-text mb-0">
+                                {{
+                                    $gettext(
+                                        'Copy a listener link from Streams below once tracks are on the air.',
+                                    )
+                                }}
+                            </p>
+                        </template>
+                        <template v-else>
+                            <p class="getting-started-step-text mb-2">
+                                {{
+                                    $gettext(
+                                        'Start broadcasting, then copy a listener link from Mount Points → Listener Streams.',
+                                    )
+                                }}
+                            </p>
+                            <div class="d-flex flex-wrap gap-2">
+                                <router-link
+                                    v-if="canBroadcast"
+                                    class="btn btn-primary btn-sm"
+                                    :to="{ name: 'stations:restart:index' }"
+                                >
+                                    {{ $gettext('Start Station') }}
+                                </router-link>
+                                <router-link
+                                    class="btn btn-outline-primary btn-sm"
+                                    :to="{ name: 'stations:mounts:index' }"
+                                >
+                                    {{ $gettext('Listener Streams') }}
+                                </router-link>
+                            </div>
+                        </template>
                     </div>
                 </li>
             </ol>
@@ -111,6 +137,10 @@ const { axiosSilent } = useAxios();
 
 const canManageMedia = computed(() =>
     userAllowedForStation(StationPermissions.Media),
+);
+
+const canBroadcast = computed(() =>
+    userAllowedForStation(StationPermissions.Broadcasting),
 );
 
 const hasAutoDj = computed(
