@@ -74,7 +74,10 @@ class Api_Admin_BillingCest extends CestAbstract
         $I->assertInstanceOf(StationPlaylist::class, $defaultPlaylist);
 
         $hasMediaRootFolder = $defaultPlaylist->folders->exists(
-            static fn(int $key, StationPlaylistFolder $folder): bool => Configuration::DEFAULT_MEDIA_FOLDER_PATH === $folder->path
+            static fn(
+                int $key,
+                StationPlaylistFolder $folder
+            ): bool => Configuration::DEFAULT_MEDIA_FOLDER_PATH === $folder->path
         );
         $I->assertTrue($hasMediaRootFolder);
 
