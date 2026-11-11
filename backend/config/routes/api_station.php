@@ -881,6 +881,10 @@ return static function (RouteCollectorProxy $group) {
                         ->setName('api:stations:status')
                         ->add(new Middleware\Permissions(StationPermissions::View, true));
 
+                    $group->get('/meters', Controller\Api\Stations\GetMetersAction::class)
+                        ->setName('api:stations:meters')
+                        ->add(new Middleware\Permissions(StationPermissions::View, true));
+
                     $group->post('/backend/{do}', Controller\Api\Stations\ServicesController::class . ':backendAction')
                         ->setName('api:stations:backend')
                         ->add(new Middleware\Permissions(StationPermissions::Broadcasting, true));

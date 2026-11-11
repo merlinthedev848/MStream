@@ -72,6 +72,8 @@
         </template>
 
         <div class="card-body nowplaying-body">
+            <broadcast-meters :meters="meters"/>
+
             <div class="row nowplaying-grid">
                 <div class="col-md-6 nowplaying-current">
                     <div class="clearfix">
@@ -312,9 +314,11 @@ import { computed, useTemplateRef } from "vue";
 import PlayButton from "~/components/Common/Audio/PlayButton.vue";
 import CardPage from "~/components/Common/CardPage.vue";
 import PlaylistSourceBadge from "~/components/Stations/Common/PlaylistSourceBadge.vue";
+import BroadcastMeters from "~/components/Stations/Profile/BroadcastMeters.vue";
 import UpdateMetadataModal from "~/components/Stations/Profile/UpdateMetadataModal.vue";
 import useMakeApiCall from "~/components/Stations/Profile/useMakeApiCall.ts";
 import { useStationProfileData } from "~/components/Stations/Profile/useProfileQuery.ts";
+import useStationMeters from "~/components/Stations/Profile/useStationMeters.ts";
 import {
     BackendAdapters,
     StationPermissions,
@@ -347,6 +351,12 @@ const backendDisconnectStreamerUri = getStationApiUrl("/backend/disconnect");
 const { np, currentTrackDurationDisplay, currentTrackElapsedDisplay } =
     useNowPlaying(nowPlayingProps);
 
+const isLiquidsoap = computed(() => {
+    return stationData.value.backendType === BackendAdapters.Liquidsoap;
+});
+
+const { meters } = useStationMeters(() => isLiquidsoap.value);
+
 const { $gettext, $ngettext } = useTranslate();
 
 const langListeners = computed(() => {
@@ -358,10 +368,6 @@ const langListeners = computed(() => {
             listeners: String(np.value?.listeners?.total ?? 0),
         },
     );
-});
-
-const isLiquidsoap = computed(() => {
-    return stationData.value.backendType === BackendAdapters.Liquidsoap;
 });
 
 const { vLightbox } = useLightbox();

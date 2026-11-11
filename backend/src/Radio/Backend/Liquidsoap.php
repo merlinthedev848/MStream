@@ -259,6 +259,111 @@ final class Liquidsoap extends AbstractLocalAdapter
     }
 
     /**
+     * Read live VU / sample-peak levels from the Liquidsoap master bus.
+     *
+     * @return array{
+     *     available: bool,
+     *     vu_l: float,
+     *     vu_r: float,
+     *     peak_l: float,
+     *     peak_r: float
+     * }
+     */
+    public function getMeters(Station $station): array
+    {
+        $silent = self::silentMeters();
+
+        if (!$this->isRunning($station)) {
+            return $silent;
+        }
+
+        try {
+            $lines = $this->command($station, 'radio.meters');
+        } catch (Throwable) {
+            return $silent;
+        }
+
+        return self::parseMetersResponse($lines);
+    }
+
+    /**
+     * @return array{
+     *     available: bool,
+     *     vu_l: float,
+     *     vu_r: float,
+     *     peak_l: float,
+     *     peak_r: float
+     * }
+     */
+    public static function silentMeters(): array
+    {
+        return [
+            'available' => false,
+            'vu_l' => -90.0,
+            'vu_r' => -90.0,
+            'peak_l' => -90.0,
+            'peak_r' => -90.0,
+        ];
+    }
+
+    /**
+     * @param string[] $lines
+     *
+     * @return array{
+     *     available: bool,
+     *     vu_l: float,
+     *     vu_r: float,
+     *     peak_l: float,
+     *     peak_r: float
+     * }
+     */
+    public static function parseMetersResponse(array $lines): array
+    {
+        $silent = self::silentMeters();
+
+        foreach ($lines as $line) {
+            $line = trim($line);
+            if ('' === $line || 'END' === strtoupper($line)) {
+                continue;
+            }
+
+            try {
+                $decoded = json_decode($line, true, 512, JSON_THROW_ON_ERROR);
+            } catch (Throwable) {
+                continue;
+            }
+
+            if (!is_array($decoded)) {
+                continue;
+            }
+
+            return [
+                'available' => true,
+                'vu_l' => self::normalizeMeterDb($decoded['vu_l'] ?? null),
+                'vu_r' => self::normalizeMeterDb($decoded['vu_r'] ?? null),
+                'peak_l' => self::normalizeMeterDb($decoded['peak_l'] ?? null),
+                'peak_r' => self::normalizeMeterDb($decoded['peak_r'] ?? null),
+            ];
+        }
+
+        return $silent;
+    }
+
+    private static function normalizeMeterDb(mixed $value): float
+    {
+        if (!is_numeric($value)) {
+            return -90.0;
+        }
+
+        $db = (float)$value;
+        if (!is_finite($db)) {
+            return -90.0;
+        }
+
+        return max(-90.0, min(0.0, $db));
+    }
+
+    /**
      * Tell LiquidSoap to disconnect the current live streamer.
      *
      * @param Station $station

@@ -1636,6 +1636,19 @@ export interface ApiStationServiceStatus {
     frontendRunning: boolean;
 }
 
+export interface ApiStationAudioMeters {
+    /** Whether live Liquidsoap meter telemetry is currently available. */
+    available: boolean;
+    /** Left-channel VU (RMS) level in dBFS. */
+    vu_l: number;
+    /** Right-channel VU (RMS) level in dBFS. */
+    vu_r: number;
+    /** Left-channel sample-peak level in dBFS from the Liquidsoap master bus. */
+    peak_l: number;
+    /** Right-channel sample-peak level in dBFS from the Liquidsoap master bus. */
+    peak_r: number;
+}
+
 export interface ApiStationStreamer {
     id: number;
     streamer_username: string;
