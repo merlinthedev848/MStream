@@ -36,10 +36,10 @@ final readonly class RolePermissions
     }
 
     /**
-     * @param Collection<int, RolePermission|ApiKeyPermission> $permissions
+     * @param Collection<int, RolePermission>|Collection<int, ApiKeyPermission>|iterable<RolePermission|ApiKeyPermission> $permissions
      * @return self
      */
-    public static function fromRolePermissions(Collection $permissions): self
+    public static function fromRolePermissions(iterable $permissions): self
     {
         $globalPermissions = [];
         $stationPermissions = [];
