@@ -8,9 +8,13 @@ review / investigation / fixing. We don't provide a date on the fixes but rest a
 When a live streamer/DJ connects to your stream, only the first metadata _update_ is received, rather than the initial
 metadata when the client connects. This is often reported as MStream "missing" the first song that a DJ broadcasts.
 This is an [upstream issue](https://github.com/savonet/liquidsoap/issues/2109) with Liquidsoap that we are continuing to
-follow. The easy workaround for most users is to connect while playing a very short track (such as an intro or station
-ID), then immediately transition to another song after connecting, which triggers a second metadata update and fixes the
-issue.
+follow.
+
+**Shipped workarounds:** empty harbor metadata is replaced with the configured live-broadcast placeholder
+(`metadata.map(insert_missing, live)`); the latest non-empty harbor metadata chunk is captured and re-inserted when
+falling over to live; WebDJ sends its current title/artist immediately on socket open (and again after connect
+confirmation). Connecting while playing a very short intro/ID track remains a useful belt-and-suspenders tip for
+broadcast clients that never emit an initial metadata chunk.
 
 ## WebDJ Audio Quality Issues
 
@@ -35,6 +39,11 @@ reliable combination for live browser DJ sessions.
 Many users have requested the ability for Liquidsoap to skip to the next song automatically after a DJ disconnects.
 This is also an [upstream issue](https://github.com/savonet/liquidsoap/issues/2107) with Liquidsoap that we are
 continuing to follow.
+
+**Shipped workaround:** the live harbor `check_live` frame hook skips AutoDJ both when entering live and when leaving
+live (gated on `live_enabled` so brief harbor readiness flaps mid-show do not skip). Harbor `on_disconnect` runs
+synchronously so the leave-live skip happens on the next frame. Crossfade edge cases with buffered fade-out fragments
+may still surface with unusual cue points; report those with Liquidsoap logs if they persist.
 
 ## Playlist Scheduling Problems
 

@@ -135,6 +135,9 @@ let mstream.to_live = ref(false)
 # Whether a DJ is successfully authenticated (and thus live broadcasting is enabled).
 let mstream.live_enabled = ref(false)
 
+# Latest non-empty metadata observed on the live harbor (Liquidsoap #2109 workaround).
+let mstream.latest_live_metadata = ref([])
+
 # The last non-jingle artist and title metadata.
 let mstream.last_title = ref("")
 let mstream.last_artist = ref("")
@@ -522,6 +525,33 @@ def mstream.dj_auth(auth_info) =
     end
 end
 
+# Persist the most recent non-empty live metadata chunk so it can be
+# re-inserted when falling over to live (harbor often drops the first song).
+def mstream.store_live_metadata(m) =
+    if m != [] then
+        mstream.latest_live_metadata := m
+    end
+end
+
+# Re-push the latest live metadata onto the source that is taking over
+# as live, so Icecast/SHOUTcast see the first title even when harbor
+# only emitted it before the fallback switch (Liquidsoap #2109).
+def mstream.insert_latest_live_metadata(s) =
+    meta = mstream.latest_live_metadata()
+    if meta != [] then
+        source.methods(s).insert_metadata(meta)
+        log(
+            level=3,
+            label="mstream.dj",
+            "Re-inserted live metadata on transition to live"
+        )
+    end
+end
+
+def mstream.clear_live_metadata() =
+    mstream.latest_live_metadata := []
+end
+
 def mstream.live_connected(header) =
     dj = mstream.last_authenticated_dj()
     dj_name = mstream.last_authenticated_dj_name()
@@ -550,7 +580,10 @@ def mstream.live_connected(header) =
 end
 
 def mstream.live_disconnected() =
+    # Clear live flags synchronously so check_live can leave-live and
+    # skip AutoDJ on the next frame (Liquidsoap #2107).
     mstream.live_enabled := false
+    mstream.clear_live_metadata()
 
     def f() =
         _ = mstream.api_call(
