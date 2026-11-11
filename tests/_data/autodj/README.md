@@ -337,6 +337,8 @@ Unless noted, every item below behaves identically in-memory and in integration.
 - **Exact picks**
   - Make exactly one playlist eligible at the winning priority bucket
     - Priority order is `OncePerHour -> OncePerXSongs -> OncePerXMinutes -> Standard`, scheduled before unscheduled
+    - Exception: General Rotation (`default`) with `backend_options: ["include_in_rotation"]` stays in the unscheduled
+      weight pool while still gated by its schedule windows (non-exclusive mixing)
   - Use `order: sequential` with explicit `weight`s to pin the media pick
 - **Random & shuffle order**
   - `order: random` (and shuffle-after-reset) is non-deterministic

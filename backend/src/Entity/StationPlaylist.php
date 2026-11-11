@@ -43,6 +43,13 @@ final class StationPlaylist implements
     public const string OPTION_PLAY_SINGLE_TRACK = 'single_track';
     public const string OPTION_MERGE = 'merge';
 
+    /**
+     * When set on a General Rotation playlist that has schedule windows, the playlist joins the
+     * unscheduled weight pool while those windows are active instead of exclusively suppressing
+     * other general rotation playlists (PHP AutoDJ + Liquidsoap backup path).
+     */
+    public const string OPTION_INCLUDE_IN_ROTATION = 'include_in_rotation';
+
     #[
         ORM\ManyToOne(inversedBy: 'playlists'),
         ORM\JoinColumn(name: 'station_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')
@@ -196,7 +203,7 @@ final class StationPlaylist implements
 
     #[OA\Property(
         items: new OA\Items(type: 'string'),
-        example: "interrupt,loop_once,single_track,merge"
+        example: "interrupt,single_track,merge,include_in_rotation"
     )]
     public array $backend_options {
         get => explode(',', $this->backend_options_raw ?? '');
@@ -218,6 +225,33 @@ final class StationPlaylist implements
     public function backendPlaySingleTrack(): bool
     {
         return in_array(self::OPTION_PLAY_SINGLE_TRACK, $this->backend_options, true);
+    }
+
+    public function backendIncludeInRotation(): bool
+    {
+        return in_array(self::OPTION_INCLUDE_IN_ROTATION, $this->backend_options, true);
+    }
+
+    /**
+     * Whether this playlist should occupy the exclusive "_scheduled" AutoDJ priority bucket.
+     * General Rotation playlists may opt into non-exclusive mixing via include_in_rotation;
+     * interrupting schedules always remain exclusive.
+     */
+    public function usesExclusiveScheduleBucket(): bool
+    {
+        if ($this->schedule_items->count() === 0) {
+            return false;
+        }
+
+        if (
+            PlaylistTypes::Standard === $this->type
+            && $this->backendIncludeInRotation()
+            && !$this->backendInterruptOtherSongs()
+        ) {
+            return false;
+        }
+
+        return true;
     }
 
     #[

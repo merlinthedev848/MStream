@@ -1,0 +1,60 @@
+{
+  "description": "Exclusive scheduled General Rotation still suppresses unscheduled peers even at low weight. With include_in_rotation, a scheduled General Rotation playlist joins the unscheduled weight pool, so a heavier unscheduled playlist can win during the same window.",
+  "modes": [
+    "in_memory",
+    "integration"
+  ],
+  "cases": [
+    {
+      "name": "exclusive-scheduled-beats-heavier-unscheduled",
+      "now": "2018-01-15T12:00:00+00:00",
+      "expect_sequence": [
+        {
+          "playlist_enabled_by_ref": {
+            "exclusive_sched": true,
+            "mix_sched": false,
+            "unsched": true
+          },
+          "mode": "exact",
+          "playlist_ref": "exclusive_sched",
+          "media_ref": "mExclusive",
+          "playlist_chain_refs": []
+        }
+      ]
+    },
+    {
+      "name": "non-exclusive-scheduled-mixes-by-weight",
+      "now": "2018-01-15T12:00:00+00:00",
+      "expect_sequence": [
+        {
+          "playlist_enabled_by_ref": {
+            "exclusive_sched": false,
+            "mix_sched": true,
+            "unsched": true
+          },
+          "mode": "exact",
+          "playlist_ref": "unsched",
+          "media_ref": "mRotation",
+          "playlist_chain_refs": []
+        }
+      ]
+    },
+    {
+      "name": "non-exclusive-outside-window-falls-back-to-unscheduled",
+      "now": "2018-01-15T16:00:00+00:00",
+      "expect_sequence": [
+        {
+          "playlist_enabled_by_ref": {
+            "exclusive_sched": false,
+            "mix_sched": true,
+            "unsched": true
+          },
+          "mode": "exact",
+          "playlist_ref": "unsched",
+          "media_ref": "mRotation",
+          "playlist_chain_refs": []
+        }
+      ]
+    }
+  ]
+}

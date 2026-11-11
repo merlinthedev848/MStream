@@ -47,31 +47,35 @@ export function usePlaylistOptions() {
             value: PlaylistTypes.Standard,
             text: $gettext("General Rotation"),
             description: $gettext(
-                "Standard playlist, shuffles with other standard playlists based on weight.",
+                "Weighted with other General Rotation playlists. A schedule window limits when it is eligible; by default a scheduled General Rotation playlist exclusively replaces unscheduled ones until you enable non-exclusive mixing on Advanced.",
             ),
         },
         {
             value: PlaylistTypes.OncePerXSongs,
             text: $gettext("Once per x Songs"),
-            description: $gettext("Play once every $x songs."),
+            description: $gettext(
+                "Play once every $x songs. Scheduled windows further limit when it may play, and scheduled entries of this type beat unscheduled ones.",
+            ),
         },
         {
             value: PlaylistTypes.OncePerXMinutes,
             text: $gettext("Once per x Minutes"),
-            description: $gettext("Play once every $x minutes."),
+            description: $gettext(
+                "Play once every $x minutes. Scheduled windows further limit when it may play, and scheduled entries of this type beat unscheduled ones.",
+            ),
         },
         {
             value: PlaylistTypes.OncePerHour,
             text: $gettext("Once per Hour"),
             description: $gettext(
-                "Play once per hour at the specified minute.",
+                "Play once per hour at the specified minute. Scheduled windows further limit when it may play, and scheduled entries of this type beat unscheduled ones.",
             ),
         },
         {
             value: PlaylistTypes.Advanced,
             text: $gettext("Advanced"),
             description: $gettext(
-                "Manually define how this playlist is used in Liquidsoap configuration.",
+                "Not managed by the AutoDJ schedule/queue. Define how this playlist is used in custom Liquidsoap configuration.",
             ),
         },
     ];

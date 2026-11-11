@@ -11,7 +11,7 @@
                 :options="backendOptions"
                 stacked
                 :label="$gettext('Advanced Manual AutoDJ Scheduling Options')"
-                :description="$gettext('Control how this playlist is handled by the AutoDJ software.')"
+                :description="$gettext('Control how this playlist is handled by AutoDJ and its Liquidsoap failover. For General Rotation, non-exclusive scheduling mixes by weight instead of replacing other rotation playlists.')"
             />
         </div>
     </tab>
@@ -23,7 +23,7 @@ import { computed } from "vue";
 import Tab from "~/components/Common/Tab.vue";
 import FormGroupMultiCheck from "~/components/Form/FormGroupMultiCheck.vue";
 import { useStationsPlaylistsForm } from "~/components/Stations/Playlists/Form/form.ts";
-import { PlaylistSources } from "~/entities/ApiInterfaces";
+import { PlaylistSources, PlaylistTypes } from "~/entities/ApiInterfaces";
 import { useFormTabClass } from "~/functions/useFormTabClass.ts";
 import { useTranslate } from "~/vendor/gettext";
 
@@ -33,31 +33,42 @@ const tabClass = useFormTabClass(computed(() => r$.value.$groups.advancedTab));
 
 const { $gettext } = useTranslate();
 
-const backendOptions = computed(() =>
-    form.value.source === PlaylistSources.Playlists
-        ? [
-              {
-                  value: "merge",
-                  text: $gettext(
-                      "Play the group's entire rotation as a single block.",
-                  ),
-              },
-          ]
-        : [
-              {
-                  value: "interrupt",
-                  text: $gettext(
-                      "Interrupt other songs to play at scheduled time.",
-                  ),
-              },
-              {
-                  value: "single_track",
-                  text: $gettext("Only play one track at scheduled time."),
-              },
-              {
-                  value: "merge",
-                  text: $gettext("Merge playlist to play as a single track."),
-              },
-          ],
-);
+const includeInRotationOption = {
+    value: "include_in_rotation",
+    text: $gettext(
+        "Include in general rotation while scheduled (non-exclusive).",
+    ),
+};
+
+const backendOptions = computed(() => {
+    const isGeneralRotation = form.value.type === PlaylistTypes.Standard;
+
+    if (form.value.source === PlaylistSources.Playlists) {
+        return [
+            {
+                value: "merge",
+                text: $gettext(
+                    "Play the group's entire rotation as a single block.",
+                ),
+            },
+            ...(isGeneralRotation ? [includeInRotationOption] : []),
+        ];
+    }
+
+    return [
+        {
+            value: "interrupt",
+            text: $gettext("Interrupt other songs to play at scheduled time."),
+        },
+        {
+            value: "single_track",
+            text: $gettext("Only play one track at scheduled time."),
+        },
+        {
+            value: "merge",
+            text: $gettext("Merge playlist to play as a single track."),
+        },
+        ...(isGeneralRotation ? [includeInRotationOption] : []),
+    ];
+});
 </script>

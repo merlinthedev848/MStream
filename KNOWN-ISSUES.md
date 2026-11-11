@@ -51,11 +51,18 @@ Users intermittently report problems with our AutoDJ scheduler not working corre
 difficult for us to diagnose, even with the appropriate logs, as they are intermittent and hard to reproduce on other
 installations. If you're a developer and you're interested in helping us with this, please let us know.
 
-One known issue is that "Scheduled" type playlists always take priority over "General Rotation" playlists, which only
-play when _no_ scheduled playlist is available to play. This is the intended functionality of MStream, but some users
-prefer non-exclusive schedule entries. The current workaround to this is to make scheduled copies of the General
-Rotation playlists (even possibly scheduling them for all-day blocks), but we are looking into better solutions for
-this.
+By default, a **scheduled** playlist occupies an exclusive AutoDJ priority bucket above unscheduled playlists of the
+same type: while any exclusive scheduled General Rotation playlist is eligible, unscheduled General Rotation will not
+play. That remains the default and matches long-standing MStream behavior.
+
+For **General Rotation** playlists only, you can opt into non-exclusive mixing: on the playlist **Advanced** tab, enable
+**Include in general rotation while scheduled (non-exclusive)**. While its schedule windows are active, that playlist
+joins the same weighted pool as other General Rotation playlists instead of suppressing them. Once-per-x / once-per-hour
+types stay exclusive when scheduled (safe default for IDs and jingles). Interrupting schedules always remain exclusive.
+
+The Schedule tab copy documents this operator-facing meaning. When playlists are also written into Liquidsoap as a
+failover, General Rotation non-exclusive schedules use a schedule-gated source in the standard `random()` pool so the
+backup path matches the PHP AutoDJ; playlist groups and request rules remain PHP-only.
 
 ## Ansible Issues
 
