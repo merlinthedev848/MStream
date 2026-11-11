@@ -19,7 +19,6 @@ use App\Radio\Enums\BackendAdapters;
 use App\Radio\Enums\CrossfadeModes;
 use App\Radio\Enums\FrontendAdapters;
 use Codeception\Test\Unit;
-use Doctrine\ORM\AbstractQuery;
 use Mockery;
 use Supervisor\SupervisorInterface;
 use Symfony\Component\Filesystem\Filesystem;
@@ -104,12 +103,9 @@ final class ConfigurationAutoDjDefaultsTest extends Unit
 
     private function createConfiguration(): Configuration
     {
-        $query = Mockery::mock(AbstractQuery::class);
-        $query->shouldReceive('getArrayResult')->andReturn([]);
-
         $em = Mockery::mock(ReloadableEntityManagerInterface::class);
-        $em->shouldReceive('createQuery')->andReturn($query);
         $em->shouldReceive('persist');
+        $em->shouldReceive('createQuery')->never();
 
         $configuration = new Configuration(
             Mockery::mock(Adapters::class),

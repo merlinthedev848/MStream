@@ -13,8 +13,8 @@ use App\Radio\Configuration;
 use App\Radio\Enums\BackendAdapters;
 use App\Radio\Enums\FrontendAdapters;
 use Codeception\Test\Unit;
-use Doctrine\ORM\AbstractQuery;
 use Mockery;
+use ReflectionProperty;
 use Supervisor\SupervisorInterface;
 
 /**
@@ -30,7 +30,7 @@ final class ConfigurationPortAllocationTest extends Unit
 
     public function testAssignRadioPortsUsesAscendingBlocksWithoutGaps(): void
     {
-        $configuration = $this->createConfigurationWithEmptyDatabasePorts();
+        $configuration = $this->createConfigurationWithEmptyPortCache();
 
         $stations = [];
         $expectedBases = [
@@ -69,7 +69,7 @@ final class ConfigurationPortAllocationTest extends Unit
 
     public function testGetFirstAvailableRadioPortSkipsOccupiedAscendingBlocks(): void
     {
-        $configuration = $this->createConfigurationWithEmptyDatabasePorts();
+        $configuration = $this->createConfigurationWithEmptyPortCache();
 
         $first = new Station();
         $first->name = 'First';
@@ -101,14 +101,12 @@ final class ConfigurationPortAllocationTest extends Unit
         );
     }
 
-    private function createConfigurationWithEmptyDatabasePorts(): Configuration
+    private function createConfigurationWithEmptyPortCache(): Configuration
     {
-        $query = Mockery::mock(AbstractQuery::class);
-        $query->shouldReceive('getArrayResult')->andReturn([]);
-
         $em = Mockery::mock(ReloadableEntityManagerInterface::class);
-        $em->shouldReceive('createQuery')->andReturn($query);
         $em->shouldReceive('persist');
+        // Port tests seed usedPorts via reflection — createQuery must not be required.
+        $em->shouldReceive('createQuery')->never();
 
         $configuration = new Configuration(
             Mockery::mock(Adapters::class),
@@ -117,6 +115,9 @@ final class ConfigurationPortAllocationTest extends Unit
         );
         $configuration->setEntityManager($em);
         $configuration->setEnvironment(new Environment([]));
+
+        $usedPorts = new ReflectionProperty(Configuration::class, 'usedPorts');
+        $usedPorts->setValue($configuration, []);
 
         return $configuration;
     }
