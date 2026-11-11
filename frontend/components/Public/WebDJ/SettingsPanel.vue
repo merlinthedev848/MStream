@@ -59,7 +59,7 @@
                 </p>
                 <p class="card-text">
                     {{
-                        $gettext('To use this feature, a secure (HTTPS) connection is required. Firefox is recommended to avoid static when broadcasting.')
+                        $gettext('A secure (HTTPS) connection is required. Use 48 kHz / 256 kbps Opus when possible; microphone echo cancellation is disabled automatically for cleaner audio.')
                     }}
                 </p>
             </div>
@@ -219,6 +219,34 @@
                             </div>
                         </div>
                     </div>
+                    <div
+                        v-if="mimeTypeOptions.length > 0"
+                        class="col-md-12"
+                    >
+                        <div class="form-group">
+                            <label
+                                for="select_mime_type"
+                                class="mb-2"
+                            >
+                                {{ $gettext('Encoding Format') }}
+                            </label>
+                            <div class="controls">
+                                <select
+                                    id="select_mime_type"
+                                    v-model="mimeType"
+                                    class="form-control"
+                                >
+                                    <option
+                                        v-for="option in mimeTypeOptions"
+                                        :key="option.value"
+                                        :value="option.value"
+                                    >
+                                        {{ option.name }} ({{ option.value }})
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </template>
@@ -254,6 +282,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
+import { getSupportedAudioMimeTypes } from "~/components/Public/WebDJ/audioMimeTypes";
 import { usePassthroughSync } from "~/components/Public/WebDJ/usePassthroughSync";
 import {
     useInjectWebcaster,
@@ -269,8 +298,16 @@ defineProps<{
 const djUsername = ref<string | null>(null);
 const djPassword = ref<string | null>(null);
 
-const { doPassThrough, bitrate, sampleRate, startStream, stopStream } =
-    useInjectWebDjNode();
+const {
+    doPassThrough,
+    bitrate,
+    sampleRate,
+    mimeType,
+    startStream,
+    stopStream,
+} = useInjectWebDjNode();
+
+const mimeTypeOptions = getSupportedAudioMimeTypes();
 
 const { metadata, sendMetadata, isConnected } = useInjectWebcaster();
 

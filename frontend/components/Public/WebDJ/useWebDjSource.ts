@@ -20,8 +20,35 @@ export interface WebDjFilePointer {
     metadata: WebcasterMetadata;
 }
 
+/**
+ * Browser getUserMedia defaults enable AEC/AGC/NS which smear music and cause
+ * the intermittent "crackle" reports when WebDJ is used as a line-in source.
+ */
+function buildMicrophoneConstraints(
+    audioDeviceId: ConstrainDOMString,
+    channelCount: number,
+): MediaStreamConstraints {
+    const audio: MediaTrackConstraints & Record<string, unknown> = {
+        deviceId: audioDeviceId,
+        channelCount: { ideal: channelCount },
+        echoCancellation: false,
+        autoGainControl: false,
+        noiseSuppression: false,
+        // Chromium vendor flags — ignored by browsers that do not implement them.
+        googEchoCancellation: false,
+        googAutoGainControl: false,
+        googNoiseSuppression: false,
+        googHighpassFilter: false,
+    };
+
+    return {
+        video: false,
+        audio,
+    };
+}
+
 export function useWebDjSource() {
-    const { context } = useInjectWebDjNode();
+    const { context, channelCount } = useInjectWebDjNode();
 
     const createAudioSource = (
         pointer: WebDjFilePointer,
@@ -97,12 +124,26 @@ export function useWebDjSource() {
         cb: (source: StreamAudioSourceWithStop) => void,
     ): void => {
         void (async () => {
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: false,
-                audio: {
-                    deviceId: audioDeviceId,
-                },
-            });
+            const constraints = buildMicrophoneConstraints(
+                audioDeviceId,
+                channelCount.value,
+            );
+
+            let stream: MediaStream;
+            try {
+                stream = await navigator.mediaDevices.getUserMedia(constraints);
+            } catch {
+                // Some browsers reject vendor constraint bags; retry with core flags only.
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: false,
+                    audio: {
+                        deviceId: audioDeviceId,
+                        echoCancellation: false,
+                        autoGainControl: false,
+                        noiseSuppression: false,
+                    },
+                });
+            }
 
             const source: StreamAudioSourceWithStop =
                 context.value.createMediaStreamSource(stream);
