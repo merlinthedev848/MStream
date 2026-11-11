@@ -487,6 +487,14 @@ final class Configuration
     {
         $usedPorts = [];
 
+        /** @var list<array{
+         *   id: int,
+         *   name: string,
+         *   frontend_type: string,
+         *   frontend_config: array<string, mixed>|null,
+         *   backend_type: string,
+         *   backend_config: array<string, mixed>|null
+         * }> $stationConfigs */
         $stationConfigs = $this->em->createQuery(
             <<<'DQL'
                 SELECT s.id, s.name, s.frontend_type, s.frontend_config_raw AS frontend_config,
@@ -495,15 +503,14 @@ final class Configuration
             DQL
         )->getArrayResult();
 
-        /** @var array<array-key, int|string|array> $row */
         foreach ($stationConfigs as $row) {
             $stationReference = ['id' => $row['id'], 'name' => $row['name']];
             $this->mergeStationPortsIntoMap(
                 $usedPorts,
                 $stationReference,
-                (string)$row['frontend_type'],
+                $row['frontend_type'],
                 (array)$row['frontend_config'],
-                (string)$row['backend_type'],
+                $row['backend_type'],
                 (array)$row['backend_config'],
             );
         }

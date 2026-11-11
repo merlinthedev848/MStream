@@ -8,6 +8,7 @@ use App\Entity\Enums\PlaylistOrders;
 use App\Entity\Enums\PlaylistSources;
 use App\Entity\Enums\PlaylistTypes;
 use App\Entity\Station;
+use App\Entity\StationMount;
 use App\Entity\StationPlaylist;
 use App\Radio\Configuration;
 use App\Radio\Enums\BackendAdapters;
@@ -59,7 +60,6 @@ class Api_Admin_StationDefaultsCest extends CestAbstract
             $I->assertGreaterThan(0, $station->backend_config->crossfade);
             $I->assertGreaterThanOrEqual(1, $station->backend_config->autodj_queue_length);
 
-            $I->assertNotNull($station->media_storage_location);
             $I->assertNotEmpty($station->media_storage_location->path);
 
             $defaultPlaylist = null;
@@ -90,6 +90,7 @@ class Api_Admin_StationDefaultsCest extends CestAbstract
 
             $I->assertGreaterThan(0, $station->mounts->count());
             $defaultMount = $station->mounts->first();
+            $I->assertInstanceOf(StationMount::class, $defaultMount);
             $I->assertTrue($defaultMount->enable_autodj);
             $I->assertSame('/error.mp3', $defaultMount->fallback_mount);
 
