@@ -67,7 +67,7 @@ class Api_Stations_TrafficMeteringCest extends CestAbstract
             $bitrate = max(1, (int)($mount->autodj_bitrate ?? $bitrate));
         }
         $expected = (int)round(3600 * $bitrate * 1000 / 8);
-        $I->assertSame((string)$expected, $row->bytes);
+        $I->assertSame($expected, (int)$row->bytes);
 
         $I->sendGet('/api/station/' . $station->id . '/dashboard');
         $I->seeResponseCodeIs(200);
