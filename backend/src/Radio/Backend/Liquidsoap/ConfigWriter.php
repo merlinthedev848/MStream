@@ -1025,7 +1025,7 @@ final class ConfigWriter implements EventSubscriberInterface
                 $compressorThreshold = self::toFloat($settings->compressor_threshold ?? -16.0);
                 $compressorRatio = self::toFloat($settings->compressor_ratio ?? 3.0);
                 $targetLufs = self::toFloat($settings->ebur128_target_lufs ?? -16.0);
-                $truePeakVal = $settings->ebur128_true_peak ?? -1.5;
+                $truePeakVal = min(0.0, (float)($settings->ebur128_true_peak ?? -1.5));
                 $truePeak = self::toFloat($truePeakVal);
                 $loudnessRange = self::toFloat($settings->ebur128_loudness_range ?? 11.0);
                 $limiterLimit = self::toFloat(round(10 ** ($truePeakVal / 20), 4));
