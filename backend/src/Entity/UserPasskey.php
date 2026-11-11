@@ -10,9 +10,11 @@ use App\Entity\Traits\TruncateStrings;
 use App\Security\WebAuthnPasskey;
 use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
+use OpenApi\Attributes as OA;
 use Symfony\Component\Serializer\Attribute as Serializer;
 
 #[
+    OA\Schema(type: 'object'),
     ORM\Entity(readOnly: true),
     ORM\Table(name: 'user_passkeys')
 ]
@@ -20,6 +22,7 @@ final readonly class UserPasskey implements IdentifiableEntityInterface
 {
     use TruncateStrings;
 
+    #[OA\Property]
     #[ORM\Column(length: 64)]
     #[ORM\Id]
     #[Serializer\Groups([
@@ -32,6 +35,7 @@ final readonly class UserPasskey implements IdentifiableEntityInterface
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public User $user;
 
+    #[OA\Property]
     #[ORM\Column]
     #[Serializer\Groups([
         EntityGroupsInterface::GROUP_GENERAL,
@@ -39,6 +43,7 @@ final readonly class UserPasskey implements IdentifiableEntityInterface
     ])]
     public int $created_at;
 
+    #[OA\Property]
     #[ORM\Column(length: 255)]
     #[Serializer\Groups([
         EntityGroupsInterface::GROUP_GENERAL,

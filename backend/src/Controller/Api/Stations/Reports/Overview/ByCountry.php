@@ -21,7 +21,6 @@ use Symfony\Component\Intl\Countries;
         new OA\Parameter(ref: OpenApi::REF_STATION_ID_REQUIRED),
     ],
     responses: [
-        // TODO API Response
         new OpenApi\Response\Success(),
         new OpenApi\Response\AccessDenied(),
         new OpenApi\Response\NotFound(),

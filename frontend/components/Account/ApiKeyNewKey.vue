@@ -25,7 +25,7 @@
         }}
     </p>
     <p class="card-text">
-        {{ $gettext('You can only perform the actions your user account is allowed to perform.') }}
+        {{ $gettext('This key can only perform actions allowed by your account, and any scopes you selected when creating it.') }}
     </p>
 </template>
 

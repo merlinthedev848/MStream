@@ -35,7 +35,6 @@ use Symfony\Component\Messenger\MessageBus;
         ),
     ],
     responses: [
-        // TODO API Response
         new OpenApi\Response\Success(),
         new OpenApi\Response\AccessDenied(),
         new OpenApi\Response\NotFound(),

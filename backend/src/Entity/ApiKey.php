@@ -8,6 +8,8 @@ use App\Entity\Interfaces\EntityGroupsInterface;
 use App\Entity\Interfaces\IdentifiableEntityInterface;
 use App\Entity\Interfaces\SplitTokenEntityInterface;
 use App\Security\SplitToken;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use MStream\Normalizer\Attributes\DeepNormalize;
 use OpenApi\Attributes as OA;
@@ -38,6 +40,10 @@ final readonly class ApiKey implements Stringable, IdentifiableEntityInterface, 
     #[Serializer\Groups([EntityGroupsInterface::GROUP_GENERAL, EntityGroupsInterface::GROUP_ALL])]
     public string $comment;
 
+    /** @var Collection<int, ApiKeyPermission> */
+    #[ORM\OneToMany(targetEntity: ApiKeyPermission::class, mappedBy: 'apiKey', fetch: 'EAGER')]
+    public Collection $permissions;
+
     public function __construct(
         User $user,
         SplitToken $token,
@@ -45,9 +51,10 @@ final readonly class ApiKey implements Stringable, IdentifiableEntityInterface, 
     ) {
         $this->id = $token->identifier;
         $this->verifier = $token->hashVerifier();
-        
+
         $this->user = $user;
         $this->comment = $this->truncateString($comment);
+        $this->permissions = new ArrayCollection();
     }
 
     public function getUser(): User

@@ -19,8 +19,13 @@ use Psr\Http\Message\ResponseInterface;
         summary: 'Get registration details for WebAuthn registration.',
         tags: [OpenApi::TAG_ACCOUNTS],
         responses: [
-            // TODO API Response Body
-            new OpenApi\Response\Success(),
+            new OpenApi\Response\Success(
+                content: new OA\JsonContent(
+                    type: 'object',
+                    additionalProperties: true,
+                    description: 'WebAuthn PublicKeyCredentialCreationOptions for navigator.credentials.create().'
+                )
+            ),
             new OpenApi\Response\AccessDenied(),
             new OpenApi\Response\NotFound(),
             new OpenApi\Response\GenericError(),

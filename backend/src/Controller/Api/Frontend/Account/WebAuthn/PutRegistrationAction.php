@@ -22,8 +22,23 @@ use Psr\Http\Message\ResponseInterface;
         operationId: 'putAccountWebAuthnRegister',
         summary: 'Submit a new registration request for WebAuthn.',
         tags: [OpenApi::TAG_ACCOUNTS],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['createResponse'],
+                properties: [
+                    new OA\Property(property: 'name', type: 'string', example: 'Laptop'),
+                    new OA\Property(
+                        property: 'createResponse',
+                        type: 'object',
+                        additionalProperties: true,
+                        description: 'Browser PublicKeyCredential attestation fields (base64).'
+                    ),
+                ],
+                type: 'object'
+            )
+        ),
         responses: [
-            // TODO API Response Body
             new OpenApi\Response\Success(),
             new OpenApi\Response\AccessDenied(),
             new OpenApi\Response\NotFound(),

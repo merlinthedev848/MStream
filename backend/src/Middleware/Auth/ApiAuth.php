@@ -7,6 +7,7 @@ namespace App\Middleware\Auth;
 use App\Acl;
 use App\Auth;
 use App\Customization;
+use App\Entity\ApiKey;
 use App\Entity\Repository\ApiKeyRepository;
 use App\Entity\Repository\UserRepository;
 use App\Entity\User;
@@ -33,21 +34,25 @@ final class ApiAuth extends AbstractAuth
     public function __invoke(ServerRequest $request, RequestHandlerInterface $handler): ResponseInterface
     {
         // Initialize the Auth for this request.
-        $user = $this->getApiUser($request);
+        [$user, $apiKey] = $this->getApiUser($request);
 
-        $request = $request->withAttribute(ServerRequest::ATTR_USER, $user);
+        $request = $request->withAttribute(ServerRequest::ATTR_USER, $user)
+            ->withAttribute(ServerRequest::ATTR_API_KEY, $apiKey);
 
         return parent::__invoke($request, $handler);
     }
 
-    private function getApiUser(ServerRequest $request): ?User
+    /**
+     * @return array{0: User|null, 1: ApiKey|null}
+     */
+    private function getApiUser(ServerRequest $request): array
     {
         $apiKey = $this->getApiKey($request);
 
         if (!empty($apiKey)) {
             $apiRecord = $this->apiKeyRepo->authenticate($apiKey);
-            if (null !== $apiRecord) {
-                return $apiRecord->getUser();
+            if ($apiRecord instanceof ApiKey) {
+                return [$apiRecord->getUser(), $apiRecord];
             }
         }
 
@@ -61,23 +66,23 @@ final class ApiAuth extends AbstractAuth
         if ($auth->isLoggedIn()) {
             $user = $auth->getLoggedInUser();
             if ('GET' === $request->getMethod()) {
-                return $user;
+                return [$user, null];
             }
 
             $csrfKey = $request->getHeaderLine('X-API-CSRF');
             if (empty($csrfKey) && !$this->environment->isTesting()) {
-                return null;
+                return [null, null];
             }
 
             $csrf = $request->getCsrf();
             try {
                 $csrf->verify($csrfKey, self::API_CSRF_NAMESPACE);
-                return $user;
+                return [$user, null];
             } catch (CsrfValidationException) {
             }
         }
 
-        return null;
+        return [null, null];
     }
 
     private function getApiKey(ServerRequestInterface $request): ?string

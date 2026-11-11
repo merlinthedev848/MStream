@@ -6,17 +6,19 @@ namespace App\Service\Dropbox;
 
 use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
+use League\OAuth2\Client\Provider\GenericResourceOwner;
+use League\OAuth2\Client\Provider\ResourceOwnerInterface;
 use League\OAuth2\Client\Token\AccessToken;
 use League\OAuth2\Client\Tool\BearerAuthorizationTrait;
-use LogicException;
 use Psr\Http\Message\ResponseInterface;
+use UnexpectedValueException;
 
 final class OAuthProvider extends AbstractProvider
 {
     use BearerAuthorizationTrait;
 
     /**
-     * @var string Key used in the access token response to identify the resource owner.
+     * @var string Key used in the access token / account response to identify the resource owner.
      */
     public const string ACCESS_TOKEN_RESOURCE_OWNER_ID = 'account_id';
 
@@ -60,8 +62,43 @@ final class OAuthProvider extends AbstractProvider
         }
     }
 
-    protected function createResourceOwner(array $response, AccessToken $token)
+    /**
+     * Dropbox account lookup is a POST with an empty JSON body.
+     *
+     * @return array<string, mixed>
+     */
+    protected function fetchResourceOwnerDetails(AccessToken $token)
     {
-        throw new LogicException('Not implemented.');
+        $url = $this->getResourceOwnerDetailsUrl($token);
+
+        $request = $this->getAuthenticatedRequest(
+            self::METHOD_POST,
+            $url,
+            $token,
+            [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                ],
+                'body' => 'null',
+            ]
+        );
+
+        $response = $this->getParsedResponse($request);
+
+        if (!is_array($response)) {
+            throw new UnexpectedValueException(
+                'Invalid response returned from the Dropbox authorization server'
+            );
+        }
+
+        return $response;
+    }
+
+    /**
+     * @param array<string, mixed> $response
+     */
+    protected function createResourceOwner(array $response, AccessToken $token): ResourceOwnerInterface
+    {
+        return new GenericResourceOwner($response, self::ACCESS_TOKEN_RESOURCE_OWNER_ID);
     }
 }

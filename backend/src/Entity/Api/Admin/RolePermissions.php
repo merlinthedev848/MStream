@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity\Api\Admin;
 
+use App\Entity\ApiKeyPermission;
 use App\Entity\RolePermission;
 use App\Enums\GlobalPermissions;
 use Doctrine\Common\Collections\Collection;
@@ -35,17 +36,17 @@ final readonly class RolePermissions
     }
 
     /**
-     * @param Collection<RolePermission> $rolePermissions
+     * @param Collection<int, RolePermission|ApiKeyPermission> $permissions
      * @return self
      */
-    public static function fromRolePermissions(Collection $rolePermissions): self
+    public static function fromRolePermissions(Collection $permissions): self
     {
         $globalPermissions = [];
         $stationPermissions = [];
 
         $permissionsByStation = [];
 
-        foreach ($rolePermissions as $permission) {
+        foreach ($permissions as $permission) {
             $station = $permission->station;
             if (null !== $station) {
                 $permissionsByStation[$station->id][] = $permission->action_name;

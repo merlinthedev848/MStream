@@ -62,6 +62,26 @@ CREATE TABLE `api_keys` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `api_key_permissions`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `api_key_permissions` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `api_key_id` varchar(16) NOT NULL,
+  `station_id` int(11) DEFAULT NULL,
+  `action_name` varchar(50) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `api_key_permission_unique_idx` (`api_key_id`,`action_name`,`station_id`),
+  KEY `IDX_API_KEY_PERMISSION_KEY` (`api_key_id`),
+  KEY `IDX_API_KEY_PERMISSION_STATION` (`station_id`),
+  CONSTRAINT `FK_API_KEY_PERMISSION_KEY` FOREIGN KEY (`api_key_id`) REFERENCES `api_keys` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `FK_API_KEY_PERMISSION_STATION` FOREIGN KEY (`station_id`) REFERENCES `station` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `app_migrations`
 --
 
