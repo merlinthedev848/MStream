@@ -600,8 +600,7 @@ final class ConfigWriter implements EventSubscriberInterface
                 updates
             end
 
-            # Temporarily disabled for testing.
-            # live = metadata.map(insert_missing, live)
+            live = metadata.map(insert_missing, live)
 
             radio = fallback(
                 id="live_fallback",
@@ -980,8 +979,10 @@ final class ConfigWriter implements EventSubscriberInterface
                 $compressorThreshold = self::toFloat($settings->compressor_threshold ?? -16.0);
                 $compressorRatio = self::toFloat($settings->compressor_ratio ?? 3.0);
                 $targetLufs = self::toFloat($settings->ebur128_target_lufs ?? -16.0);
-                $truePeak = self::toFloat($settings->ebur128_true_peak ?? -1.5);
+                $truePeakVal = $settings->ebur128_true_peak ?? -1.5;
+                $truePeak = self::toFloat($truePeakVal);
                 $loudnessRange = self::toFloat($settings->ebur128_loudness_range ?? 11.0);
+                $limiterLimit = self::toFloat(round(10 ** ($truePeakVal / 20), 4));
 
                 $event->appendBlock(
                     <<<LIQ
@@ -1012,11 +1013,11 @@ final class ConfigWriter implements EventSubscriberInterface
                                 lra = {$loudnessRange}
                             )
 
-                            # Stage 3: Lookahead Brickwall Peak Limiter
+                            # Stage 3: Lookahead Brickwall Peak Limiter (-1.5 dBTP inter-sample safety)
                             audio = ffmpeg.filter.alimiter(
                                 graph,
                                 audio,
-                                limit = 0.95,
+                                limit = {$limiterLimit},
                                 attack = 5.0,
                                 release = 50.0,
                                 asc = true

@@ -56,18 +56,33 @@ div.datatable-main {
 }
 
 .table {
+  border-collapse: separate;
+  border-spacing: 0;
+
   thead th {
-    font-size: 1.1rem;
-    font-weight: normal;
+    font-size: 0.775rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--mstream-card-table-th-color);
+    background-color: var(--mstream-card-table-th-bg);
+    border-bottom: 1px solid var(--mstream-card-table-td-border);
+    padding: 0.55rem 0.75rem;
   }
 
   > :not(caption) > * > * {
-    padding: 1rem 1rem;
+    padding: 0.55rem 0.75rem;
+    font-size: 0.875rem;
+    border-bottom: 1px solid var(--mstream-card-table-td-border);
+  }
+
+  tbody tr:hover {
+    background-color: var(--mstream-card-table-hover);
   }
 
   &.table-striped {
     thead th {
-      border-bottom: 1px solid rgba(0,0,0, 0.1);
+      border-bottom: 1px solid var(--mstream-card-table-td-border);
     }
   }
 }

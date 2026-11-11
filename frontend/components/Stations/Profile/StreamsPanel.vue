@@ -45,10 +45,10 @@
                                 target="_blank"
                             >{{ mount.url }}</a>
                         </td>
-                        <td class="ps-1 text-end">
+                        <td class="ps-1 text-end broadcast-mono">
                             <icon-ic-headphones class="sm align-middle"/>
-                            <span class="listeners-total ps-1">{{ mount.listeners.total }}</span><br>
-                            <small>
+                            <span class="listeners-total ps-1 font-weight-bold">{{ mount.listeners.total }}</span><br>
+                            <small class="text-muted">
                                 <span class="listeners-unique pe-1">{{ mount.listeners.unique }}</span>
                                 {{ $gettext('Unique') }}
                             </small>
@@ -93,10 +93,10 @@
                                 target="_blank"
                             >{{ remote.url }}</a>
                         </td>
-                        <td class="ps-1 text-end">
+                        <td class="ps-1 text-end broadcast-mono">
                             <icon-ic-headphones class="sm align-middle"/>
-                            <span class="listeners-total ps-1">{{ remote.listeners.total }}</span><br>
-                            <small>
+                            <span class="listeners-total ps-1 font-weight-bold">{{ remote.listeners.total }}</span><br>
+                            <small class="text-muted">
                                 <span class="listeners-unique pe-1">{{ remote.listeners.unique }}</span>
                                 {{ $gettext('Unique') }}
                             </small>

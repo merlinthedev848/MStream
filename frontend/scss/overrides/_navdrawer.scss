@@ -1,10 +1,8 @@
 .offcanvas.navdrawer {
   width: $navdrawer-width;
-  background: rgba(13, 19, 31, 0.98);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-right: 1px solid rgba(255, 255, 255, 0.07);
-  box-shadow: 4px 0 24px -4px rgba(0, 0, 0, 0.4);
+  background: var(--bs-tertiary-bg, #0f1420);
+  border-right: 1px solid var(--border-color-dark, #242f44);
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
 }
 
 @include media-breakpoint-up(lg) {
@@ -38,9 +36,9 @@
 
 .navdrawer-header {
   display: block;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 1rem $navdrawer-inner-spacer-x;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, transparent 100%);
+  border-bottom: 1px solid var(--border-color-dark, #242f44);
+  padding: 0.75rem $navdrawer-inner-spacer-x;
+  background: var(--mstream-card-header-bg, #182132);
 
   .navbar-brand {
     font-size: 1.15rem;

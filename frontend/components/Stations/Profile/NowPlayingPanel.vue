@@ -16,23 +16,43 @@
                         }"
                     />
                 </div>
-                <h3
-                    :id="id"
-                    class="flex-shrink card-title my-0"
-                >
-                    {{ $gettext('On the Air') }}
-                </h3>
+                <div class="d-flex align-items-center">
+                    <h3
+                        :id="id"
+                        class="flex-shrink card-title my-0"
+                    >
+                        {{ $gettext('On the Air') }}
+                    </h3>
+                    <span
+                        v-if="np.is_online && np.live?.is_live"
+                        class="badge broadcast-tally-live ms-2"
+                    >
+                        {{ $gettext('LIVE DJ') }}
+                    </span>
+                    <span
+                        v-else-if="np.is_online"
+                        class="badge broadcast-tally-onair ms-2"
+                    >
+                        {{ $gettext('ON AIR') }}
+                    </span>
+                    <span
+                        v-else
+                        class="badge bg-secondary ms-2"
+                    >
+                        {{ $gettext('OFFLINE') }}
+                    </span>
+                </div>
                 <h6
                     class="card-subtitle text-end flex-fill my-0"
                     style="line-height: 1;"
                 >
                     <icon-ic-headphones class="align-middle"/>
-                    <span class="ps-1">
+                    <span class="ps-1 broadcast-mono">
                         {{ langListeners }}
                     </span>
 
                     <br>
-                    <small>
+                    <small class="broadcast-mono">
                         <span class="pe-1">{{ np.listeners?.unique ?? 0 }}</span>
                         {{ $gettext('Unique') }}
                     </small>
@@ -114,7 +134,7 @@
                                     </div>
                                     <div
                                         v-if="currentTrackElapsedDisplay"
-                                        class="nowplaying-progress"
+                                        class="nowplaying-progress broadcast-mono"
                                     >
                                         <small>
                                             {{ currentTrackElapsedDisplay }} / {{ currentTrackDurationDisplay }}

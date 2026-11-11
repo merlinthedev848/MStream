@@ -118,7 +118,10 @@ defineExpose({
         width: 300px;
 
         div.time-display {
-            font-size: 90%;
+            font-size: 85%;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.02em;
         }
     }
 

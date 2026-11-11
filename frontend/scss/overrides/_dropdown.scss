@@ -1,41 +1,40 @@
 .dropdown-menu {
-  border-radius: 0.75rem !important;
-  border: 1px solid var(--mstream-card-border, rgba(255, 255, 255, 0.12)) !important;
-  background: var(--bs-card-bg, #111827) !important;
-  box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.45), 0 4px 12px -2px rgba(0, 0, 0, 0.25) !important;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  padding: 0.5rem;
+  border-radius: 4px !important;
+  border: 1px solid var(--mstream-card-border, #242f44) !important;
+  background: var(--bs-card-bg, #131a29) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+  padding: 0.35rem;
 
   .dropdown-item {
-    border-radius: 0.5rem;
-    padding: 0.55rem 0.85rem;
+    border-radius: 3px;
+    padding: 0.45rem 0.75rem;
+    font-size: 0.85rem;
     font-weight: 500;
-    transition: all 0.15s ease;
+    transition: background-color 0.1s ease, color 0.1s ease;
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
 
     &:hover,
     &:focus {
-      background: rgba(99, 102, 241, 0.14);
-      color: #818cf8;
+      background: #0284c7;
+      color: #ffffff;
     }
 
     &.active,
     &:active {
-      background: #6366f1;
+      background: #0369a1;
       color: #ffffff;
     }
   }
 
   .dropdown-divider {
-    border-top: 1px solid var(--mstream-card-header-border, rgba(255, 255, 255, 0.08));
-    margin: 0.4rem 0;
+    border-top: 1px solid var(--mstream-card-header-border, #242f44);
+    margin: 0.35rem 0;
   }
 
   .form-check {
-    margin-bottom: 0.5rem;
-    padding: 0.25rem 0.5rem;
+    margin-bottom: 0.35rem;
+    padding: 0.2rem 0.5rem;
   }
 }
