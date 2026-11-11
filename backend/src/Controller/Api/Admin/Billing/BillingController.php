@@ -5,21 +5,34 @@ declare(strict_types=1);
 namespace App\Controller\Api\Admin\Billing;
 
 use App\Container\EntityManagerAwareTrait;
+use App\Container\LoggerAwareTrait;
 use App\Entity\Api\Status;
 use App\Entity\Repository\StationRepository;
+use App\Entity\Repository\StorageLocationRepository;
 use App\Entity\Station;
 use App\Http\Response;
 use App\Http\ServerRequest;
+use App\Nginx\Nginx;
 use App\OpenApi;
+use App\Radio\Configuration;
 use App\Radio\Enums\BackendAdapters;
 use App\Radio\Enums\FrontendAdapters;
+use Brick\Math\BigInteger;
+use Brick\Math\RoundingMode;
 use InvalidArgumentException;
 use OpenApi\Attributes as OA;
 use Psr\Http\Message\ResponseInterface;
+use Symfony\Component\Filesystem\Exception\IOException;
+use Symfony\Component\Filesystem\Filesystem;
+use Throwable;
 
 /**
  * High-performance Webhook and REST API controller for automated hosting,
  * provisioning, and subscription lifecycle management (WHMCS, Blesta, FOSSBilling).
+ *
+ * Station create/delete/suspend follow the same Configuration + StationRepository
+ * paths used by Admin\StationsController so billing automation does not leave
+ * orphan supervisor processes or incomplete station directories.
  */
 #[
     OA\Post(
@@ -60,7 +73,7 @@ use Psr\Http\Message\ResponseInterface;
                     new OA\Property(
                         property: 'disk_quota_mb',
                         type: 'integer',
-                        description: 'Maximum storage quota in MB'
+                        description: 'Max storage quota in MB for media/recordings/podcasts; 0 clears'
                     ),
                 ],
             )
@@ -78,9 +91,13 @@ use Psr\Http\Message\ResponseInterface;
 final class BillingController
 {
     use EntityManagerAwareTrait;
+    use LoggerAwareTrait;
 
     public function __construct(
         private readonly StationRepository $stationRepo,
+        private readonly StorageLocationRepository $storageLocationRepo,
+        private readonly Configuration $configuration,
+        private readonly Nginx $nginx,
     ) {
     }
 
@@ -125,13 +142,25 @@ final class BillingController
         }
 
         $feConfig = $station->frontend_config;
+        $feConfig->ensurePasswordsAreSet();
         if (isset($data['max_listeners'])) {
             $feConfig->max_listeners = (int)$data['max_listeners'];
         }
         $station->frontend_config = $feConfig;
 
-        $this->em->persist($station);
-        $this->em->flush();
+        $station->generateAdapterApiKey();
+
+        try {
+            // Match Admin\StationsController::handleCreate — ports, dirs, playlist, supervisor prep.
+            $this->configuration->initializeConfiguration($station);
+            $this->applyDiskQuota($station, $data);
+            $this->stationRepo->resetMounts($station);
+        } catch (Throwable $e) {
+            $this->em->remove($station);
+            $this->em->flush();
+
+            throw $e;
+        }
 
         return $response->withJson([
             'success' => true,
@@ -140,6 +169,7 @@ final class BillingController
             'short_name' => $station->short_name,
             'max_listeners' => $station->frontend_config->max_listeners,
             'max_bitrate' => $station->max_bitrate,
+            'disk_quota_mb' => $this->getDiskQuotaMb($station),
         ]);
     }
 
@@ -147,10 +177,29 @@ final class BillingController
     {
         $station = $this->requireStation($data);
         $station->is_enabled = $enabled;
-        $station->needs_restart = true;
+
+        if ($enabled) {
+            // Unsuspend: allow writeConfiguration to start adapters (same as ServicesController).
+            $station->has_started = true;
+        }
 
         $this->em->persist($station);
         $this->em->flush();
+
+        try {
+            // Disabled stations tear down local supervisor services via removeLocalServices.
+            // Enabled stations rewrite and (re)start adapters.
+            $this->configuration->writeConfiguration(
+                station: $station,
+                forceRestart: true
+            );
+
+            if ($enabled) {
+                $this->nginx->writeConfiguration($station);
+            }
+        } catch (Throwable) {
+            // Mirrors Admin\StationsController::handleEdit — supervisor may already be stopped.
+        }
 
         $actionText = $enabled ? 'unsuspended' : 'suspended';
         return $response->withJson([
@@ -166,6 +215,37 @@ final class BillingController
         $station = $this->requireStation($data);
         $stationId = $station->id;
         $stationName = $station->name;
+
+        // Match Admin\StationsController::handleDelete — stop supervisor before entity removal.
+        $this->configuration->removeConfiguration($station);
+
+        $fsUtils = new Filesystem();
+        $stationBaseDir = $station->radio_base_dir;
+        foreach (Station::NON_STORAGE_LOCATION_DIRS as $otherDir) {
+            try {
+                $fsUtils->remove($stationBaseDir . '/' . $otherDir);
+            } catch (IOException $e) {
+                $this->logger->error(
+                    sprintf(
+                        'Error while deleting station directory "%s": %s',
+                        $otherDir,
+                        $e->getMessage()
+                    ),
+                    [
+                        'exception' => $e,
+                    ]
+                );
+            }
+        }
+
+        $this->em->flush();
+
+        foreach ($station->getAllStorageLocations() as $storageLocation) {
+            $stations = $this->storageLocationRepo->getStationsUsingLocation($storageLocation);
+            if (1 === count($stations)) {
+                $this->em->remove($storageLocation);
+            }
+        }
 
         $this->em->remove($station);
         $this->em->flush();
@@ -190,6 +270,8 @@ final class BillingController
             $station->frontend_config = $feConfig;
         }
 
+        $this->applyDiskQuota($station, $data);
+
         $station->needs_restart = true;
         $this->em->persist($station);
         $this->em->flush();
@@ -200,6 +282,7 @@ final class BillingController
             'station_id' => $station->id,
             'max_listeners' => $station->frontend_config->max_listeners,
             'max_bitrate' => $station->max_bitrate,
+            'disk_quota_mb' => $this->getDiskQuotaMb($station),
         ]);
     }
 
@@ -216,7 +299,51 @@ final class BillingController
             'has_started' => $station->has_started,
             'max_listeners' => $station->frontend_config->max_listeners,
             'max_bitrate' => $station->max_bitrate,
+            'disk_quota_mb' => $this->getDiskQuotaMb($station),
         ]);
+    }
+
+    /**
+     * Apply disk_quota_mb to all station storage locations (media, recordings, podcasts).
+     * Supported via StorageLocation::$storageQuota; 0 clears the quota (unlimited).
+     */
+    private function applyDiskQuota(Station $station, array $data): void
+    {
+        if (
+            !array_key_exists('disk_quota_mb', $data)
+            || $data['disk_quota_mb'] === null
+            || $data['disk_quota_mb'] === ''
+        ) {
+            return;
+        }
+
+        $mb = (int)$data['disk_quota_mb'];
+        if ($mb < 0) {
+            throw new InvalidArgumentException('disk_quota_mb must be greater than or equal to 0.');
+        }
+
+        // Readable size is honored by StorageLocation::$storageQuota / Quota::convertFromReadableSize.
+        $quota = (0 === $mb) ? null : sprintf('%d MB', $mb);
+
+        foreach ($station->getAllStorageLocations() as $storageLocation) {
+            $storageLocation->storageQuota = $quota;
+            $this->em->persist($storageLocation);
+        }
+
+        $this->em->flush();
+    }
+
+    private function getDiskQuotaMb(Station $station): ?int
+    {
+        $quotaBytes = $station->media_storage_location->storageQuotaBytes;
+        if (!$quotaBytes instanceof BigInteger) {
+            return null;
+        }
+
+        return $quotaBytes
+            ->toBigDecimal()
+            ->dividedBy(1024 * 1024, 0, RoundingMode::Down)
+            ->toInt();
     }
 
     private function requireStation(array $data): Station
