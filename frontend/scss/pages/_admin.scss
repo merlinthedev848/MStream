@@ -123,4 +123,9 @@
   .station-listeners-cell {
     min-width: 3.5rem;
   }
+
+  .media-services-actions {
+    flex-wrap: wrap;
+    row-gap: 0.25rem;
+  }
 }

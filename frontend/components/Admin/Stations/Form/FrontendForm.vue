@@ -3,7 +3,10 @@
         :label="$gettext('Broadcasting')"
         :item-header-class="tabClass"
     >
-        <div class="row g-3 mb-3">
+        <div
+            v-if="canManageServer"
+            class="row g-3 mb-3"
+        >
             <form-group-multi-check
                 id="edit_form_frontend_type"
                 class="col-md-12"
@@ -62,7 +65,10 @@
                     </span>
                 </template>
 
-                <div class="row g-3 mb-3">
+                <div
+                    v-if="canManageServer"
+                    class="row g-3 mb-3"
+                >
                     <form-group-field
                         id="edit_form_frontend_port"
                         class="col-md-6"
@@ -143,7 +149,7 @@
                 </div>
             </form-fieldset>
 
-            <form-fieldset>
+            <form-fieldset v-if="canManageServer">
                 <template #label>
                     {{ $gettext('Custom Configuration') }}
                     <span class="badge small text-bg-primary ms-2">
@@ -183,9 +189,13 @@ import FormFieldset from "~/components/Form/FormFieldset.vue";
 import FormGroupField from "~/components/Form/FormGroupField.vue";
 import FormGroupMultiCheck from "~/components/Form/FormGroupMultiCheck.vue";
 import FormGroupSelect from "~/components/Form/FormGroupSelect.vue";
-import { FrontendAdapters } from "~/entities/ApiInterfaces.ts";
+import {
+    FrontendAdapters,
+    GlobalPermissions,
+} from "~/entities/ApiInterfaces.ts";
 import { SimpleFormOptionInput } from "~/functions/objectToFormOptions.ts";
 import { useFormTabClass } from "~/functions/useFormTabClass.ts";
+import { useUserAllowed } from "~/functions/useUserAllowed.ts";
 import { useTranslate } from "~/vendor/gettext";
 
 const props = defineProps<{
@@ -197,6 +207,9 @@ const props = defineProps<{
 const { r$, form } = storeToRefs(useAdminStationsForm());
 
 const tabClass = useFormTabClass(computed(() => r$.value.$groups.frontendTab));
+
+const { userAllowed } = useUserAllowed();
+const canManageServer = userAllowed(GlobalPermissions.Stations);
 
 const { $gettext } = useTranslate();
 

@@ -79,6 +79,7 @@
                     </form-group-field>
 
                     <form-group-field
+                        v-if="canManageServer"
                         id="edit_form_backend_dj_port"
                         class="col-md-6"
                         :field="r$.backend_config.dj_port"
@@ -142,12 +143,20 @@ import FormFieldset from "~/components/Form/FormFieldset.vue";
 import FormGroupCheckbox from "~/components/Form/FormGroupCheckbox.vue";
 import FormGroupField from "~/components/Form/FormGroupField.vue";
 import FormGroupMultiCheck from "~/components/Form/FormGroupMultiCheck.vue";
-import { BackendAdapters, StreamFormats } from "~/entities/ApiInterfaces.ts";
+import {
+    BackendAdapters,
+    GlobalPermissions,
+    StreamFormats,
+} from "~/entities/ApiInterfaces.ts";
 import { useFormTabClass } from "~/functions/useFormTabClass.ts";
+import { useUserAllowed } from "~/functions/useUserAllowed.ts";
 
 const { r$, form } = storeToRefs(useAdminStationsForm());
 
 const tabClass = useFormTabClass(computed(() => r$.value.$groups.streamersTab));
+
+const { userAllowed } = useUserAllowed();
+const canManageServer = userAllowed(GlobalPermissions.Stations);
 
 const isBackendEnabled = computed(() => {
     return form.value.backend_type !== BackendAdapters.None;

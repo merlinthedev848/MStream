@@ -1,11 +1,15 @@
 import { shallowRef, watch } from "vue";
-import { StationPermissions } from "~/entities/ApiInterfaces.ts";
+import {
+    GlobalPermissions,
+    StationPermissions,
+} from "~/entities/ApiInterfaces.ts";
 import {
     filterMenu,
     MenuCategory,
     RawMenuCategory,
 } from "~/functions/filterMenu.ts";
 import { useStationData } from "~/functions/useStationQuery.ts";
+import { useUserAllowed } from "~/functions/useUserAllowed.ts";
 import { useUserAllowedForStation } from "~/functions/useUserallowedForStation.ts";
 import { useTranslate } from "~/vendor/gettext.ts";
 import IconBiBroadcast from "~icons/bi/broadcast";
@@ -18,18 +22,26 @@ import IconIcMic from "~icons/ic/baseline-mic";
 import IconIcPodcasts from "~icons/ic/baseline-podcasts";
 import IconIcPublic from "~icons/ic/baseline-public";
 import IconIcQueueMusic from "~icons/ic/baseline-queue-music";
+import IconIcSchedule from "~icons/ic/baseline-schedule";
 import IconIcSettingsApplication from "~icons/ic/baseline-settings-applications";
 
+/**
+ * MediaCP-like service console IA:
+ * Overview → Configure → Media → Playlists → … → Reporting
+ * Server-managed tools (ports, Liquidsoap, Stereo Tool) stay superadmin-only.
+ */
 export function useStationsMenu() {
     const { $gettext } = useTranslate();
 
     const station = useStationData();
+    const { userAllowed } = useUserAllowed();
     const { userAllowedForStation } = useUserAllowedForStation();
+    const canManageServer = () => userAllowed(GlobalPermissions.Stations);
 
     const fullMenu: RawMenuCategory[] = [
         {
             key: "profile",
-            label: $gettext("Station Console"),
+            label: $gettext("Overview"),
             icon: () => IconIcImage,
             url: {
                 name: "stations:index",
@@ -37,7 +49,7 @@ export function useStationsMenu() {
         },
         {
             key: "edit_profile",
-            label: $gettext("Station Settings"),
+            label: $gettext("Configure"),
             icon: () => IconIcSettingsApplication,
             url: {
                 name: "stations:settings:index",
@@ -45,65 +57,19 @@ export function useStationsMenu() {
             visible: () => userAllowedForStation(StationPermissions.Profile),
         },
         {
-            key: "public_page",
-            label: $gettext("Public Pages"),
-            icon: () => IconIcPublic,
-            items: [
-                {
-                    key: "branding",
-                    label: $gettext("Branding"),
-                    url: {
-                        name: "stations:branding",
-                    },
-                    visible: () =>
-                        userAllowedForStation(StationPermissions.Profile),
-                },
-                {
-                    key: "public_player",
-                    label: $gettext("Public Player"),
-                    url: station.value.publicPageUrl,
-                    external: true,
-                    visible: () => station.value.enablePublicPages,
-                },
-                {
-                    key: "public_on_demand",
-                    label: $gettext("On-Demand Media"),
-                    url: station.value.onDemandUrl,
-                    external: true,
-                    visible: () =>
-                        station.value.enablePublicPages &&
-                        station.value.enableOnDemand,
-                },
-                {
-                    key: "public_podcasts",
-                    label: $gettext("Podcasts"),
-                    url: station.value.publicPodcastsUrl,
-                    external: true,
-                    visible: () => station.value.enablePublicPages,
-                },
-                {
-                    key: "public_schedule",
-                    label: $gettext("Schedule"),
-                    url: station.value.publicScheduleUrl,
-                    external: true,
-                    visible: () => station.value.enablePublicPages,
-                },
-            ],
-        },
-        {
             key: "media",
-            label: $gettext("Music Library"),
+            label: $gettext("Media"),
             icon: () => IconIcLibraryMusic,
-            visible: () => station.value.features.media,
+            visible: () =>
+                station.value.features.media &&
+                userAllowedForStation(StationPermissions.Media),
             items: [
                 {
                     key: "music_files",
-                    label: $gettext("Upload & Manage Music"),
+                    label: $gettext("Music Library"),
                     url: {
                         name: "stations:files:index",
                     },
-                    visible: () =>
-                        userAllowedForStation(StationPermissions.Media),
                 },
                 {
                     key: "duplicate_songs",
@@ -114,32 +80,26 @@ export function useStationsMenu() {
                             path: "special:duplicates",
                         },
                     },
-                    visible: () =>
-                        userAllowedForStation(StationPermissions.Media),
                 },
                 {
                     key: "unprocessable",
-                    label: $gettext("Files That Need Attention"),
+                    label: $gettext("Needs Attention"),
                     url: {
                         name: "stations:files:index",
                         params: {
                             path: "special:unprocessable",
                         },
                     },
-                    visible: () =>
-                        userAllowedForStation(StationPermissions.Media),
                 },
                 {
                     key: "unassigned",
-                    label: $gettext("Songs Not in a Playlist"),
+                    label: $gettext("Not in a Playlist"),
                     url: {
                         name: "stations:files:index",
                         params: {
                             path: "special:unassigned",
                         },
                     },
-                    visible: () =>
-                        userAllowedForStation(StationPermissions.Media),
                 },
                 {
                     key: "ondemand",
@@ -154,18 +114,14 @@ export function useStationsMenu() {
                     url: {
                         name: "stations:sftp_users:index",
                     },
-                    visible: () =>
-                        userAllowedForStation(StationPermissions.Media) &&
-                        station.value.features.sftp,
+                    visible: () => station.value.features.sftp,
                 },
                 {
                     key: "bulk_media",
-                    label: $gettext("Import / Export Music List"),
+                    label: $gettext("Import / Export List"),
                     url: {
                         name: "stations:bulk-media",
                     },
-                    visible: () =>
-                        userAllowedForStation(StationPermissions.Media),
                 },
             ],
         },
@@ -181,6 +137,67 @@ export function useStationsMenu() {
                 station.value.features.media,
         },
         {
+            key: "jingles",
+            label: $gettext("Jingles"),
+            icon: () => IconIcQueueMusic,
+            url: {
+                name: "stations:playlists:index",
+                query: {
+                    filter: "jingle",
+                },
+            },
+            visible: () =>
+                userAllowedForStation(StationPermissions.Media) &&
+                station.value.features.media,
+        },
+        {
+            key: "schedule",
+            label: $gettext("Schedule"),
+            icon: () => IconIcSchedule,
+            url: station.value.publicScheduleUrl,
+            external: true,
+            visible: () => station.value.enablePublicPages,
+        },
+        {
+            key: "public_page",
+            label: $gettext("Public Page"),
+            icon: () => IconIcPublic,
+            items: [
+                {
+                    key: "branding",
+                    label: $gettext("Widgets & Branding"),
+                    url: {
+                        name: "stations:branding",
+                    },
+                    visible: () =>
+                        userAllowedForStation(StationPermissions.Profile),
+                },
+                {
+                    key: "public_player",
+                    label: $gettext("Public Player"),
+                    url: station.value.publicPageUrl,
+                    external: true,
+                    visible: () => station.value.enablePublicPages,
+                },
+                {
+                    key: "public_on_demand",
+                    label: $gettext("On-Demand Page"),
+                    url: station.value.onDemandUrl,
+                    external: true,
+                    visible: () =>
+                        station.value.enablePublicPages &&
+                        station.value.enableOnDemand,
+                },
+                {
+                    key: "public_podcasts",
+                    label: $gettext("Podcasts Page"),
+                    url: station.value.publicPodcastsUrl,
+                    external: true,
+                    visible: () => station.value.enablePublicPages,
+                },
+            ],
+        },
+        {
             key: "podcasts",
             label: $gettext("Podcasts"),
             icon: () => IconIcPodcasts,
@@ -192,96 +209,12 @@ export function useStationsMenu() {
                 station.value.features.podcasts,
         },
         {
-            key: "streaming",
-            label: $gettext("Live DJs"),
-            icon: () => IconIcMic,
-            visible: () =>
-                userAllowedForStation(StationPermissions.Streamers) &&
-                station.value.features.streamers,
-            items: [
-                {
-                    key: "streamers",
-                    label: $gettext("DJ Accounts"),
-                    url: {
-                        name: "stations:streamers:index",
-                    },
-                    visible: () =>
-                        userAllowedForStation(StationPermissions.Streamers),
-                },
-                {
-                    key: "webdj",
-                    label: $gettext("Browser DJ"),
-                    url: station.value?.webDjUrl,
-                    external: true,
-                    visible: () => station.value.enablePublicPages,
-                },
-            ],
-        },
-        {
-            key: "webhooks",
-            label: $gettext("Alerts & Integrations"),
-            icon: () => IconIcCode,
-            url: {
-                name: "stations:webhooks:index",
-            },
-            visible: () =>
-                userAllowedForStation(StationPermissions.WebHooks) &&
-                station.value.features.webhooks,
-        },
-        {
-            key: "reports",
-            label: $gettext("Reports"),
-            icon: () => IconIcInsertChart,
-            visible: () => userAllowedForStation(StationPermissions.Reports),
-            items: [
-                {
-                    key: "reports_overview",
-                    label: $gettext("Station Statistics"),
-                    url: {
-                        name: "stations:reports:overview",
-                    },
-                },
-                {
-                    key: "reports_listeners",
-                    label: $gettext("Listeners"),
-                    url: {
-                        name: "stations:reports:listeners",
-                    },
-                },
-                {
-                    key: "reports_requests",
-                    label: $gettext("Song Requests"),
-                    url: {
-                        name: "stations:reports:requests",
-                    },
-                    visible: () =>
-                        userAllowedForStation(
-                            StationPermissions.Broadcasting,
-                        ) && station.value.enableRequests,
-                },
-                {
-                    key: "reports_timeline",
-                    label: $gettext("Song Playback Timeline"),
-                    url: {
-                        name: "stations:reports:timeline",
-                    },
-                },
-                {
-                    key: "reports_soundexchange",
-                    label: $gettext("SoundExchange Royalties"),
-                    url: {
-                        name: "stations:reports:soundexchange",
-                    },
-                },
-            ],
-        },
-        {
-            key: "broadcasting",
-            label: $gettext("On-Air Tools"),
+            key: "mounts",
+            label: $gettext("Mount Points"),
             icon: () => IconBiBroadcast,
             items: [
                 {
-                    key: "mounts",
+                    key: "mounts_list",
                     label: $gettext("Listener Streams"),
                     url: {
                         name: "stations:mounts:index",
@@ -313,31 +246,9 @@ export function useStationsMenu() {
                 },
                 {
                     key: "fallback",
-                    label: $gettext("Offline Fallback Audio"),
+                    label: $gettext("Offline Fallback"),
                     url: {
                         name: "stations:fallback",
-                    },
-                    visible: () =>
-                        userAllowedForStation(
-                            StationPermissions.Broadcasting,
-                        ) && station.value.features.media,
-                },
-                {
-                    key: "ls_config",
-                    label: $gettext("Advanced AutoDJ Config"),
-                    url: {
-                        name: "stations:util:ls_config",
-                    },
-                    visible: () =>
-                        userAllowedForStation(
-                            StationPermissions.Broadcasting,
-                        ) && station.value.features.customLiquidsoapConfig,
-                },
-                {
-                    key: "stereo_tool",
-                    label: $gettext("Stereo Tool Config"),
-                    url: {
-                        name: "stations:stereo_tool_config",
                     },
                     visible: () =>
                         userAllowedForStation(
@@ -357,23 +268,124 @@ export function useStationsMenu() {
                 },
                 {
                     key: "restart",
-                    label: $gettext("Restart Station"),
+                    label: $gettext("Restart Service"),
                     url: {
                         name: "stations:restart:index",
                     },
                     visible: () =>
                         userAllowedForStation(StationPermissions.Broadcasting),
                 },
+                {
+                    key: "ls_config",
+                    label: $gettext("Advanced AutoDJ Config"),
+                    url: {
+                        name: "stations:util:ls_config",
+                    },
+                    visible: () =>
+                        canManageServer() &&
+                        station.value.features.customLiquidsoapConfig,
+                },
+                {
+                    key: "stereo_tool",
+                    label: $gettext("Stereo Tool Config"),
+                    url: {
+                        name: "stations:stereo_tool_config",
+                    },
+                    visible: () =>
+                        canManageServer() && station.value.features.media,
+                },
             ],
         },
         {
+            key: "streaming",
+            label: $gettext("DJ Manager"),
+            icon: () => IconIcMic,
+            visible: () =>
+                userAllowedForStation(StationPermissions.Streamers) &&
+                station.value.features.streamers,
+            items: [
+                {
+                    key: "streamers",
+                    label: $gettext("DJ Accounts"),
+                    url: {
+                        name: "stations:streamers:index",
+                    },
+                },
+                {
+                    key: "webdj",
+                    label: $gettext("Browser DJ"),
+                    url: station.value?.webDjUrl,
+                    external: true,
+                    visible: () => station.value.enablePublicPages,
+                },
+            ],
+        },
+        {
+            key: "webhooks",
+            label: $gettext("Alerts & Integrations"),
+            icon: () => IconIcCode,
+            url: {
+                name: "stations:webhooks:index",
+            },
+            visible: () =>
+                userAllowedForStation(StationPermissions.WebHooks) &&
+                station.value.features.webhooks,
+        },
+        {
             key: "logs",
-            label: $gettext("Station Logs"),
+            label: $gettext("Logs"),
             icon: () => IconIcAssignment,
             url: {
                 name: "stations:logs",
             },
             visible: () => userAllowedForStation(StationPermissions.Logs),
+        },
+        {
+            key: "reports",
+            label: $gettext("Reporting"),
+            icon: () => IconIcInsertChart,
+            visible: () => userAllowedForStation(StationPermissions.Reports),
+            items: [
+                {
+                    key: "reports_overview",
+                    label: $gettext("Station Statistics"),
+                    url: {
+                        name: "stations:reports:overview",
+                    },
+                },
+                {
+                    key: "reports_listeners",
+                    label: $gettext("Listeners"),
+                    url: {
+                        name: "stations:reports:listeners",
+                    },
+                },
+                {
+                    key: "reports_requests",
+                    label: $gettext("Song Requests"),
+                    url: {
+                        name: "stations:reports:requests",
+                    },
+                    visible: () =>
+                        userAllowedForStation(
+                            StationPermissions.Broadcasting,
+                        ) && station.value.enableRequests,
+                },
+                {
+                    key: "reports_timeline",
+                    label: $gettext("Playback Timeline"),
+                    url: {
+                        name: "stations:reports:timeline",
+                    },
+                },
+                {
+                    key: "reports_soundexchange",
+                    label: $gettext("SoundExchange Royalties"),
+                    url: {
+                        name: "stations:reports:soundexchange",
+                    },
+                },
+            ],
         },
     ];
 

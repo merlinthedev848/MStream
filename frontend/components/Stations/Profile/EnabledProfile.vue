@@ -8,8 +8,12 @@
         <div class="col-lg-7">
             <getting-started-panel />
 
+            <service-quota-panel />
+
             <template v-if="stationData.hasStarted">
                 <profile-now-playing/>
+
+                <usage-graphs-panel />
 
                 <profile-schedule/>
 
@@ -53,8 +57,10 @@ import ProfileNowPlaying from "~/components/Stations/Profile/NowPlayingPanel.vue
 import ProfilePublicPages from "~/components/Stations/Profile/PublicPagesPanel.vue";
 import ProfileRequests from "~/components/Stations/Profile/RequestsPanel.vue";
 import ProfileSchedule from "~/components/Stations/Profile/SchedulePanel.vue";
+import ServiceQuotaPanel from "~/components/Stations/Profile/ServiceQuotaPanel.vue";
 import ProfileStreamers from "~/components/Stations/Profile/StreamersPanel.vue";
 import ProfileStreams from "~/components/Stations/Profile/StreamsPanel.vue";
+import UsageGraphsPanel from "~/components/Stations/Profile/UsageGraphsPanel.vue";
 import { BackendAdapters, FrontendAdapters } from "~/entities/ApiInterfaces.ts";
 import { useStationData } from "~/functions/useStationQuery.ts";
 

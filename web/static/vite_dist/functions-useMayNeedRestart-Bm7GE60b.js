@@ -1,0 +1,1 @@
+import{a as e,c as t,u as n}from"./useApiRouter-BIDdOVj1.js";function r(){let r=n(),i=e();return{mayNeedRestart:()=>{r.invalidateQueries({queryKey:t([],i)})}}}export{r as t};

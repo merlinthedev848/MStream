@@ -306,6 +306,52 @@
   }
 }
 
+#profile-service-quotas {
+  .service-quota-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.75rem;
+
+    @media (max-width: 991.98px) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    @media (max-width: 575.98px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .service-quota-cell {
+    min-width: 0;
+    padding: 0.65rem 0.75rem;
+    background: var(--bs-tertiary-bg, #0f1420);
+    border: 1px solid var(--border-color-dark, #242f44);
+    border-radius: 3px;
+    min-height: 6.5rem;
+  }
+
+  .service-quota-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #94a3b8;
+    margin-bottom: 0.25rem;
+  }
+
+  .service-quota-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--mstream-card-title-color, #f8fafc);
+    line-height: 1.2;
+  }
+
+  .service-quota-meta {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin-top: 0.15rem;
+  }
+}
+
 #profile-getting-started {
   .getting-started-lead {
     color: var(--mstream-card-text-color, #cbd5e1);

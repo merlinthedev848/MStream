@@ -9,7 +9,7 @@
                 id="hdr_edit_profile"
                 class="card-title"
             >
-                {{ $gettext('Edit Station Settings') }}
+                {{ $gettext('Streaming Service Settings') }}
             </h3>
         </div>
         <div class="card-body">

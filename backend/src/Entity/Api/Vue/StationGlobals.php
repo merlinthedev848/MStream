@@ -36,6 +36,10 @@ final readonly class StationGlobals
         public ?string $offlineText,
         #[OA\Property]
         public int $maxBitrate,
+        #[OA\Property(
+            description: 'Maximum concurrent listeners (0 = unlimited / unset).',
+        )]
+        public int $maxListeners,
         #[OA\Property]
         public int $maxMounts,
         #[OA\Property]

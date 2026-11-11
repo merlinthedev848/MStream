@@ -3,6 +3,7 @@ import { Component } from "vue";
 export type MenuRouteBasedUrl = {
     name: string;
     params?: Record<string, any>;
+    query?: Record<string, any>;
 };
 
 export type MenuRouteUrl = string | MenuRouteBasedUrl;
