@@ -13,7 +13,7 @@ use App\Enums\GlobalPermissions;
 use App\Enums\StationPermissions;
 use App\Security\SplitToken;
 use Codeception\Test\Unit;
-use Doctrine\ORM\AbstractQuery;
+use Doctrine\ORM\Query;
 use Mockery;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
@@ -63,7 +63,7 @@ final class ApiKeyScopesTest extends Unit
 
     private function createAcl(): Acl
     {
-        $query = Mockery::mock(AbstractQuery::class);
+        $query = Mockery::mock(Query::class);
         $query->shouldReceive('toIterable')->andReturn([]);
 
         $em = Mockery::mock(ReloadableEntityManagerInterface::class);
