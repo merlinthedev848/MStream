@@ -26,8 +26,9 @@ use Psr\Http\Message\ResponseInterface;
             new OA\Parameter(ref: OpenApi::REF_STATION_ID_REQUIRED),
         ],
         responses: [
-            // TODO: API Response Body
-            new OpenApi\Response\Success(),
+            new OpenApi\Response\Success(
+                content: new OA\JsonContent(ref: Status::class)
+            ),
             new OpenApi\Response\AccessDenied(),
             new OpenApi\Response\NotFound(),
             new OpenApi\Response\GenericError(),
