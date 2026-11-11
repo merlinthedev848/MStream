@@ -8,7 +8,6 @@ use App\Entity\Api\LogType;
 use App\Entity\Station;
 use App\Entity\StationMount;
 use App\Environment;
-use App\Radio\Enums\StreamFormats;
 use App\Service\Acme;
 use App\Utilities\Arrays;
 use GuzzleHttp\Psr7\Uri;
@@ -190,16 +189,7 @@ final class Rsas extends Icecast
                 );
             }
 
-            if (!empty($mountRow->fallback_mount)) {
-                $mount['fallback-mount'] = $mountRow->fallback_mount;
-                $mount['fallback-override'] = 1;
-            } elseif ($mountRow->enable_autodj) {
-                $autoDjFormat = $mountRow->autodj_format ?? StreamFormats::default();
-                $autoDjBitrate = $mountRow->autodj_bitrate;
-
-                $mount['fallback-mount'] = '/fallback-[' . $autoDjBitrate . '].' . $autoDjFormat->getExtension();
-                $mount['fallback-override'] = 1;
-            }
+            $this->writeMountFallback($mount, $mountRow);
 
             $mountFrontendConfig = trim($mountRow->frontend_config ?? '');
             if (!empty($mountFrontendConfig)) {

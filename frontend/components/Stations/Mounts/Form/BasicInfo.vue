@@ -90,7 +90,7 @@
                     </template>
                 </form-group-field>
             </template>
-            <template v-if="isIcecast">
+            <template v-if="supportsFallbackMount">
                 <form-group-field
                     id="edit_form_fallback_mount"
                     class="col-md-6"
@@ -121,8 +121,10 @@ const { r$ } = storeToRefs(useStationsMountsForm());
 
 const tabClass = useFormTabClass(computed(() => r$.value.$groups.basicInfoTab));
 
-const isIcecast = computed(() => {
-    return FrontendAdapters.Icecast === props.stationFrontendType;
+const supportsFallbackMount = computed(() => {
+    return [FrontendAdapters.Icecast, FrontendAdapters.Rsas].includes(
+        props.stationFrontendType
+    );
 });
 
 const isShoutcast = computed(() => {
