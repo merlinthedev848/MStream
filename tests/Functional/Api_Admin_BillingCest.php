@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Functional;
 
+use App\Entity\Enums\PlaylistTypes;
 use App\Entity\Station;
 use App\Entity\StationPlaylist;
+use App\Radio\Configuration;
+use App\Radio\Enums\CrossfadeModes;
 use FunctionalTester;
 
 class Api_Admin_BillingCest extends CestAbstract
@@ -52,10 +55,28 @@ class Api_Admin_BillingCest extends CestAbstract
             (string)$station->media_storage_location->storageQuotaBytes
         );
 
-        $hasDefaultPlaylist = $station->playlists->exists(
-            static fn(int $key, StationPlaylist $playlist): bool => 'default' === $playlist->name
+        $I->assertFalse($station->backend_config->use_manual_autodj);
+        $I->assertSame(CrossfadeModes::Normal->value, $station->backend_config->crossfade_type);
+
+        $defaultPlaylist = null;
+        foreach ($station->playlists as $playlist) {
+            if (
+                Configuration::DEFAULT_PLAYLIST_NAME === $playlist->name
+                && PlaylistTypes::default() === $playlist->type
+                && $playlist->is_enabled
+            ) {
+                $defaultPlaylist = $playlist;
+                break;
+            }
+        }
+        $I->assertInstanceOf(StationPlaylist::class, $defaultPlaylist);
+
+        $hasMediaRootFolder = $defaultPlaylist->folders->exists(
+            static fn(int $key, $folder): bool => Configuration::DEFAULT_MEDIA_FOLDER_PATH === $folder->path
         );
-        $I->assertTrue($hasDefaultPlaylist);
+        $I->assertTrue($hasMediaRootFolder);
+
+        $I->assertSame('/error.mp3', $station->mounts->first()->fallback_mount);
 
         // Status
         $I->sendPost('/api/admin/billing/provision', [

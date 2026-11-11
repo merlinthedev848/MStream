@@ -120,9 +120,9 @@ final class FlowUploadAction implements SingleActionInterface
                     $this->spmRepo->addMediaToPlaylist($stationMedia, $playlist);
                     $this->em->flush();
                 }
-            } elseif (!empty($currentDir)) {
-                // If the user is viewing a regular directory, check for playlists assigned to the directory and assign
-                // them to this media immediately.
+            } else {
+                // Assign to playlists wired to this directory, including the media root
+                // (empty currentDirectory) so AutoDJ-ready default stations pick up uploads.
                 $parentFolders = $this->spfRepo->getPlaylistFoldersForPath($station, $currentDir, true);
 
                 if (!empty($parentFolders)) {
