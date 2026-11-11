@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Frontend\Account;
 
+use App\Acl;
 use App\Controller\Api\AbstractApiCrudController;
 use App\Entity\Api\Account\NewApiKey;
+use App\Entity\Api\Admin\RolePermissions;
 use App\Entity\Api\Traits\HasLinks;
 use App\Entity\ApiKey;
 use App\Entity\Interfaces\EntityGroupsInterface;
+use App\Entity\Traits\WriteApiKeyPermissionsTrait;
 use App\Http\Response;
 use App\Http\ServerRequest;
 use App\OpenApi;
@@ -17,6 +20,8 @@ use App\Utilities\Types;
 use OpenApi\Attributes as OA;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\Serializer\Serializer;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
  * @template TEntity as ApiKey
@@ -48,8 +53,19 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
         path: '/frontend/account/api-keys',
         operationId: 'addMyApiKey',
         summary: 'Create a new API key associated with your account.',
+        description: 'Optional permissions scopes; omit/empty inherits full account ACL.',
         requestBody: new OA\RequestBody(
-            content: new OA\JsonContent(ref: ApiKey::class)
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: 'comment', type: 'string'),
+                    new OA\Property(
+                        property: 'permissions',
+                        ref: RolePermissions::class,
+                        nullable: true
+                    ),
+                ],
+                type: 'object'
+            )
         ),
         tags: [OpenApi::TAG_ACCOUNTS],
         responses: [
@@ -118,8 +134,18 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 ]
 final class ApiKeysController extends AbstractApiCrudController
 {
+    use WriteApiKeyPermissionsTrait;
+
     protected string $entityClass = ApiKey::class;
     protected string $resourceRouteName = 'api:frontend:api-key';
+
+    public function __construct(
+        Serializer $serializer,
+        ValidatorInterface $validator,
+        private readonly Acl $acl,
+    ) {
+        parent::__construct($serializer, $validator);
+    }
 
     public function listAction(
         ServerRequest $request,
@@ -143,14 +169,29 @@ final class ApiKeysController extends AbstractApiCrudController
         $newKey = SplitToken::generate();
 
         $parsedBody = (array)$request->getParsedBody();
+        $user = $request->getUser();
 
         $record = new ApiKey(
-            $request->getUser(),
+            $user,
             $newKey,
             Types::string($parsedBody['comment'] ?? null)
         );
 
         $this->em->persist($record);
+        $this->em->flush();
+
+        $permissions = isset($parsedBody['permissions']) && is_array($parsedBody['permissions'])
+            ? $parsedBody['permissions']
+            : null;
+
+        $this->writeApiKeyPermissions(
+            $this->em,
+            $this->acl,
+            $record,
+            $user,
+            $permissions,
+            $request
+        );
         $this->em->flush();
 
         $return = $this->viewRecord($record, $request);
@@ -200,6 +241,9 @@ final class ApiKeysController extends AbstractApiCrudController
             EntityGroupsInterface::GROUP_GENERAL,
         ];
 
-        return parent::toArray($record, $context);
+        $return = parent::toArray($record, $context);
+        $return['permissions'] = RolePermissions::fromRolePermissions($record->permissions);
+
+        return $return;
     }
 }

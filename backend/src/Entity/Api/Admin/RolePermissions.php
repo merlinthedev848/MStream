@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Entity\Api\Admin;
 
+use App\Entity\ApiKeyPermission;
 use App\Entity\RolePermission;
 use App\Enums\GlobalPermissions;
-use Doctrine\Common\Collections\Collection;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
@@ -35,17 +35,16 @@ final readonly class RolePermissions
     }
 
     /**
-     * @param Collection<RolePermission> $rolePermissions
-     * @return self
+     * @param iterable<int, RolePermission|ApiKeyPermission> $permissions
      */
-    public static function fromRolePermissions(Collection $rolePermissions): self
+    public static function fromRolePermissions(iterable $permissions): self
     {
         $globalPermissions = [];
         $stationPermissions = [];
 
         $permissionsByStation = [];
 
-        foreach ($rolePermissions as $permission) {
+        foreach ($permissions as $permission) {
             $station = $permission->station;
             if (null !== $station) {
                 $permissionsByStation[$station->id][] = $permission->action_name;

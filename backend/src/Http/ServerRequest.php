@@ -7,6 +7,7 @@ namespace App\Http;
 use App\Acl;
 use App\Auth;
 use App\Customization;
+use App\Entity\ApiKey;
 use App\Entity\Podcast;
 use App\Entity\Settings;
 use App\Entity\Station;
@@ -37,6 +38,7 @@ final class ServerRequest extends SlimServerRequest
     public const string ATTR_STATION = 'station';
     public const string ATTR_PODCAST = 'podcast';
     public const string ATTR_USER = 'user';
+    public const string ATTR_API_KEY = 'api_key';
 
     /**
      * @throws InvalidRequestAttribute
@@ -124,6 +126,16 @@ final class ServerRequest extends SlimServerRequest
     public function getUser(): User
     {
         return $this->getAttributeOfClass(self::ATTR_USER, User::class);
+    }
+
+    /**
+     * API key used for this request, if authenticated via key (null for session auth).
+     */
+    public function getApiKey(): ?ApiKey
+    {
+        $apiKey = $this->serverRequest->getAttribute(self::ATTR_API_KEY);
+
+        return ($apiKey instanceof ApiKey) ? $apiKey : null;
     }
 
     /**

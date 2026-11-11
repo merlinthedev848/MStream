@@ -22,7 +22,6 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
         summary: 'Save changes to your logged in account.',
         tags: [OpenApi::TAG_ACCOUNTS],
         responses: [
-            // TODO API Response Body
             new OpenApi\Response\Success(),
             new OpenApi\Response\AccessDenied(),
             new OpenApi\Response\NotFound(),

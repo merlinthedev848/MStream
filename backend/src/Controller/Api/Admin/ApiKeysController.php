@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Admin;
 
+use App\Acl;
 use App\Controller\Api\AbstractApiCrudController;
 use App\Entity\Api\Account\NewApiKey as AccountNewApiKey;
 use App\Entity\Api\Admin\NewApiKey;
+use App\Entity\Api\Admin\RolePermissions;
 use App\Entity\Api\Traits\HasLinks;
 use App\Entity\ApiKey;
 use App\Entity\Repository\UserRepository;
+use App\Entity\Traits\WriteApiKeyPermissionsTrait;
 use App\Entity\User;
 use App\Exception\ValidationException;
 use App\Http\Response;
@@ -51,6 +54,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
         path: '/admin/api-keys',
         operationId: 'adminCreateApiKey',
         summary: 'Create a new API key for a specified user.',
+        description: 'Optional permissions scopes; omit/empty inherits target user ACL.',
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(ref: NewApiKey::class)
         ),
@@ -93,6 +97,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 ]
 final class ApiKeysController extends AbstractApiCrudController
 {
+    use WriteApiKeyPermissionsTrait;
+
     protected string $entityClass = ApiKey::class;
     protected string $resourceRouteName = 'api:admin:api-key';
 
@@ -100,6 +106,7 @@ final class ApiKeysController extends AbstractApiCrudController
         Serializer $serializer,
         ValidatorInterface $validator,
         private readonly UserRepository $userRepo,
+        private readonly Acl $acl,
     ) {
         parent::__construct($serializer, $validator);
     }
@@ -109,9 +116,11 @@ final class ApiKeysController extends AbstractApiCrudController
         Response $response,
         array $params
     ): ResponseInterface {
+        $parsedBody = (array)$request->getParsedBody();
+
         /** @var NewApiKey $createKey */
         $createKey = $this->serializer->denormalize(
-            (array)$request->getParsedBody(),
+            $parsedBody,
             NewApiKey::class
         );
 
@@ -137,9 +146,37 @@ final class ApiKeysController extends AbstractApiCrudController
         $this->em->persist($record);
         $this->em->flush();
 
+        $permissions = isset($parsedBody['permissions']) && is_array($parsedBody['permissions'])
+            ? $parsedBody['permissions']
+            : null;
+
+        $this->writeApiKeyPermissions(
+            $this->em,
+            $this->acl,
+            $record,
+            $user,
+            $permissions,
+            $request
+        );
+        $this->em->flush();
+
         $return = $this->viewRecord($record, $request);
         $return['key'] = (string)$newKey;
 
         return $response->withJson($return);
+    }
+
+    /**
+     * @param ApiKey $record
+     * @param array<string, mixed> $context
+     *
+     * @return array<mixed>
+     */
+    protected function toArray(object $record, array $context = []): array
+    {
+        $return = parent::toArray($record, $context);
+        $return['permissions'] = RolePermissions::fromRolePermissions($record->permissions);
+
+        return $return;
     }
 }

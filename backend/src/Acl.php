@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App;
 
 use App\Doctrine\ReloadableEntityManagerInterface;
+use App\Entity\ApiKey;
 use App\Entity\Role;
 use App\Entity\Station;
 use App\Entity\User;
@@ -126,6 +127,9 @@ final class Acl
     /**
      * Check if the current user associated with the request has the specified permission.
      *
+     * When the request was authenticated with an API key that has scopes, the key's scopes
+     * are intersected with the owning user's role ACL (scopes cannot escalate).
+     *
      * @param array<string|PermissionInterface>|string|PermissionInterface $action
      * @param int|Station|null $stationId
      */
@@ -136,12 +140,86 @@ final class Acl
         if ($this->request instanceof ServerRequest) {
             try {
                 $user = $this->request->getUser();
-                return $this->userAllowed($action, $user, $stationId);
+                if (!$this->userAllowed($action, $user, $stationId)) {
+                    return false;
+                }
+
+                $apiKey = $this->request->getApiKey();
+                if (null !== $apiKey) {
+                    return $this->apiKeyAllowed($apiKey, $action, $stationId);
+                }
+
+                return true;
             } catch (InvalidRequestAttribute) {
             }
         }
 
         return false;
+    }
+
+    /**
+     * Check whether an API key's scopes allow an action.
+     *
+     * Empty scopes mean the key inherits the owning user's full ACL (caller must still
+     * enforce userAllowed separately).
+     *
+     * @param array<string|PermissionInterface>|string|PermissionInterface $action
+     * @param int|Station|null $stationId
+     */
+    public function apiKeyAllowed(
+        ApiKey $apiKey,
+        array|string|PermissionInterface $action,
+        Station|int|null $stationId = null
+    ): bool {
+        if ($apiKey->permissions->isEmpty()) {
+            return true;
+        }
+
+        if ($stationId instanceof Station) {
+            $stationId = $stationId->id;
+        }
+
+        if ($action instanceof PermissionInterface) {
+            $action = $action->getValue();
+        }
+
+        if (is_array($action)) {
+            return array_any($action, fn($a) => $this->apiKeyAllowed($apiKey, $a, $stationId));
+        }
+
+        $global = [];
+        $stations = [];
+
+        foreach ($apiKey->permissions as $permission) {
+            $permStationId = $permission->station_id;
+            if (null !== $permStationId) {
+                $stations[$permStationId][] = $permission->action_name;
+            } else {
+                $global[] = $permission->action_name;
+            }
+        }
+
+        if (in_array(GlobalPermissions::All->value, $global, true)) {
+            return true;
+        }
+
+        if ($stationId !== null) {
+            if (in_array(GlobalPermissions::Stations->value, $global, true)) {
+                return true;
+            }
+
+            $stationActions = $stations[$stationId] ?? [];
+            if (
+                in_array(StationPermissions::All->value, $stationActions, true)
+                || in_array($action, $stationActions, true)
+            ) {
+                return true;
+            }
+
+            return false;
+        }
+
+        return in_array($action, $global, true);
     }
 
     /**

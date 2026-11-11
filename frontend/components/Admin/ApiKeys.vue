@@ -58,6 +58,28 @@ const fields: DataTableField<Row>[] = [
         sortable: false,
     },
     {
+        key: "permissions",
+        label: $gettext("Scopes"),
+        sortable: false,
+        formatter: (_value, _key, item): string => {
+            const permissions = item.permissions;
+            if (
+                !permissions ||
+                ((permissions.global?.length ?? 0) === 0 &&
+                    (permissions.station?.length ?? 0) === 0)
+            ) {
+                return $gettext("Full account");
+            }
+
+            const globalCount = permissions.global?.length ?? 0;
+            const stationCount = permissions.station?.length ?? 0;
+            return $gettext("%{global} global, %{station} station group(s)", {
+                global: String(globalCount),
+                station: String(stationCount),
+            });
+        },
+    },
+    {
         key: "actions",
         label: $gettext("Actions"),
         sortable: false,

@@ -339,6 +339,8 @@ export interface ApiAdminNewApiKey {
     user: number | string;
     /** @example "Admin-generated API key" */
     comment?: string;
+    /** Optional scopes. Omit or leave empty to inherit the target user's full ACL. */
+    permissions?: ApiAdminRolePermissions | null;
 }
 
 export interface ApiAdminNewLoginToken {
@@ -1997,6 +1999,8 @@ export interface ApiWidgetCustomization {
 export type ApiKey = HasSplitTokenFields & {
     user?: User;
     comment?: string;
+    /** Empty scopes inherit the owning user's full ACL. */
+    permissions?: ApiAdminRolePermissions;
 };
 
 export type AuditLog = HasAutoIncrementId & {

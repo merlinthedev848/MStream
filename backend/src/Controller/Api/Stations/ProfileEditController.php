@@ -7,6 +7,7 @@ namespace App\Controller\Api\Stations;
 use App\Controller\Api\Admin\StationsController;
 use App\Entity\Api\Status;
 use App\Entity\Interfaces\EntityGroupsInterface;
+use App\Entity\Station;
 use App\Entity\StationBackendConfiguration;
 use App\Enums\GlobalPermissions;
 use App\Enums\StationPermissions;
@@ -34,8 +35,9 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
             new OA\Parameter(ref: OpenApi::REF_STATION_ID_REQUIRED),
         ],
         responses: [
-            // TODO API Response Body
-            new OpenApi\Response\Success(),
+            new OpenApi\Response\Success(
+                content: new OA\JsonContent(ref: Station::class)
+            ),
             new OpenApi\Response\AccessDenied(),
             new OpenApi\Response\NotFound(),
             new OpenApi\Response\GenericError(),
@@ -49,8 +51,10 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
         parameters: [
             new OA\Parameter(ref: OpenApi::REF_STATION_ID_REQUIRED),
         ],
+        requestBody: new OA\RequestBody(
+            content: new OA\JsonContent(ref: Station::class)
+        ),
         responses: [
-            // TODO API Response Body
             new OpenApi\Response\Success(),
             new OpenApi\Response\AccessDenied(),
             new OpenApi\Response\NotFound(),

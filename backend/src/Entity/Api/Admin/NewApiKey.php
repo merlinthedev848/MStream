@@ -30,4 +30,15 @@ final class NewApiKey
 
     #[OA\Property(example: 'Admin-generated API key')]
     public string $comment = '';
+
+    /**
+     * Optional scopes. Omit or leave empty to inherit the target user's full ACL.
+     *
+     * @var array{
+     *     global?: list<string>,
+     *     station?: list<array{id: int, permissions: list<string>}>
+     * }|null
+     */
+    #[OA\Property(ref: RolePermissions::class, nullable: true)]
+    public ?array $permissions = null;
 }

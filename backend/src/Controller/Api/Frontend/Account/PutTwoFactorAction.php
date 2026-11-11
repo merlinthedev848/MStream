@@ -7,6 +7,7 @@ namespace App\Controller\Api\Frontend\Account;
 use App\Auth;
 use App\Container\EntityManagerAwareTrait;
 use App\Controller\SingleActionInterface;
+use App\Entity\Api\Account\TwoFactorSetup;
 use App\Entity\Api\Error;
 use App\Entity\Api\Status;
 use App\Http\Response;
@@ -25,10 +26,17 @@ use Throwable;
         path: '/frontend/account/two-factor',
         operationId: 'putAccountTwoFactor',
         summary: 'Register a new two-factor authentication method.',
+        description: 'Without otp: returns enrollment secret + totp_uri. With secret+otp: verifies and enables 2FA.',
         tags: [OpenApi::TAG_ACCOUNTS],
         responses: [
-            // TODO API Response Body
-            new OpenApi\Response\Success(),
+            new OpenApi\Response\Success(
+                content: new OA\JsonContent(
+                    oneOf: [
+                        new OA\Schema(ref: TwoFactorSetup::class),
+                        new OA\Schema(ref: Status::class),
+                    ]
+                )
+            ),
             new OpenApi\Response\AccessDenied(),
             new OpenApi\Response\NotFound(),
             new OpenApi\Response\GenericError(),

@@ -31,7 +31,6 @@ use Psr\Http\Message\ResponseInterface;
         ),
     ],
     responses: [
-        // TODO API Response
         new OpenApi\Response\Success(),
         new OpenApi\Response\AccessDenied(),
         new OpenApi\Response\NotFound(),

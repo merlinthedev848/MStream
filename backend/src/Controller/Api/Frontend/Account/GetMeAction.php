@@ -25,8 +25,13 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
         summary: 'Show the details for your current logged-in account.',
         tags: [OpenApi::TAG_ACCOUNTS],
         responses: [
-            // TODO API Response Body
-            new OpenApi\Response\Success(),
+            new OpenApi\Response\Success(
+                content: new OA\JsonContent(
+                    type: 'object',
+                    additionalProperties: true,
+                    description: 'Current user (ID + GENERAL groups) plus avatar URLs and roles.'
+                )
+            ),
             new OpenApi\Response\AccessDenied(),
             new OpenApi\Response\NotFound(),
             new OpenApi\Response\GenericError(),

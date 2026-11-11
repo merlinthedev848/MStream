@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Controller\Api\Frontend\Account;
 
 use App\Controller\Api\AbstractApiCrudController;
+use App\Entity\Api\Error;
+use App\Entity\Api\Traits\HasLinks;
 use App\Entity\Interfaces\EntityGroupsInterface;
 use App\Entity\UserPasskey;
 use App\Http\Response;
@@ -12,10 +14,14 @@ use App\Http\ServerRequest;
 use App\OpenApi;
 use OpenApi\Attributes as OA;
 use Psr\Http\Message\ResponseInterface;
-use RuntimeException;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 
 /**
+ * List/get/delete registered passkeys for the current account.
+ *
+ * Creation is intentionally WebAuthn-only via PUT /frontend/account/webauthn/register.
+ * Passkeys are immutable after registration (no edit route).
+ *
  * @template TEntity as UserPasskey
  * @extends AbstractApiCrudController<TEntity>
  */
@@ -26,8 +32,17 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
         summary: 'List currently registered passkeys.',
         tags: [OpenApi::TAG_ACCOUNTS],
         responses: [
-            // TODO API Response Body
-            new OpenApi\Response\Success(),
+            new OpenApi\Response\Success(
+                content: new OA\JsonContent(
+                    type: 'array',
+                    items: new OA\Items(
+                        allOf: [
+                            new OA\Schema(ref: UserPasskey::class),
+                            new OA\Schema(ref: HasLinks::class),
+                        ]
+                    )
+                )
+            ),
             new OpenApi\Response\AccessDenied(),
             new OpenApi\Response\NotFound(),
             new OpenApi\Response\GenericError(),
@@ -48,8 +63,14 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
             ),
         ],
         responses: [
-            // TODO API Response Body
-            new OpenApi\Response\Success(),
+            new OpenApi\Response\Success(
+                content: new OA\JsonContent(
+                    allOf: [
+                        new OA\Schema(ref: UserPasskey::class),
+                        new OA\Schema(ref: HasLinks::class),
+                    ]
+                )
+            ),
             new OpenApi\Response\AccessDenied(),
             new OpenApi\Response\NotFound(),
             new OpenApi\Response\GenericError(),
@@ -70,7 +91,6 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
             ),
         ],
         responses: [
-            // TODO API Response Body
             new OpenApi\Response\Success(),
             new OpenApi\Response\AccessDenied(),
             new OpenApi\Response\NotFound(),
@@ -102,12 +122,25 @@ final class PasskeysController extends AbstractApiCrudController
         Response $response,
         array $params
     ): ResponseInterface {
-        throw new RuntimeException('Not implemented. See /frontend/account/webauthn/register.');
+        return $response->withStatus(405)->withJson(
+            new Error(
+                405,
+                'Passkeys are created via WebAuthn registration only. Use PUT /api/frontend/account/webauthn/register.'
+            )
+        );
     }
 
-    public function editAction(ServerRequest $request, Response $response, array $params): ResponseInterface
-    {
-        throw new RuntimeException('Not implemented.');
+    public function editAction(
+        ServerRequest $request,
+        Response $response,
+        array $params
+    ): ResponseInterface {
+        return $response->withStatus(405)->withJson(
+            new Error(
+                405,
+                'Passkeys cannot be edited after registration. Delete and re-register via WebAuthn if needed.'
+            )
+        );
     }
 
     /**

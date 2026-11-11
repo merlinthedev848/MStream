@@ -6,6 +6,7 @@ namespace App\Controller\Api\Frontend\Dashboard;
 
 use App\Container\EntityManagerAwareTrait;
 use App\Controller\SingleActionInterface;
+use App\Entity\Api\Account\DashboardCharts;
 use App\Entity\Api\Error;
 use App\Entity\Enums\AnalyticsIntervals;
 use App\Entity\Station;
@@ -20,14 +21,15 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\SimpleCache\CacheInterface;
 
 #[
-    OA\Put(
+    OA\Get(
         path: '/frontend/dashboard/charts',
         operationId: 'getDashboardCharts',
         summary: 'Get the measurements for the dashboard charts.',
         tags: [OpenApi::TAG_MISC],
         responses: [
-            // TODO API Response Body
-            new OpenApi\Response\Success(),
+            new OpenApi\Response\Success(
+                content: new OA\JsonContent(ref: DashboardCharts::class)
+            ),
             new OpenApi\Response\AccessDenied(),
             new OpenApi\Response\NotFound(),
             new OpenApi\Response\GenericError(),
