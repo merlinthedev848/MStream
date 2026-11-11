@@ -123,7 +123,7 @@ const tabClass = useFormTabClass(computed(() => r$.value.$groups.basicInfoTab));
 
 const supportsFallbackMount = computed(() => {
     return [FrontendAdapters.Icecast, FrontendAdapters.Rsas].includes(
-        props.stationFrontendType
+        props.stationFrontendType,
     );
 });
 
