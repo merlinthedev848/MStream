@@ -587,7 +587,9 @@ final class ConfigWriter implements EventSubscriberInterface
             # Live Broadcasting
             live = input.harbor({$harborParams})
             live.on_connect(synchronous=false, mstream.live_connected)
-            live.on_disconnect(synchronous=false, mstream.live_disconnected)
+            # synchronous=true so live_enabled clears before the next frame,
+            # allowing check_live to skip AutoDJ immediately on disconnect.
+            live.on_disconnect(synchronous=true, mstream.live_disconnected)
 
             def insert_missing(m) =
                 def updates =
@@ -600,7 +602,10 @@ final class ConfigWriter implements EventSubscriberInterface
                 updates
             end
 
+            # Fill empty harbor metadata and mark the source as live.
+            # Work around Liquidsoap #2109 (first song metadata often missed).
             live = metadata.map(insert_missing, live)
+            live.on_metadata(synchronous=true, mstream.store_live_metadata)
 
             radio = fallback(
                 id="live_fallback",
@@ -609,6 +614,9 @@ final class ConfigWriter implements EventSubscriberInterface
                 transitions=[
                     fun (_, s) -> begin
                         log("executing transition to live")
+                        # Re-insert captured harbor metadata so mounts see the
+                        # first title even when harbor emitted it too early.
+                        mstream.insert_latest_live_metadata(s)
                         s
                     end,
                     fun (_, s) -> begin
@@ -618,7 +626,9 @@ final class ConfigWriter implements EventSubscriberInterface
                 [live, radio]
             )
 
-            # Skip non-live track when live DJ goes live.
+            # Skip AutoDJ when entering OR leaving live so disconnect does not
+            # resume a mid-track AutoDJ song (Liquidsoap #2107). Gate the leave
+            # path on live_enabled so brief is_ready flaps mid-show do not skip.
             def check_live() =
                 if live.is_ready() then
                     if not mstream.to_live() then
@@ -626,7 +636,10 @@ final class ConfigWriter implements EventSubscriberInterface
                         radio_without_live.skip()
                     end
                 else
-                    mstream.to_live := false
+                    if mstream.to_live() and not mstream.live_enabled() then
+                        mstream.to_live := false
+                        radio_without_live.skip()
+                    end
                 end
             end
 

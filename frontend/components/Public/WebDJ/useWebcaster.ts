@@ -156,6 +156,18 @@ export const [useProvideWebcaster, useInjectWebcaster] =
 
                     flushRingBuffer();
 
+                    // Push current metadata immediately on connect so harbor/
+                    // Icecast see the first title (Liquidsoap #2109). The
+                    // delayed send below re-asserts after the socket settles.
+                    if (metadata.value !== null) {
+                        socket.send(
+                            JSON.stringify({
+                                type: "metadata",
+                                data: metadata.value,
+                            }),
+                        );
+                    }
+
                     if (heartbeatTimer !== null) {
                         clearInterval(heartbeatTimer);
                     }
