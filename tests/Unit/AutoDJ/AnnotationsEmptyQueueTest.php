@@ -9,6 +9,7 @@ use App\Entity\Repository\StationQueueRepository;
 use App\Entity\Station;
 use App\Radio\AutoDJ\Annotations;
 use Codeception\Test\Unit;
+use Mockery;
 use Monolog\Handler\TestHandler;
 use Monolog\Level;
 use Monolog\Logger;
@@ -20,25 +21,34 @@ use Psr\EventDispatcher\EventDispatcherInterface;
  *
  * Queue builder / Scheduler dump fixtures remain the oracle for fill behavior;
  * this covers the annotation handoff when no unsent StationQueue row exists.
+ *
+ * Uses Mockery (with BypassFinals) for final repository classes — same approach
+ * as InMemoryAutoDjHarnessFactory.
  */
 final class AnnotationsEmptyQueueTest extends Unit
 {
+    protected function tearDown(): void
+    {
+        Mockery::close();
+        parent::tearDown();
+    }
+
     public function testAnnotateNextSongReturnsEmptyStringWhenQueueIsEmpty(): void
     {
         $station = new Station();
         $station->name = 'Empty Queue Station';
 
-        $queueRepo = $this->createMock(StationQueueRepository::class);
-        $queueRepo->expects($this->once())
-            ->method('getNextToSendToAutoDj')
+        $queueRepo = Mockery::mock(StationQueueRepository::class);
+        $queueRepo->shouldReceive('getNextToSendToAutoDj')
+            ->once()
             ->with($station)
-            ->willReturn(null);
+            ->andReturnNull();
 
-        $customFieldRepo = $this->createMock(CustomFieldRepository::class);
-        $customFieldRepo->expects($this->never())->method($this->anything());
+        $customFieldRepo = Mockery::mock(CustomFieldRepository::class);
+        $customFieldRepo->shouldNotReceive('getCustomFields');
 
-        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
-        $eventDispatcher->expects($this->never())->method('dispatch');
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+        $eventDispatcher->shouldNotReceive('dispatch');
 
         $annotations = new Annotations(
             $queueRepo,

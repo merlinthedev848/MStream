@@ -376,10 +376,10 @@ const isLiquidsoap = computed(() => {
 /** Operator-visible empty AutoDJ queue: online, not live, nothing queued next. */
 const isQueueEmpty = computed(() => {
     return (
-        isLiquidsoap.value
-        && !!np.value?.is_online
-        && !np.value?.live?.is_live
-        && !np.value?.playing_next
+        isLiquidsoap.value &&
+        !!np.value?.is_online &&
+        !np.value?.live?.is_live &&
+        !np.value?.playing_next
     );
 });
 
