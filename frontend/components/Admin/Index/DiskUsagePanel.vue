@@ -10,7 +10,7 @@
             <h6 class="mb-1 text-center">
                 {{ $gettext('Total Disk Space') }}
                 :
-                {{ diskStats.total_readable }}
+                <span class="broadcast-mono">{{ diskStats.total_readable }}</span>
             </h6>
 
             <div
@@ -32,7 +32,7 @@
 
                     {{ $gettext('Used') }}
                     :
-                    {{ diskStats.used_readable }}
+                    <span class="broadcast-mono">{{ diskStats.used_readable }}</span>
                 </div>
             </div>
         </div>

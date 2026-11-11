@@ -8,6 +8,59 @@
         @shown="resetForm"
         @hidden="clearContents"
     >
+        <div
+            v-if="!isEditMode"
+            class="admin-console px-3 pt-3"
+        >
+            <div class="admin-create-guide">
+                <div class="admin-create-guide-step">
+                    <span class="admin-create-guide-index broadcast-mono">1</span>
+                    <div>
+                        <div class="admin-create-guide-title">
+                            {{ $gettext('Name the station') }}
+                        </div>
+                        <p class="admin-create-guide-text">
+                            {{
+                                $gettext(
+                                    'Start with a display name. Ports, media folders, and a default playlist are assigned automatically.',
+                                )
+                            }}
+                        </p>
+                    </div>
+                </div>
+                <div class="admin-create-guide-step">
+                    <span class="admin-create-guide-index broadcast-mono">2</span>
+                    <div>
+                        <div class="admin-create-guide-title">
+                            {{ $gettext('AutoDJ is ready') }}
+                        </div>
+                        <p class="admin-create-guide-text">
+                            {{
+                                $gettext(
+                                    'New stations ship with Liquidsoap AutoDJ and a default playlist. Operators upload tracks and go on the air.',
+                                )
+                            }}
+                        </p>
+                    </div>
+                </div>
+                <div class="admin-create-guide-step">
+                    <span class="admin-create-guide-index broadcast-mono">3</span>
+                    <div>
+                        <div class="admin-create-guide-title">
+                            {{ $gettext('Optional fine-tuning') }}
+                        </div>
+                        <p class="admin-create-guide-text">
+                            {{
+                                $gettext(
+                                    'Broadcasting, HLS, requests, and DJ settings are available in the tabs below when you need them.',
+                                )
+                            }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <admin-stations-form
             v-bind="props"
             ref="$form"
@@ -38,7 +91,7 @@
                 type="submit"
                 @click="doSubmit"
             >
-                {{ $gettext('Save Changes') }}
+                {{ isEditMode ? $gettext('Save Changes') : $gettext('Create Station') }}
             </button>
         </template>
     </modal>
@@ -78,7 +131,7 @@ const { $gettext } = useTranslate();
 const langTitle = computed(() => {
     return isEditMode.value
         ? $gettext("Edit Station")
-        : $gettext("Add Station");
+        : $gettext("Create Station");
 });
 
 const $modal = useTemplateRef("$modal");

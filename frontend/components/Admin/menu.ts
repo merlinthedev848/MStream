@@ -14,12 +14,12 @@ export function useAdminMenu() {
     const fullMenu: RawMenuCategory[] = [
         {
             key: "maintenance",
-            label: $gettext("System Maintenance"),
+            label: $gettext("System"),
             icon: () => IconIcRouter,
             items: [
                 {
                     key: "settings",
-                    label: $gettext("System Settings"),
+                    label: $gettext("Settings"),
                     url: {
                         name: "admin:settings:index",
                     },
@@ -27,7 +27,7 @@ export function useAdminMenu() {
                 },
                 {
                     key: "branding",
-                    label: $gettext("Custom Branding"),
+                    label: $gettext("Branding"),
                     url: {
                         name: "admin:branding:index",
                     },
@@ -35,7 +35,7 @@ export function useAdminMenu() {
                 },
                 {
                     key: "logs",
-                    label: $gettext("System Logs"),
+                    label: $gettext("Logs"),
                     url: {
                         name: "admin:logs:index",
                     },
@@ -43,7 +43,7 @@ export function useAdminMenu() {
                 },
                 {
                     key: "storage_locations",
-                    label: $gettext("Storage Locations"),
+                    label: $gettext("Storage"),
                     url: {
                         name: "admin:storage_locations:index",
                     },
@@ -60,7 +60,7 @@ export function useAdminMenu() {
                 },
                 {
                     key: "debug",
-                    label: $gettext("System Debugger"),
+                    label: $gettext("Debugger"),
                     url: {
                         name: "admin:debug:index",
                     },
@@ -68,7 +68,7 @@ export function useAdminMenu() {
                 },
                 {
                     key: "updates",
-                    label: $gettext("Update MStream"),
+                    label: $gettext("Updates"),
                     url: {
                         name: "admin:updates:index",
                     },
@@ -78,12 +78,12 @@ export function useAdminMenu() {
         },
         {
             key: "users",
-            label: $gettext("Users"),
+            label: $gettext("People & Access"),
             icon: () => IconIcGroup,
             items: [
                 {
                     key: "manage_users",
-                    label: $gettext("User Accounts"),
+                    label: $gettext("Accounts"),
                     url: {
                         name: "admin:users:index",
                     },
@@ -122,7 +122,7 @@ export function useAdminMenu() {
             items: [
                 {
                     key: "manage_stations",
-                    label: $gettext("Stations"),
+                    label: $gettext("All Stations"),
                     url: {
                         name: "admin:stations:index",
                     },
@@ -138,7 +138,7 @@ export function useAdminMenu() {
                 },
                 {
                     key: "relays",
-                    label: $gettext("Connected MStreamRelays"),
+                    label: $gettext("Stream Relays"),
                     url: {
                         name: "admin:relays:index",
                     },
@@ -148,7 +148,7 @@ export function useAdminMenu() {
         },
         {
             key: "software",
-            label: $gettext("Third-Party Software"),
+            label: $gettext("Broadcast Software"),
             icon: () => IconIcWidgets,
             items: [
                 {
@@ -177,7 +177,7 @@ export function useAdminMenu() {
                 },
                 {
                     key: "geolite",
-                    label: $gettext("MaxMind GeoLite IP Database"),
+                    label: $gettext("GeoLite IP Database"),
                     url: {
                         name: "admin:install_geolite:index",
                     },

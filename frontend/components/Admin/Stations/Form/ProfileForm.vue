@@ -1,6 +1,6 @@
 <template>
     <tab
-        :label="$gettext('Profile')"
+        :label="$gettext('Station Profile')"
         :item-header-class="tabClass"
     >
         <div class="row g-3 mb-3">
@@ -8,8 +8,14 @@
                 id="edit_form_name"
                 class="col-md-12"
                 :field="r$.name"
-                :label="$gettext('Name')"
-            />
+                :label="$gettext('Station Name')"
+            >
+                <template #description>
+                    {{
+                        $gettext('Shown to listeners and operators. Required to create the station.')
+                    }}
+                </template>
+            </form-group-field>
 
             <form-group-field
                 id="edit_form_description"

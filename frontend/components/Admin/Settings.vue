@@ -16,7 +16,7 @@
                     class="card-title"
                 >
                     <slot name="cardTitle">
-                        {{ $gettext('System Settings') }}
+                        {{ $gettext('Settings') }}
                     </slot>
                 </h2>
             </div>

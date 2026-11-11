@@ -1,9 +1,18 @@
 <template>
     <loading :loading="propsLoading" lazy>
-        <card-page :title="$gettext('Users')">
+        <card-page :title="$gettext('Accounts')">
+            <template #info>
+                <p class="card-text mb-0">
+                    {{
+                        $gettext(
+                            'People who can sign in to MStream. Assign roles to control what each account can manage.',
+                        )
+                    }}
+                </p>
+            </template>
             <template #actions>
                 <add-button
-                    :text="$gettext('Add User')"
+                    :text="$gettext('New Account')"
                     @click="doCreate"
                 />
             </template>
@@ -14,6 +23,27 @@
                 :fields="fields"
                 :provider="listItemProvider"
             >
+                <template #empty>
+                    <div class="admin-guided-empty admin-console">
+                        <div class="admin-guided-empty-title">
+                            {{ $gettext('No accounts yet') }}
+                        </div>
+                        <p class="admin-guided-empty-text">
+                            {{
+                                $gettext(
+                                    'Create an account and assign a role so operators can open their stations.',
+                                )
+                            }}
+                        </p>
+                        <button
+                            type="button"
+                            class="btn btn-primary"
+                            @click="doCreate"
+                        >
+                            {{ $gettext('New Account') }}
+                        </button>
+                    </div>
+                </template>
                 <template #cell(name)="row">
                     <h5
                         v-if="row.item.name !== ''"
@@ -139,7 +169,7 @@ const fields: DataTableField<Row>[] = [
     {
         key: "name",
         isRowHeader: true,
-        label: $gettext("User Name"),
+        label: $gettext("Account"),
         sortable: true,
     },
     { key: "roles", label: $gettext("Roles"), sortable: false },

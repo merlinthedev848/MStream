@@ -1,8 +1,18 @@
 <template>
+    <div class="admin-console">
     <card-page
         header-id="hdr_storage_locations"
-        :title="$gettext('Storage Locations')"
+        :title="$gettext('Storage')"
     >
+        <template #info>
+            <p class="card-text mb-0">
+                {{
+                    $gettext(
+                        'Where station media, recordings, podcasts, and backups live — local disk or remote adapters.',
+                    )
+                }}
+            </p>
+        </template>
         <div class="card-body pb-0">
             <nav
                 class="nav nav-tabs"
@@ -40,6 +50,20 @@
             :fields="fields"
             :provider="listItemProvider"
         >
+            <template #empty>
+                <div class="admin-guided-empty">
+                    <div class="admin-guided-empty-title">
+                        {{ $gettext('No storage locations in this category') }}
+                    </div>
+                    <p class="admin-guided-empty-text mb-0">
+                        {{
+                            $gettext(
+                                'Add a location to hold media for this category, or switch tabs to review other storage types.',
+                            )
+                        }}
+                    </p>
+                </div>
+            </template>
             <template #cell(actions)="{item}">
                 <div class="btn-group btn-group-sm">
                     <button
@@ -84,12 +108,12 @@
                             :class="getProgressVariant(item.storageUsedPercent)"
                             :style="{ width: item.storageUsedPercent+'%' }"
                         >
-                            {{ item.storageUsedPercent }}%
+                            <span class="broadcast-mono">{{ item.storageUsedPercent }}%</span>
                         </div>
                     </div>
                 </template>
 
-                {{ getSpaceUsed(item) }}
+                <span class="broadcast-mono">{{ getSpaceUsed(item) }}</span>
             </template>
         </data-table>
     </card-page>
@@ -100,6 +124,7 @@
         :type="activeType"
         @relist="() => relist()"
     />
+    </div>
 </template>
 
 <script setup lang="ts">
@@ -134,14 +159,14 @@ const { $gettext } = useTranslate();
 type Row = Required<StorageLocation & ApiAdminStorageLocation>;
 
 const fields: DataTableField<Row>[] = [
-    { key: "adapter", label: $gettext("Adapter"), sortable: false },
+    { key: "adapter", label: $gettext("Location"), sortable: false },
     {
         key: "space",
-        label: $gettext("Space Used"),
+        label: $gettext("Capacity"),
         class: "text-nowrap",
         sortable: false,
     },
-    { key: "stations", label: $gettext("Station(s)"), sortable: false },
+    { key: "stations", label: $gettext("Stations"), sortable: false },
     {
         key: "actions",
         label: $gettext("Actions"),
@@ -162,15 +187,15 @@ const relist = () => {
 const tabs = [
     {
         type: StorageLocationTypes.StationMedia,
-        title: $gettext("Station Media"),
+        title: $gettext("Music Library"),
     },
     {
         type: StorageLocationTypes.StationRecordings,
-        title: $gettext("Station Recordings"),
+        title: $gettext("Live Recordings"),
     },
     {
         type: StorageLocationTypes.StationPodcasts,
-        title: $gettext("Station Podcasts"),
+        title: $gettext("Podcasts"),
     },
     {
         type: StorageLocationTypes.Backup,

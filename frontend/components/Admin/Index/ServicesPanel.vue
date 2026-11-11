@@ -2,7 +2,7 @@
     <section class="card">
         <div class="card-header text-bg-primary">
             <h2 class="card-title mb-0">
-                {{ $gettext('Services') }}
+                {{ $gettext('Background Services') }}
             </h2>
         </div>
 
