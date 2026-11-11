@@ -50,20 +50,6 @@ return static function (RouteCollectorProxy $group) {
             )->setName('api:admin:billing:provision')
                 ->add(new Middleware\Permissions(GlobalPermissions::Stations));
 
-            $group->group(
-                '/cluster',
-                function (RouteCollectorProxy $group) {
-                    $group->get(
-                        '/nodes',
-                        Controller\Api\Admin\Cluster\ClusterController::class . ':listNodes'
-                    )->setName('api:admin:cluster:nodes');
-                    $group->post(
-                        '/nodes/heartbeat',
-                        Controller\Api\Admin\Cluster\ClusterController::class . ':heartbeat'
-                    )->setName('api:admin:cluster:heartbeat');
-                }
-            )->add(new Middleware\Permissions(GlobalPermissions::Stations));
-
             $group->get('/auditlog', Controller\Api\Admin\AuditLogAction::class)
                 ->setName('api:admin:auditlog')
                 ->add(new Middleware\Permissions(GlobalPermissions::Logs));
