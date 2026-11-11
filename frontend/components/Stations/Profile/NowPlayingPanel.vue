@@ -37,15 +37,9 @@
                     </span>
                     <span
                         v-else
-                        class="badge bg-secondary ms-2"
-                    >
-                        {{ $gettext('OFFLINE') }}
-                    </span>
-                    <span
-                        v-if="isQueueEmpty"
                         class="badge broadcast-tally-standby ms-2"
                     >
-                        {{ $gettext('QUEUE EMPTY') }}
+                        {{ $gettext('OFFLINE') }}
                     </span>
                 </div>
                 <h6
@@ -153,32 +147,7 @@
                 </div>
                 <div class="col-md-6 mt-3 mt-md-0">
                     <div
-                        v-if="!np.live?.is_live && isQueueEmpty"
-                        class="clearfix"
-                    >
-                        <div class="d-table">
-                            <div class="d-table-row">
-                                <div class="d-table-cell align-middle pe-2 text-end pb-2">
-                                    <icon-ic-skip-next/>
-                                </div>
-                                <div class="d-table-cell align-middle w-100 pb-2">
-                                    <h5 class="m-0">
-                                        {{ $gettext('Playing Next') }}
-                                    </h5>
-                                </div>
-                            </div>
-                            <div class="d-table-row">
-                                <div class="d-table-cell align-middle pe-2 text-end"/>
-                                <div class="d-table-cell align-middle w-100">
-                                    <h6 class="media-heading m-0 text-muted">
-                                        {{ $gettext('Queue empty') }}
-                                    </h6>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div
-                        v-else-if="!np.live?.is_live && np.playing_next"
+                        v-if="!np.live?.is_live && np.playing_next"
                         class="clearfix"
                     >
                         <div class="d-table">
@@ -371,16 +340,6 @@ const langListeners = computed(() => {
 
 const isLiquidsoap = computed(() => {
     return stationData.value.backendType === BackendAdapters.Liquidsoap;
-});
-
-/** Operator-visible empty AutoDJ queue: online, not live, nothing queued next. */
-const isQueueEmpty = computed(() => {
-    return (
-        isLiquidsoap.value &&
-        !!np.value?.is_online &&
-        !np.value?.live?.is_live &&
-        !np.value?.playing_next
-    );
 });
 
 const { vLightbox } = useLightbox();
