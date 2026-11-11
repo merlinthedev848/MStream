@@ -311,17 +311,47 @@ final class ConfigWriter implements EventSubscriberInterface
             switch ($playlist->type) {
                 case PlaylistTypes::Standard:
                     if ($scheduleItems->count() > 0) {
-                        foreach ($scheduleItems as $scheduleItem) {
-                            $playTime = $this->getScheduledPlaylistPlayTime($event, $scheduleItem);
+                        // Non-exclusive General Rotation: gate availability by schedule, then
+                        // mix by weight with other standard playlists (matches PHP AutoDJ).
+                        if (
+                            $playlist->backendIncludeInRotation()
+                            && !$playlist->backendInterruptOtherSongs()
+                        ) {
+                            $schedulePredicates = [];
+                            foreach ($scheduleItems as $scheduleItem) {
+                                $playTime = $this->getScheduledPlaylistPlayTime($event, $scheduleItem);
+                                $schedulePredicates[] = $playlist->backendPlaySingleTrack()
+                                    ? '(predicate.at_most(1, {' . $playTime . '}), ' . $playlistVarName . ')'
+                                    : '({ ' . $playTime . ' }, ' . $playlistVarName . ')';
+                            }
 
-                            $scheduleTiming = $playlist->backendPlaySingleTrack()
-                                ? '(predicate.at_most(1, {' . $playTime . '}), ' . $playlistVarName . ')'
-                                : '({ ' . $playTime . ' }, ' . $playlistVarName . ')';
+                            $gatedVarName = $playlistVarName . '_scheduled';
+                            $event->appendLines(
+                                [
+                                    sprintf(
+                                        '%s = switch(id=%s, track_sensitive=true, [%s])',
+                                        $gatedVarName,
+                                        self::toRawString($gatedVarName),
+                                        implode(', ', $schedulePredicates)
+                                    ),
+                                ]
+                            );
 
-                            if ($playlist->backendInterruptOtherSongs()) {
-                                $scheduleSwitchesInterrupting[] = $scheduleTiming;
-                            } else {
-                                $scheduleSwitches[] = $scheduleTiming;
+                            $genPlaylistWeights[] = $playlist->weight;
+                            $genPlaylistVars[] = $gatedVarName;
+                        } else {
+                            foreach ($scheduleItems as $scheduleItem) {
+                                $playTime = $this->getScheduledPlaylistPlayTime($event, $scheduleItem);
+
+                                $scheduleTiming = $playlist->backendPlaySingleTrack()
+                                    ? '(predicate.at_most(1, {' . $playTime . '}), ' . $playlistVarName . ')'
+                                    : '({ ' . $playTime . ' }, ' . $playlistVarName . ')';
+
+                                if ($playlist->backendInterruptOtherSongs()) {
+                                    $scheduleSwitchesInterrupting[] = $scheduleTiming;
+                                } else {
+                                    $scheduleSwitches[] = $scheduleTiming;
+                                }
                             }
                         }
                     } else {

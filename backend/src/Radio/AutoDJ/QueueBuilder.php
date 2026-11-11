@@ -136,7 +136,10 @@ final class QueueBuilder implements EventSubscriberInterface
             if ($playlist->isPlayable($event->isInterrupting())) {
                 $type = $playlist->type->value;
 
-                $subType = ($playlist->schedule_items->count() > 0) ? 'scheduled' : 'unscheduled';
+                // Exclusive scheduled playlists occupy a higher priority bucket than unscheduled
+                // peers of the same type. Non-exclusive General Rotation (include_in_rotation)
+                // stays in the unscheduled weight pool while still gated by schedule windows.
+                $subType = $playlist->usesExclusiveScheduleBucket() ? 'scheduled' : 'unscheduled';
                 $activePlaylistsByType[$type . '_' . $subType][$playlist->id] = $playlist;
             }
         }

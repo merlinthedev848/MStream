@@ -5,6 +5,11 @@ release channel, you can take advantage of these new features and fixes.
 
 ## New Features/Changes
 
+- **Non-exclusive General Rotation schedules**: Scheduled General Rotation playlists can optionally mix by weight with
+  other General Rotation playlists instead of exclusively replacing them. Enable
+  "Include in general rotation while scheduled (non-exclusive)" on the playlist Advanced tab. Default behavior stays
+  exclusive. Schedule UI labels now describe how AutoDJ priority buckets actually work.
+
 ## Code Quality/Technical Changes
 
 - Improved security around annotated values sent to Liquidsoap.

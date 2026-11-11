@@ -368,7 +368,7 @@
                         class="col-md-12"
                         :field="r$.backend_config.write_playlists_to_liquidsoap"
                         :label="$gettext('Always Write Playlists to Liquidsoap')"
-                        :description="$gettext('By default, all playlists are written to Liquidsoap as a backup in case the normal AutoDJ fails. This can affect CPU load, especially on startup. Disable to only write essential playlists to Liquidsoap.')"
+                        :description="$gettext('Writes song playlists into Liquidsoap as a failover beneath the PHP AutoDJ. General Rotation schedule exclusivity follows the playlist Advanced non-exclusive option; playlist groups and request rules remain AutoDJ-only. Disable to only write essential playlists and reduce startup CPU load.')"
                     />
 
                     <form-group-field

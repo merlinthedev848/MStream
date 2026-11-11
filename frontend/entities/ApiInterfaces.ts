@@ -2726,7 +2726,7 @@ export type StationPlaylist = HasAutoIncrementId & {
      * @example true
      */
     include_in_on_demand?: boolean;
-    /** @example "interrupt,loop_once,single_track,merge" */
+    /** @example "interrupt,single_track,merge,include_in_rotation" */
     backend_options?: string[];
     /** @example true */
     avoid_duplicates?: boolean;

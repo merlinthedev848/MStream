@@ -520,12 +520,17 @@ final class PlaylistsController extends AbstractScheduledEntityController
             $data['is_jingle'] = false;
 
             $backendOptions = (array) ($data['backend_options'] ?? []);
-            $data['backend_options'] = (
-                $source === PlaylistSources::Playlists
-                && in_array(StationPlaylist::OPTION_MERGE, $backendOptions, true)
-            )
-                ? [StationPlaylist::OPTION_MERGE]
-                : [];
+            if ($source === PlaylistSources::Playlists) {
+                $allowedBackendOptions = [
+                    StationPlaylist::OPTION_MERGE,
+                    StationPlaylist::OPTION_INCLUDE_IN_ROTATION,
+                ];
+                $data['backend_options'] = array_values(
+                    array_intersect($backendOptions, $allowedBackendOptions)
+                );
+            } else {
+                $data['backend_options'] = [];
+            }
 
             if (PlaylistTypes::tryFrom($data['type'] ?? '') === PlaylistTypes::Advanced) {
                 $data['type'] = PlaylistTypes::Standard->value;
