@@ -55,6 +55,12 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
                 in: 'query',
                 schema: new OA\Schema(ref: PlaylistOrders::class)
             ),
+            new OA\Parameter(
+                name: 'filter[is_jingle]',
+                description: 'Filter by jingle mode. Use 1 for jingles only, 0 for music only.',
+                in: 'query',
+                schema: new OA\Schema(type: 'string', enum: ['0', '1'])
+            ),
         ],
         responses: [
             new OpenApi\Response\Success(
@@ -224,6 +230,7 @@ final class PlaylistsController extends AbstractScheduledEntityController
                 'source' => ListFilter::fromEnum('sp.source', PlaylistSources::class),
                 'type' => ListFilter::fromEnum('sp.type', PlaylistTypes::class),
                 'order' => ListFilter::fromEnum('sp.order', PlaylistOrders::class),
+                'is_jingle' => ListFilter::equals('sp.is_jingle', ['0', '1']),
             ]
         );
 

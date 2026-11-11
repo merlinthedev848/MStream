@@ -25,23 +25,43 @@
 
     <card-page
         id="station-disabled"
-        :title="$gettext('Station Disabled')"
+        :title="$gettext('Station Suspended')"
     >
         <div class="card-body">
-            <p class="card-text">
-                {{ $gettext('Your station is currently not enabled for broadcasting. You can still manage media, playlists, and other station settings. To re-enable broadcasting, edit your station profile.') }}
+            <p class="card-text mb-0">
+                <template v-if="canManageFleet">
+                    {{
+                        $gettext(
+                            'This service is suspended. You can still manage media and configuration. Use Fleet Admin → Unsuspend in the sidebar to restore broadcasting.',
+                        )
+                    }}
+                </template>
+                <template v-else>
+                    {{
+                        $gettext(
+                            'This service is suspended by a fleet administrator. You can still manage media, playlists, and other station settings. Ask a fleet admin to unsuspend the service to restore broadcasting.',
+                        )
+                    }}
+                </template>
             </p>
         </div>
     </card-page>
 </template>
 <script setup lang="ts">
+import { computed } from "vue";
 import CardPage from "~/components/Common/CardPage.vue";
-import { StationPermissions } from "~/entities/ApiInterfaces.ts";
+import {
+    GlobalPermissions,
+    StationPermissions,
+} from "~/entities/ApiInterfaces.ts";
 import { useStationData } from "~/functions/useStationQuery.ts";
+import { useUserAllowed } from "~/functions/useUserAllowed.ts";
 import { useUserAllowedForStation } from "~/functions/useUserallowedForStation.ts";
 import IconIcEdit from "~icons/ic/baseline-edit";
 
 const stationData = useStationData();
 
 const { userAllowedForStation } = useUserAllowedForStation();
+const { userAllowed } = useUserAllowed();
+const canManageFleet = computed(() => userAllowed(GlobalPermissions.Stations));
 </script>

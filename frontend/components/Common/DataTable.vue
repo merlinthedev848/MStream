@@ -394,6 +394,7 @@ export interface DataTableProps<Row extends DataTableRow = DataTableRow> {
     detailed?: boolean; // Allow showing "Detail" panel for selected rows.
     selectFields?: boolean; // Allow selecting which columns are visible.
     filters?: DataTableFilter[]; // Quick filters offered in the toolbar menu.
+    initialFilters?: Record<string, DataTableFilterValue>; // Seeded filters (e.g. route deep-links).
 }
 
 const props = withDefaults(defineProps<DataTableProps<Row>>(), {
@@ -407,6 +408,7 @@ const props = withDefaults(defineProps<DataTableProps<Row>>(), {
     detailed: false,
     selectFields: false,
     filters: () => [],
+    initialFilters: () => ({}),
 });
 
 const slots = defineSlots<{
@@ -448,7 +450,16 @@ watch(selectedRows, (newRows: Row[]) => {
 const searchPhrase = ref<string>(DATATABLE_DEFAULT_CONTEXT.searchPhrase);
 const currentPage = ref<number>(DATATABLE_DEFAULT_CONTEXT.currentPage);
 
-const activeFilters = ref<Record<string, DataTableFilterValue>>({});
+const activeFilters = ref<Record<string, DataTableFilterValue>>({
+    ...props.initialFilters,
+});
+
+watch(
+    () => props.initialFilters,
+    (next) => {
+        activeFilters.value = { ...next };
+    },
+);
 
 const activeFilterCount = computed<number>(() => {
     return Object.keys(activeFilters.value).length;

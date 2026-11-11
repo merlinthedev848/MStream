@@ -41,6 +41,8 @@
                 <admin-stations-admin-form
                     v-if="showAdminTab"
                     :is-edit-mode="isEditMode"
+                    :resellers="resellers"
+                    :customers="customers"
                 />
             </tabs>
 
@@ -100,6 +102,8 @@ const props = withDefaults(defineProps<StationFormProps>(), {
     isRsasInstalled: false,
     isShoutcastInstalled: false,
     isStereoToolInstalled: false,
+    resellers: () => ({}),
+    customers: () => ({}),
     editUrl: null,
     isModal: false,
 });
@@ -111,7 +115,9 @@ const emit = defineEmits<{
 }>();
 
 const { userAllowed } = useUserAllowed();
-const showAdminTab = userAllowed(GlobalPermissions.Stations);
+const showAdminTab =
+    userAllowed(GlobalPermissions.Stations) ||
+    userAllowed(GlobalPermissions.ResellerStations);
 
 const { userAllowedForStation } = useUserAllowedForStation();
 const showBroadcastingTabs = userAllowedForStation(

@@ -36,6 +36,8 @@ const blankStationGlobals: VueStationGlobals = {
     maxListeners: 0,
     maxMounts: 0,
     maxHlsStreams: 0,
+    maxTrafficMb: 0,
+    trafficUsedMb: 0,
     enablePublicPages: true,
     publicPageUrl: "",
     enableOnDemand: false,

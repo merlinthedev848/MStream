@@ -66,6 +66,19 @@ class Api_Stations_ProfileEditServerFieldsCest extends CestAbstract
 
         /** @var array<string, mixed> $payload */
         $payload = json_decode($I->grabResponse(), true, 512, JSON_THROW_ON_ERROR);
+
+        // GET must not expose hoster-managed ports / listener quotas to operators.
+        $I->assertArrayNotHasKey('port', $payload['frontend_config'] ?? []);
+        $I->assertArrayNotHasKey('max_listeners', $payload['frontend_config'] ?? []);
+        $I->assertArrayNotHasKey('dj_port', $payload['backend_config'] ?? []);
+        $I->assertArrayNotHasKey('telnet_port', $payload['backend_config'] ?? []);
+
+        $payload['frontend_config'] = is_array($payload['frontend_config'] ?? null)
+            ? $payload['frontend_config']
+            : [];
+        $payload['backend_config'] = is_array($payload['backend_config'] ?? null)
+            ? $payload['backend_config']
+            : [];
         $payload['frontend_config']['port'] = ((int)$originalPort) + 50;
         $payload['frontend_config']['max_listeners'] = 999;
         $payload['backend_config']['dj_port'] = ((int)$originalDjPort) + 50;

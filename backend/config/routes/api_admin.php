@@ -288,7 +288,6 @@ return static function (RouteCollectorProxy $group) {
                     GlobalPermissions::CustomFields,
                 ],
                 ['role', 'roles', Controller\Api\Admin\RolesController::class, GlobalPermissions::All],
-                ['station', 'stations', Controller\Api\Admin\StationsController::class, GlobalPermissions::Stations],
                 ['user', 'users', Controller\Api\Admin\UsersController::class, GlobalPermissions::All],
                 [
                     'login_token',
@@ -320,15 +319,62 @@ return static function (RouteCollectorProxy $group) {
                 )->add(new Middleware\Permissions($permission));
             }
 
+            $stationFleetPermissions = [
+                GlobalPermissions::Stations,
+                GlobalPermissions::ResellerStations,
+            ];
+
+            $group->group(
+                '',
+                function (RouteCollectorProxy $group) {
+                    $group->get('/stations', Controller\Api\Admin\StationsController::class . ':listAction')
+                        ->setName('api:admin:stations');
+                    $group->post('/stations', Controller\Api\Admin\StationsController::class . ':createAction');
+
+                    $group->get('/station/{id}', Controller\Api\Admin\StationsController::class . ':getAction')
+                        ->setName('api:admin:station');
+                    $group->put('/station/{id}', Controller\Api\Admin\StationsController::class . ':editAction');
+                    $group->delete('/station/{id}', Controller\Api\Admin\StationsController::class . ':deleteAction');
+                }
+            )->add(new Middleware\PermissionsAny($stationFleetPermissions));
+
+            $group->group(
+                '',
+                function (RouteCollectorProxy $group) {
+                    $group->get('/resellers', Controller\Api\Admin\ResellersController::class . ':listAction')
+                        ->setName('api:admin:resellers');
+                    $group->post('/resellers', Controller\Api\Admin\ResellersController::class . ':createAction');
+
+                    $group->get('/reseller/{id}', Controller\Api\Admin\ResellersController::class . ':getAction')
+                        ->setName('api:admin:reseller');
+                    $group->put('/reseller/{id}', Controller\Api\Admin\ResellersController::class . ':editAction');
+                    $group->delete('/reseller/{id}', Controller\Api\Admin\ResellersController::class . ':deleteAction');
+                }
+            )->add(new Middleware\Permissions(GlobalPermissions::Stations));
+
+            $group->group(
+                '',
+                function (RouteCollectorProxy $group) {
+                    $group->get('/customers', Controller\Api\Admin\CustomersController::class . ':listAction')
+                        ->setName('api:admin:customers');
+                    $group->post('/customers', Controller\Api\Admin\CustomersController::class . ':createAction');
+
+                    $group->get('/customer/{id}', Controller\Api\Admin\CustomersController::class . ':getAction')
+                        ->setName('api:admin:customer');
+                    $group->put('/customer/{id}', Controller\Api\Admin\CustomersController::class . ':editAction');
+                    $group->delete('/customer/{id}', Controller\Api\Admin\CustomersController::class . ':deleteAction');
+                }
+            )->add(new Middleware\PermissionsAny($stationFleetPermissions));
+
             $group->post('/station/{id}/clone', Controller\Api\Admin\Stations\CloneAction::class)
                 ->setName('api:admin:station:clone')
-                ->add(new Middleware\Permissions(GlobalPermissions::Stations));
+                ->add(new Middleware\PermissionsAny($stationFleetPermissions));
 
             $group->get(
                 '/stations/storage-locations',
                 Controller\Api\Admin\Stations\StorageLocationsAction::class
             )->setName('api:admin:stations:storage-locations')
-                ->add(new Middleware\Permissions(GlobalPermissions::Stations));
+                ->add(new Middleware\PermissionsAny($stationFleetPermissions));
 
             $group->group(
                 '',

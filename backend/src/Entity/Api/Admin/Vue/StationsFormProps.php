@@ -29,7 +29,17 @@ final readonly class StationsFormProps
         #[OA\Property]
         public bool $isShoutcastInstalled,
         #[OA\Property]
-        public bool $isStereoToolInstalled
+        public bool $isStereoToolInstalled,
+        #[OA\Property(
+            type: 'object',
+            additionalProperties: new OA\AdditionalProperties(type: 'string')
+        )]
+        public array $resellers = [],
+        #[OA\Property(
+            type: 'object',
+            additionalProperties: new OA\AdditionalProperties(type: 'string')
+        )]
+        public array $customers = [],
     ) {
     }
 }

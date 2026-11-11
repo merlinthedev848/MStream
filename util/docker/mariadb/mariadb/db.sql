@@ -495,6 +495,8 @@ CREATE TABLE `station` (
   `max_bitrate` smallint(6) NOT NULL DEFAULT 0,
   `max_mounts` smallint(6) NOT NULL DEFAULT 0,
   `max_hls_streams` smallint(6) NOT NULL DEFAULT 0,
+  `customer_name` varchar(200) DEFAULT NULL,
+  `max_traffic_mb` int(11) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `IDX_9F39F8B19B209974` (`current_streamer_id`),
   KEY `idx_short_name` (`short_name`),

@@ -21,11 +21,55 @@
                     />
                 </template>
 
+                <div
+                    v-if="selectedStations.length > 0"
+                    class="d-flex flex-wrap gap-2 mb-3 media-services-bulk"
+                >
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-outline-warning"
+                        :disabled="bulkBusy"
+                        @click="doBulkSuspend(true)"
+                    >
+                        {{ $gettext('Suspend Selected') }}
+                    </button>
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-outline-success"
+                        :disabled="bulkBusy"
+                        @click="doBulkSuspend(false)"
+                    >
+                        {{ $gettext('Unsuspend Selected') }}
+                    </button>
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-warning"
+                        :disabled="bulkBusy"
+                        @click="doBulkRestart"
+                    >
+                        {{ $gettext('Restart Selected') }}
+                    </button>
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-danger"
+                        :disabled="bulkBusy"
+                        @click="doBulkDelete"
+                    >
+                        {{ $gettext('Delete Selected') }}
+                    </button>
+                    <span class="align-self-center broadcast-mono text-muted">
+                        {{ selectedStations.length }}
+                        {{ $gettext('selected') }}
+                    </span>
+                </div>
+
                 <data-table
                     id="stations"
                     paginated
+                    selectable
                     :fields="fields"
                     :provider="listItemProvider"
+                    @row-selected="onRowSelected"
                 >
                     <template #empty>
                         <div class="admin-guided-empty">
@@ -54,6 +98,11 @@
                         </div>
                         <code class="broadcast-mono">{{ item.short_name }}</code>
                     </template>
+                    <template #cell(customer)="{item}">
+                        <span class="broadcast-mono">
+                            {{ item.customer_name || '—' }}
+                        </span>
+                    </template>
                     <template #cell(portbase)="{item}">
                         <span class="broadcast-mono">
                             {{ item.frontend_config?.port ?? '—' }}
@@ -68,7 +117,7 @@
                         <div class="station-status-cell">
                             <span
                                 v-if="!item.is_enabled"
-                                class="badge text-bg-secondary"
+                                class="badge broadcast-tally-standby"
                             >
                                 {{ $gettext('SUSPENDED') }}
                             </span>
@@ -249,6 +298,12 @@ const fields: DataTableField<Row>[] = [
         sortable: true,
     },
     {
+        key: "customer",
+        label: $gettext("Customer"),
+        sortable: false,
+        class: "shrink",
+    },
+    {
         key: "portbase",
         label: $gettext("Portbase"),
         sortable: false,
@@ -295,15 +350,26 @@ const doClone = (stationName: string, url: string) => {
 const { showAlert } = useDialog();
 const { notifySuccess, notifyError } = useNotify();
 const restartingId = ref<number | null>(null);
+const selectedStations = ref<Row[]>([]);
+const bulkBusy = ref(false);
+
+const onRowSelected = (rows: Row[]) => {
+    selectedStations.value = rows;
+};
 
 const formatConnections = (item: Row) => {
     const live = liveById.value[item.id];
     const current = live?.listeners?.total ?? 0;
     const max = item.frontend_config?.max_listeners;
-    if (max) {
-        return `${current} / ${max}`;
+    const bitrate = item.max_bitrate;
+    const base =
+        max !== null && max !== undefined && Number(max) > 0
+            ? `${current} / ${max}`
+            : String(current);
+    if (bitrate && bitrate > 0) {
+        return `${base} @ ${bitrate}K`;
     }
-    return String(current);
+    return base;
 };
 
 const doRestart = async (station: Row) => {
@@ -348,6 +414,97 @@ const doToggle = async (station: Row) => {
 
     notifySuccess(data.message);
     relist();
+};
+
+const doBulkSuspend = async (suspend: boolean) => {
+    const { value } = await showAlert({
+        title: suspend
+            ? $gettext("Suspend selected services?")
+            : $gettext("Unsuspend selected services?"),
+        confirmButtonText: suspend
+            ? $gettext("Suspend Selected")
+            : $gettext("Unsuspend Selected"),
+        confirmButtonClass: suspend ? "btn-warning" : "btn-success",
+        focusCancel: true,
+    });
+    if (!value) {
+        return;
+    }
+
+    bulkBusy.value = true;
+    try {
+        for (const station of selectedStations.value) {
+            if (station.is_enabled === !suspend) {
+                continue;
+            }
+            await axios.put(station.links.self, {
+                is_enabled: !suspend,
+            });
+        }
+        notifySuccess(
+            suspend
+                ? $gettext("Selected services suspended.")
+                : $gettext("Selected services unsuspended."),
+        );
+        selectedStations.value = [];
+        relist();
+    } catch {
+        notifyError($gettext("Bulk suspend/unsuspend failed."));
+    } finally {
+        bulkBusy.value = false;
+    }
+};
+
+const doBulkRestart = async () => {
+    const { value } = await showAlert({
+        title: $gettext("Restart selected services?"),
+        confirmButtonText: $gettext("Restart Selected"),
+        confirmButtonClass: "btn-warning",
+        focusCancel: true,
+    });
+    if (!value) {
+        return;
+    }
+
+    bulkBusy.value = true;
+    try {
+        for (const station of selectedStations.value) {
+            await axios.post(getApiUrl(`/station/${station.id}/restart`).value);
+        }
+        notifySuccess($gettext("Selected services restarted."));
+        selectedStations.value = [];
+        relist();
+    } catch {
+        notifyError($gettext("Bulk restart failed."));
+    } finally {
+        bulkBusy.value = false;
+    }
+};
+
+const doBulkDelete = async () => {
+    const { value } = await showAlert({
+        title: $gettext("Delete selected services?"),
+        confirmButtonText: $gettext("Delete Selected"),
+        confirmButtonClass: "btn-danger",
+        focusCancel: true,
+    });
+    if (!value) {
+        return;
+    }
+
+    bulkBusy.value = true;
+    try {
+        for (const station of selectedStations.value) {
+            await axios.delete(station.links.self);
+        }
+        notifySuccess($gettext("Selected services deleted."));
+        selectedStations.value = [];
+        relist();
+    } catch {
+        notifyError($gettext("Bulk delete failed."));
+    } finally {
+        bulkBusy.value = false;
+    }
 };
 
 const { doDelete } = useConfirmAndDelete($gettext("Delete Service?"), () =>

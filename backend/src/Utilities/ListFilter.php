@@ -39,4 +39,12 @@ final readonly class ListFilter
     {
         return new self($field, ListFilterMode::Contains);
     }
+
+    /**
+     * @param list<string> $allowedValues
+     */
+    public static function equals(string $field, array $allowedValues): self
+    {
+        return new self($field, ListFilterMode::Equals, $allowedValues);
+    }
 }

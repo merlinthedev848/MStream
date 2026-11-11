@@ -46,6 +46,15 @@
                 :options="roles"
                 :label="$gettext('Roles')"
             />
+
+            <form-group-select
+                id="edit_form_reseller"
+                class="col-md-12"
+                :field="r$.reseller"
+                :options="resellerOptions"
+                :label="$gettext('Reseller')"
+                :description="$gettext('Optional. Required for users with Administer Reseller Stations so their Media Services list is scoped.')"
+            />
         </div>
     </modal-form>
 </template>
@@ -57,6 +66,7 @@ import { computed, ref, toRef, useTemplateRef, watch } from "vue";
 import ModalForm from "~/components/Common/ModalForm.vue";
 import FormGroupField from "~/components/Form/FormGroupField.vue";
 import FormGroupMultiCheck from "~/components/Form/FormGroupMultiCheck.vue";
+import FormGroupSelect from "~/components/Form/FormGroupSelect.vue";
 import mergeExisting from "~/functions/mergeExisting.ts";
 import {
     BaseEditModalEmits,
@@ -70,6 +80,7 @@ import { isValidPassword, useAppRegle } from "~/vendor/regle.ts";
 const props = defineProps<
     BaseEditModalProps & {
         roles: Record<number, string>;
+        resellers?: Record<string, string>;
     }
 >();
 const emit = defineEmits<BaseEditModalEmits>();
@@ -85,6 +96,7 @@ const { r$ } = useAppRegle(
         new_password: "",
         name: "",
         roles: [],
+        reseller: "",
     },
     {
         email: { required, email },
@@ -119,6 +131,7 @@ const {
             toState: mergeExisting(r$.$value, {
                 ...data,
                 roles: map(data.roles, "id"),
+                reseller: data.reseller != null ? String(data.reseller) : "",
                 new_password: "",
             }),
         });
@@ -127,6 +140,13 @@ const {
         const { valid, data } = await r$.$validate();
         return { valid, data };
     },
+);
+
+const resellerOptions = computed(() =>
+    Object.entries(props.resellers ?? {}).map(([value, text]) => ({
+        value,
+        text,
+    })),
 );
 
 watch(isEditMode, (newValue) => {

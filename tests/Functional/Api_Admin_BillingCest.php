@@ -29,9 +29,11 @@ class Api_Admin_BillingCest extends CestAbstract
         $I->sendPost('/api/admin/billing/provision', [
             'action' => 'create',
             'name' => 'Billing Provisioned Radio',
+            'customer_name' => 'Acme Hosting',
             'max_listeners' => 50,
             'max_bitrate' => 128,
             'disk_quota_mb' => 256,
+            'max_traffic_mb' => 10240,
         ]);
 
         $I->seeResponseCodeIs(200);
@@ -40,6 +42,8 @@ class Api_Admin_BillingCest extends CestAbstract
             'max_listeners' => 50,
             'max_bitrate' => 128,
             'disk_quota_mb' => 256,
+            'max_traffic_mb' => 10240,
+            'customer_name' => 'Acme Hosting',
         ]);
 
         $stationId = $I->grabDataFromResponseByJsonPath('$.station_id')[0];
@@ -125,13 +129,15 @@ class Api_Admin_BillingCest extends CestAbstract
             'is_enabled' => true,
         ]);
 
-        // Modify package including disk quota.
+        // Modify package including disk quota, traffic, and customer label.
         $I->sendPost('/api/admin/billing/provision', [
             'action' => 'modify_package',
             'station' => $stationId,
             'max_listeners' => 100,
             'max_bitrate' => 192,
             'disk_quota_mb' => 512,
+            'max_traffic_mb' => 20480,
+            'customer_name' => 'Acme Radio Co',
         ]);
         $I->seeResponseCodeIs(200);
         $I->seeResponseContainsJson([
@@ -139,7 +145,15 @@ class Api_Admin_BillingCest extends CestAbstract
             'max_listeners' => 100,
             'max_bitrate' => 192,
             'disk_quota_mb' => 512,
+            'max_traffic_mb' => 20480,
+            'customer_name' => 'Acme Radio Co',
         ]);
+
+        $this->em->clear();
+        $resized = $this->em->find(Station::class, $stationId);
+        $I->assertInstanceOf(Station::class, $resized);
+        $I->assertSame(20480, $resized->max_traffic_mb);
+        $I->assertSame('Acme Radio Co', $resized->customer_name);
 
         // Terminate removes configuration and entity.
         $I->sendPost('/api/admin/billing/provision', [

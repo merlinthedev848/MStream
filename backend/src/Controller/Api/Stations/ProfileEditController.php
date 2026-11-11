@@ -69,10 +69,15 @@ final class ProfileEditController extends StationsController
         Response $response
     ): ResponseInterface {
         $station = $request->getStation();
+        $payload = $this->toArray($station, $this->getContext($request));
 
-        return $response->withJson(
-            $this->toArray($station, $this->getContext($request))
-        );
+        // Defense in depth: operators with Broadcasting can edit streaming config,
+        // but must not read hoster-managed ports / listener slot quotas via GET.
+        if (!$request->getAcl()->isAllowed(GlobalPermissions::Stations)) {
+            $payload = $this->stripServerManagedFields($payload);
+        }
+
+        return $response->withJson($payload);
     }
 
     public function putProfileAction(

@@ -51,6 +51,45 @@
             />
         </div>
 
+        <div class="row g-3 mb-3">
+            <form-group-field
+                id="edit_form_customer_name"
+                class="col-md-6"
+                :field="r$.customer_name"
+                :label="$gettext('Customer Label')"
+                :description="$gettext('Free-text hosting label shown in Media Services (legacy / display).')"
+            />
+
+            <form-group-field
+                id="edit_form_max_traffic_mb"
+                class="col-md-6"
+                :field="r$.max_traffic_mb"
+                :label="$gettext('Traffic Quota (MB)')"
+                :description="$gettext('Monthly traffic package limit. 0 means unlimited. Over-quota services are soft-suspended.')"
+                input-number
+            />
+        </div>
+
+        <div class="row g-3 mb-3">
+            <form-group-select
+                id="edit_form_reseller"
+                class="col-md-6"
+                :field="r$.reseller"
+                :options="resellerOptions"
+                :label="$gettext('Reseller')"
+                :description="$gettext('Optional reseller tenancy for this media service.')"
+            />
+
+            <form-group-select
+                id="edit_form_customer"
+                class="col-md-6"
+                :field="r$.customer"
+                :options="customerOptions"
+                :label="$gettext('Customer Account')"
+                :description="$gettext('Optional customer under the reseller tree.')"
+            />
+        </div>
+
         <loading :loading="storageLocationsLoading">
             <div class="row g-3">
                 <form-group-select
@@ -98,6 +137,8 @@ import { useTranslate } from "~/vendor/gettext.ts";
 
 const props = defineProps<{
     isEditMode: boolean;
+    resellers?: Record<string, string>;
+    customers?: Record<string, string>;
 }>();
 
 const { getApiUrl } = useApiRouter();
@@ -106,6 +147,12 @@ const storageLocationApiUrl = getApiUrl("/admin/stations/storage-locations");
 const { r$ } = storeToRefs(useAdminStationsForm());
 
 const tabClass = useFormTabClass(computed(() => r$.value.$groups.adminTab));
+
+const toOptions = (map?: Record<string, string>) =>
+    Object.entries(map ?? {}).map(([value, text]) => ({ value, text }));
+
+const resellerOptions = computed(() => toOptions(props.resellers));
+const customerOptions = computed(() => toOptions(props.customers));
 
 interface StorageLocationOptions {
     media_storage_location: ApiFormSimpleOptions;

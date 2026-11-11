@@ -100,12 +100,38 @@
 
                 <div class="service-quota-cell">
                     <div class="service-quota-label">
+                        {{ $gettext('Traffic') }}
+                    </div>
+                    <div class="service-quota-value broadcast-mono">
+                        {{ trafficLabel }}
+                    </div>
+                    <div
+                        v-if="trafficPercent !== null"
+                        class="progress h-15 mt-2"
+                        role="progressbar"
+                        :aria-valuenow="trafficPercent"
+                        aria-valuemin="0"
+                        aria-valuemax="100"
+                    >
+                        <div
+                            class="progress-bar"
+                            :class="trafficBarClass"
+                            :style="{ width: trafficPercent + '%' }"
+                        />
+                    </div>
+                    <div class="service-quota-meta">
+                        {{ $gettext('Estimated outbound audio this month') }}
+                    </div>
+                </div>
+
+                <div class="service-quota-cell">
+                    <div class="service-quota-label">
                         {{ $gettext('Status') }}
                     </div>
                     <div class="mt-1">
                         <span
                             v-if="!stationData.isEnabled"
-                            class="badge text-bg-secondary"
+                            class="badge broadcast-tally-standby"
                         >
                             {{ $gettext('SUSPENDED') }}
                         </span>
@@ -269,5 +295,43 @@ const storageBarClass = computed(() => {
         return "text-bg-warning";
     }
     return "text-bg-primary";
+});
+
+const formatMb = (value: number): string => {
+    if (value >= 1000) {
+        return `${(value / 1000).toFixed(1)} GB`;
+    }
+    return `${Math.round(value)} MB`;
+};
+
+const trafficLabel = computed(() => {
+    const used = stationData.value.trafficUsedMb ?? 0;
+    const max = stationData.value.maxTrafficMb;
+    if (max > 0) {
+        return `${formatMb(used)} / ${formatMb(max)}`;
+    }
+    if (used > 0) {
+        return formatMb(used);
+    }
+    return "—";
+});
+
+const trafficPercent = computed(() => {
+    const max = stationData.value.maxTrafficMb;
+    if (max <= 0) {
+        return null;
+    }
+    const used = stationData.value.trafficUsedMb ?? 0;
+    return Math.min(Math.round((used / max) * 100), 100);
+});
+
+const trafficBarClass = computed(() => {
+    if ((trafficPercent.value ?? 0) > 85) {
+        return "text-bg-danger";
+    }
+    if ((trafficPercent.value ?? 0) > 65) {
+        return "text-bg-warning";
+    }
+    return "text-bg-secondary";
 });
 </script>

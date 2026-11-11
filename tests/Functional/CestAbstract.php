@@ -7,9 +7,11 @@ namespace Functional;
 use App\Acl;
 use App\Doctrine\ReloadableEntityManagerInterface;
 use App\Entity\ApiKey;
+use App\Entity\Customer;
 use App\Entity\Repository\SettingsRepository;
 use App\Entity\Repository\StationRepository;
 use App\Entity\Repository\StorageLocationRepository;
+use App\Entity\Reseller;
 use App\Entity\Role;
 use App\Entity\RolePermission;
 use App\Entity\Settings;
@@ -202,6 +204,8 @@ abstract class CestAbstract
             User::class,
             Role::class,
             Station::class,
+            Customer::class,
+            Reseller::class,
             Settings::class,
         ];
 

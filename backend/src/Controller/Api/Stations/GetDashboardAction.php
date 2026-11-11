@@ -7,16 +7,19 @@ namespace App\Controller\Api\Stations;
 use App\Controller\SingleActionInterface;
 use App\Entity\Api\Vue\StationGlobalFeatures;
 use App\Entity\Api\Vue\StationGlobals;
+use App\Entity\Repository\StationTrafficRepository;
 use App\Enums\StationFeatures;
 use App\Http\Response;
 use App\Http\ServerRequest;
 use App\Service\IpGeolocation;
+use App\Utilities\Time;
 use Psr\Http\Message\ResponseInterface;
 
 final class GetDashboardAction implements SingleActionInterface
 {
     public function __construct(
-        private IpGeolocation $ipGeolocation
+        private IpGeolocation $ipGeolocation,
+        private StationTrafficRepository $trafficRepo,
     ) {
     }
 
@@ -45,6 +48,11 @@ final class GetDashboardAction implements SingleActionInterface
             maxListeners: (int)($station->frontend_config->max_listeners ?? 0),
             maxMounts: $station->max_mounts,
             maxHlsStreams: $station->max_hls_streams,
+            maxTrafficMb: $station->max_traffic_mb,
+            trafficUsedMb: round(
+                $this->trafficRepo->getMonthMegabytes($station, Time::nowUtc()->toDateTimeImmutable()),
+                2
+            ),
             enablePublicPages: $station->enable_public_page,
             publicPageUrl: $router->named(
                 routeName: 'public:index',

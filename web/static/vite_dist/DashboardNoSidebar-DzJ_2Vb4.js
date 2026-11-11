@@ -1,0 +1,1 @@
+import{Lt as e,Vt as t,pt as n,ut as r,vt as i,yt as a}from"./ApiInterfaces-Dle9n6zt.js";import{t as o}from"./PanelFooter-DC9vH_R7.js";var s={id:`page-wrapper`},c={id:`main`},l={class:`container`,id:`content`},u=a({__name:`DashboardNoSidebar`,setup(a){return(a,u)=>(e(),n(`div`,s,[r(`main`,c,[r(`div`,l,[t(a.$slots,`default`)])]),i(o)]))}});export{u as t};

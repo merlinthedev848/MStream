@@ -167,11 +167,19 @@
                         colspan="3"
                         class="text-muted py-3"
                     >
-                        {{
-                            $gettext(
-                                'No listener streams yet. Add a stream under On-Air Tools → Listener Streams.',
-                            )
-                        }}
+                        <span>
+                            {{
+                                $gettext(
+                                    'No listener streams yet. Add a stream under Mount Points → Listener Streams.',
+                                )
+                            }}
+                        </span>
+                        <router-link
+                            class="btn btn-link btn-sm px-1"
+                            :to="{ name: 'stations:mounts:index' }"
+                        >
+                            {{ $gettext('Open Listener Streams') }}
+                        </router-link>
                     </td>
                 </tr>
             </tbody>

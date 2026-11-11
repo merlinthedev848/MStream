@@ -75,6 +75,16 @@ use Throwable;
                         type: 'integer',
                         description: 'Max storage quota in MB for media/recordings/podcasts; 0 clears'
                     ),
+                    new OA\Property(
+                        property: 'max_traffic_mb',
+                        type: 'integer',
+                        description: 'Monthly traffic quota in MB; 0 means unlimited'
+                    ),
+                    new OA\Property(
+                        property: 'customer_name',
+                        type: 'string',
+                        description: 'Hosting customer label shown in Media Services'
+                    ),
                 ],
             )
         ),
@@ -141,6 +151,8 @@ final class BillingController
             $station->max_bitrate = (int)$data['max_bitrate'];
         }
 
+        $this->applyHostingLabels($station, $data);
+
         $feConfig = $station->frontend_config;
         $feConfig->ensurePasswordsAreSet();
         if (isset($data['max_listeners'])) {
@@ -169,6 +181,8 @@ final class BillingController
             'short_name' => $station->short_name,
             'max_listeners' => $station->frontend_config->max_listeners,
             'max_bitrate' => $station->max_bitrate,
+            'max_traffic_mb' => $station->max_traffic_mb,
+            'customer_name' => $station->customer_name,
             'disk_quota_mb' => $this->getDiskQuotaMb($station),
         ]);
     }
@@ -270,6 +284,7 @@ final class BillingController
             $station->frontend_config = $feConfig;
         }
 
+        $this->applyHostingLabels($station, $data);
         $this->applyDiskQuota($station, $data);
 
         $station->needs_restart = true;
@@ -282,6 +297,8 @@ final class BillingController
             'station_id' => $station->id,
             'max_listeners' => $station->frontend_config->max_listeners,
             'max_bitrate' => $station->max_bitrate,
+            'max_traffic_mb' => $station->max_traffic_mb,
+            'customer_name' => $station->customer_name,
             'disk_quota_mb' => $this->getDiskQuotaMb($station),
         ]);
     }
@@ -299,8 +316,29 @@ final class BillingController
             'has_started' => $station->has_started,
             'max_listeners' => $station->frontend_config->max_listeners,
             'max_bitrate' => $station->max_bitrate,
+            'max_traffic_mb' => $station->max_traffic_mb,
+            'customer_name' => $station->customer_name,
             'disk_quota_mb' => $this->getDiskQuotaMb($station),
         ]);
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    private function applyHostingLabels(Station $station, array $data): void
+    {
+        if (array_key_exists('customer_name', $data)) {
+            $name = trim((string)$data['customer_name']);
+            $station->customer_name = ('' === $name) ? null : $name;
+        }
+
+        if (isset($data['max_traffic_mb'])) {
+            $traffic = (int)$data['max_traffic_mb'];
+            if ($traffic < 0) {
+                throw new InvalidArgumentException('max_traffic_mb must be greater than or equal to 0.');
+            }
+            $station->max_traffic_mb = $traffic;
+        }
     }
 
     /**

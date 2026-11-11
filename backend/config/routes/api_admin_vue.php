@@ -29,7 +29,10 @@ return static function (RouteCollectorProxy $app) {
 
             $group->get('/stations', Controller\Api\Admin\Vue\StationsAction::class)
                 ->setName('api:vue:admin:stations')
-                ->add(new Middleware\Permissions(GlobalPermissions::Stations));
+                ->add(new Middleware\PermissionsAny([
+                    GlobalPermissions::Stations,
+                    GlobalPermissions::ResellerStations,
+                ]));
 
             $group->get('/updates', Controller\Api\Admin\Vue\UpdatesAction::class)
                 ->setName('api:vue:admin:updates')
