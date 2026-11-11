@@ -47,20 +47,6 @@ return static function (RouteCollectorProxy $group) {
                     $group->get('/schedule', Controller\Api\Stations\ScheduleAction::class)
                         ->setName('api:stations:schedule');
 
-                    // VAST / DAI Dynamic Audio Ad Insertion Endpoint
-                    $group->get('/vast', Controller\Api\Stations\Media\VastAdController::class)
-                        ->setName('api:stations:vast');
-
-                    // Visual Radio & Video Re-Streaming Configuration
-                    $group->get(
-                        '/visual-radio',
-                        Controller\Api\Stations\Media\VisualRadioController::class . ':getConfig'
-                    )->setName('api:stations:visual-radio:get');
-                    $group->post(
-                        '/visual-radio',
-                        Controller\Api\Stations\Media\VisualRadioController::class . ':setConfig'
-                    )->setName('api:stations:visual-radio:set');
-
                     // Song Requests
                     $group->get('/requests', Controller\Api\Stations\Requests\ListAction::class)
                         ->add(new Middleware\StationSupportsFeature(StationFeatures::Requests))
