@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Radio\AutoDJ;
 
 use App\Container\EntityManagerAwareTrait;
+use App\Container\LoggerAwareTrait;
 use App\Entity\Repository\CustomFieldRepository;
 use App\Entity\Repository\StationQueueRepository;
 use App\Entity\Station;
@@ -17,12 +18,12 @@ use App\Radio\Backend\Liquidsoap\AutoCueCacheKey;
 use App\Utilities\Time;
 use App\Utilities\Types;
 use Psr\EventDispatcher\EventDispatcherInterface;
-use RuntimeException;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 final class Annotations implements EventSubscriberInterface
 {
     use EntityManagerAwareTrait;
+    use LoggerAwareTrait;
 
     public function __construct(
         private readonly StationQueueRepository $queueRepo,
@@ -50,6 +51,9 @@ final class Annotations implements EventSubscriberInterface
 
     /**
      * Pulls the next song from the AutoDJ, dispatches the AnnotateNextSong event and returns the built result.
+     *
+     * When the AutoDJ queue has no unsent rows, returns an empty string so Liquidsoap can soft-fail
+     * (treat empty/null annotation as no request) instead of hard-failing the nextsong API call.
      */
     public function annotateNextSong(
         Station $station,
@@ -58,7 +62,15 @@ final class Annotations implements EventSubscriberInterface
         $queueRow = $this->queueRepo->getNextToSendToAutoDj($station);
 
         if (null === $queueRow) {
-            throw new RuntimeException('Queue is empty!');
+            $this->logger->warning(
+                'AutoDJ queue is empty; returning empty nextsong annotation.',
+                [
+                    'station' => (string) $station,
+                    'asAutoDj' => $asAutoDj,
+                ]
+            );
+
+            return '';
         }
 
         $event = AnnotateNextSong::fromStationQueue($queueRow, $asAutoDj);

@@ -19,6 +19,8 @@ final class NextSongCommand extends AbstractCommand
         bool $asAutoDj = false,
         array $payload = []
     ): array {
+        // Empty string is a structured soft-fail for an empty AutoDJ queue.
+        // Liquidsoap treats blank/null nextsong annotations as "no request".
         return [
             'uri' => $this->annotations->annotateNextSong($station, $asAutoDj),
         ];
