@@ -1,1 +1,0 @@
-import{Lt as e,dt as t,ln as n,yt as r}from"./ApiInterfaces-DAAtUQKN.js";import{t as i}from"./delay-CCH6L4zT.js";import{t as a}from"./Settings-apcu12Cr.js";var o=r({__name:`SettingsWrapper`,setup(r){let o=n(!1),s=async()=>{o.value=!0,await i(2e3),window.location.reload()};return(n,r)=>(e(),t(a,{loading:o.value,onSaved:s},null,8,[`loading`]))}});export{o as default};

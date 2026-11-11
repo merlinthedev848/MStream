@@ -390,7 +390,18 @@ def mstream.autodj_next_song() =
                 }
             ) = null.get(api_response)
 
-            request.create(uri)
+            # Empty uri is the structured soft-fail when the PHP AutoDJ queue has
+            # nothing to send; treat it as null so request.dynamic retries later.
+            if uri == "" then
+                log(
+                    level=2,
+                    label="mstream.autodj",
+                    "AutoDJ queue empty; waiting for nextsong."
+                )
+                null
+            else
+                request.create(uri)
+            end
         else
             null
         end
