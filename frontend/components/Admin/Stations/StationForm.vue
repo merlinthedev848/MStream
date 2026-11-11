@@ -120,8 +120,13 @@ const showAdminTab =
     userAllowed(GlobalPermissions.ResellerStations);
 
 const { userAllowedForStation } = useUserAllowedForStation();
-const showBroadcastingTabs = userAllowedForStation(
-    StationPermissions.Broadcasting,
+// Admin create/edit is outside station route context — ResellerStations must still
+// see Broadcasting / HLS / DJ tabs. Station operators need Broadcasting on-station.
+const showBroadcastingTabs = computed(
+    () =>
+        userAllowed(GlobalPermissions.Stations) ||
+        userAllowed(GlobalPermissions.ResellerStations) ||
+        userAllowedForStation(StationPermissions.Broadcasting),
 );
 
 const formStore = useAdminStationsForm();

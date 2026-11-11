@@ -36,7 +36,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { TabParentProps, useTabParent } from "~/functions/tabs.ts";
 
 const props = withDefaults(defineProps<TabParentProps>(), {
@@ -57,17 +57,33 @@ const selectTab = (computedId: string): void => {
     emit("update:modelValue", computedId);
 };
 
-onMounted(() => {
+const selectPreferredOrFirst = (preferred?: string): void => {
     if (!state.tabs.length) {
         return;
     }
 
-    const preferred = props.modelValue;
     const hasPreferred =
         !!preferred && state.tabs.some((tab) => tab.computedId === preferred);
 
     selectTab(hasPreferred ? preferred : state.tabs[0].computedId);
+};
+
+onMounted(() => {
+    selectPreferredOrFirst(props.modelValue);
 });
+
+// Keep in sync when a parent drives the tab via route query (Schedule ↔ Playlists).
+watch(
+    () => props.modelValue,
+    (preferred) => {
+        if (!preferred || preferred === activeId.value) {
+            return;
+        }
+        if (state.tabs.some((tab) => tab.computedId === preferred)) {
+            selectTab(preferred);
+        }
+    },
+);
 
 defineExpose({
     selectTab,

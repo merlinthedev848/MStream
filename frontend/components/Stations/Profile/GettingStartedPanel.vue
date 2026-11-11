@@ -76,7 +76,7 @@
                             <p class="getting-started-step-text mb-0">
                                 {{
                                     $gettext(
-                                        'Copy a listener link from Streams below once tracks are on the air.',
+                                        'Copy a listener link from Listener Streams below once tracks are on the air.',
                                     )
                                 }}
                             </p>
@@ -85,7 +85,7 @@
                             <p class="getting-started-step-text mb-2">
                                 {{
                                     $gettext(
-                                        'Start broadcasting, then copy a listener link from Mount Points → Listener Streams.',
+                                        'Start broadcasting to go on the air. Listener stream URLs are listed below, and you can manage mounts under Mount Points.',
                                     )
                                 }}
                             </p>
@@ -101,7 +101,7 @@
                                     class="btn btn-outline-primary btn-sm"
                                     :to="{ name: 'stations:mounts:index' }"
                                 >
-                                    {{ $gettext('Listener Streams') }}
+                                    {{ $gettext('Manage Mounts') }}
                                 </router-link>
                             </div>
                         </template>

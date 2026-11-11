@@ -12,7 +12,7 @@
             <router-link
                 class="btn btn-primary"
                 role="button"
-                :to="{name: 'stations:profile:edit'}"
+                :to="{name: 'stations:settings:index'}"
             >
                 <icon-ic-edit/>
 

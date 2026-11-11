@@ -445,7 +445,7 @@
 import { EventApi } from "@fullcalendar/vue3";
 import { toRefs } from "@vueuse/core";
 import { computed, ref, useTemplateRef, watch } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import AddButton from "~/components/Common/AddButton.vue";
 import DataTable, {
     DataTableField,
@@ -540,6 +540,7 @@ const { sourceOptions, typeOptions, orderOptions } = usePlaylistOptions();
 const { playlistPresets, applyPreset } = usePlaylistPresets();
 
 const route = useRoute();
+const router = useRouter();
 
 const activeTab = ref(
     route.query.tab === "schedule_view" ? "schedule_view" : "all_playlists",
@@ -552,6 +553,30 @@ watch(
             tab === "schedule_view" ? "schedule_view" : "all_playlists";
     },
 );
+
+// Keep sidebar Schedule vs Playlists highlighting in sync with in-page tabs.
+watch(activeTab, (tab) => {
+    const nextQuery: Record<string, string | string[]> = {
+        ...(route.query as Record<string, string | string[]>),
+    };
+
+    if (tab === "schedule_view") {
+        nextQuery.tab = "schedule_view";
+        delete nextQuery.filter;
+    } else {
+        delete nextQuery.tab;
+    }
+
+    const sameTab =
+        (route.query.tab === "schedule_view") === (tab === "schedule_view");
+    const sameFilter =
+        tab !== "schedule_view" || route.query.filter === undefined;
+    if (sameTab && sameFilter) {
+        return;
+    }
+
+    void router.replace({ query: nextQuery });
+});
 
 const jingleFilterActive = computed(
     () =>

@@ -73,8 +73,9 @@ final class ProfileEditController extends StationsController
 
         // Defense in depth: operators with Broadcasting can edit streaming config,
         // but must not read hoster-managed ports / listener slot quotas via GET.
+        // Keep frontend_type / backend_type so Configure tabs render the right adapter UI.
         if (!$request->getAcl()->isAllowed(GlobalPermissions::Stations)) {
-            $payload = $this->stripServerManagedFields($payload);
+            $payload = $this->stripServerManagedFields($payload, stripAdapterTypes: false);
         }
 
         return $response->withJson($payload);
@@ -89,7 +90,7 @@ final class ProfileEditController extends StationsController
 
         // Explicitly filter out server-managed fields when the caller is not a station/fleet admin.
         if (!$acl->isAllowed(GlobalPermissions::Stations)) {
-            $requestBody = $this->stripServerManagedFields($requestBody);
+            $requestBody = $this->stripServerManagedFields($requestBody, stripAdapterTypes: true);
         }
 
         $this->editRecord($requestBody, $request->getStation(), $this->getContext($request));
@@ -101,11 +102,9 @@ final class ProfileEditController extends StationsController
      * @param array<string, mixed> $body
      * @return array<string, mixed>
      */
-    private function stripServerManagedFields(array $body): array
+    private function stripServerManagedFields(array $body, bool $stripAdapterTypes = true): array
     {
         unset(
-            $body['frontend_type'],
-            $body['backend_type'],
             $body['is_enabled'],
             $body['radio_base_dir'],
             $body['max_bitrate'],
@@ -115,6 +114,13 @@ final class ProfileEditController extends StationsController
             $body['recordings_storage_location'],
             $body['podcasts_storage_location'],
         );
+
+        if ($stripAdapterTypes) {
+            unset(
+                $body['frontend_type'],
+                $body['backend_type'],
+            );
+        }
 
         if (isset($body['frontend_config']) && is_array($body['frontend_config'])) {
             unset(
