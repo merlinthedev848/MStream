@@ -42,6 +42,7 @@ final class GetDashboardAction implements SingleActionInterface
             timezone: $station->timezone,
             offlineText: $station->branding_config->offline_text,
             maxBitrate: $station->max_bitrate,
+            maxListeners: (int)($station->frontend_config->max_listeners ?? 0),
             maxMounts: $station->max_mounts,
             maxHlsStreams: $station->max_hls_streams,
             enablePublicPages: $station->enable_public_page,

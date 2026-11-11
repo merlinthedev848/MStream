@@ -27,11 +27,13 @@
                 </div>
             </div>
 
-            <h2 class="outside-card-header mb-1">
-                {{ $gettext('Station Fleet') }}
-            </h2>
+            <template v-if="canManageFleet">
+                <h2 class="outside-card-header mb-1">
+                    {{ $gettext('Media Services') }}
+                </h2>
 
-            <station-fleet-panel />
+                <station-fleet-panel />
+            </template>
 
             <h2 class="outside-card-header mb-1">
                 {{ $gettext('Host Metrics') }}
@@ -110,15 +112,22 @@ import StationFleetPanel from "~/components/Admin/Index/StationFleetPanel.vue";
 import { useAdminMenu } from "~/components/Admin/menu";
 import Loading from "~/components/Common/Loading.vue";
 import DashboardNoSidebar from "~/components/Layout/DashboardNoSidebar.vue";
-import { ApiAdminServerStats } from "~/entities/ApiInterfaces.ts";
+import {
+    ApiAdminServerStats,
+    GlobalPermissions,
+} from "~/entities/ApiInterfaces.ts";
 import { QueryKeys } from "~/entities/Queries.ts";
 import { useApiRouter } from "~/functions/useApiRouter.ts";
+import { useUserAllowed } from "~/functions/useUserAllowed.ts";
 import { useAxios } from "~/vendor/axios";
 
 const { getApiUrl } = useApiRouter();
 const statsUrl = getApiUrl("/admin/server/stats");
 
 const menuItems = useAdminMenu();
+
+const { userAllowed } = useUserAllowed();
+const canManageFleet = userAllowed(GlobalPermissions.Stations);
 
 const { axiosSilent } = useAxios();
 

@@ -79,12 +79,6 @@
                                         {{ $gettext('Jingle Mode') }}
                                     </span>
                                     <span
-                                        v-if="row.item.order === 'sequential'"
-                                        class="badge text-bg-info"
-                                    >
-                                        {{ $gettext('Sequential') }}
-                                    </span>
-                                    <span
                                         v-if="row.item.include_in_on_demand"
                                         class="badge text-bg-info"
                                     >
@@ -124,6 +118,30 @@
                                     </template>
                                 </span>
                             </template>
+                            <template #cell(weight)="{ item }">
+                                <span class="broadcast-mono">{{ item.weight ?? '—' }}</span>
+                            </template>
+                            <template #cell(order)="{ item }">
+                                <span
+                                    v-if="item.order === PlaylistOrders.Shuffle"
+                                    class="badge text-bg-success"
+                                >
+                                    {{ $gettext('Shuffled') }}
+                                </span>
+                                <span
+                                    v-else-if="item.order === PlaylistOrders.Sequential"
+                                    class="badge text-bg-info"
+                                >
+                                    {{ $gettext('Sequential') }}
+                                </span>
+                                <span
+                                    v-else-if="item.order === PlaylistOrders.Random"
+                                    class="badge text-bg-secondary"
+                                >
+                                    {{ $gettext('Random') }}
+                                </span>
+                                <span v-else class="text-muted">—</span>
+                            </template>
                             <template #cell(scheduling)="{ item }">
                                 <template v-if="!item.is_enabled">
                                     {{ $gettext('Disabled') }}
@@ -132,8 +150,7 @@
                                     {{ $gettext('Remote URL') }}
                                 </template>
                                 <template v-else-if="item.type === 'default'">
-                                    {{ $gettext('General Rotation') }}<br>
-                                    {{ $gettext('Weight') }}: {{ item.weight }}
+                                    {{ $gettext('General Rotation') }}
                                 </template>
                                 <template v-else-if="item.type === 'once_per_x_songs'">
                                     {{
@@ -416,6 +433,7 @@ import QueueModal from "~/components/Stations/Playlists/QueueModal.vue";
 import ReorderModal from "~/components/Stations/Playlists/ReorderModal.vue";
 import {
     PlaylistGroupAllowedRequests,
+    PlaylistOrders,
     StationPlaylistGroup,
 } from "~/entities/ApiInterfaces.ts";
 import { QueryKeys, queryKeyWithStation } from "~/entities/Queries.ts";
@@ -455,6 +473,18 @@ const fields: DataTableField[] = [
         sortable: true,
     },
     { key: "source", label: $gettext("Source"), sortable: false },
+    {
+        key: "weight",
+        label: $gettext("Weight"),
+        sortable: true,
+        class: "shrink",
+    },
+    {
+        key: "order",
+        label: $gettext("Playback"),
+        sortable: false,
+        class: "shrink",
+    },
     { key: "scheduling", label: $gettext("Scheduling"), sortable: false },
     { key: "num_entries", label: $gettext("# Entries"), sortable: false },
     { key: "groups", label: $gettext("Groups"), sortable: false },

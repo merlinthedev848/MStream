@@ -122,7 +122,7 @@ export function useAdminMenu() {
             items: [
                 {
                     key: "manage_stations",
-                    label: $gettext("All Stations"),
+                    label: $gettext("Media Services"),
                     url: {
                         name: "admin:stations:index",
                     },

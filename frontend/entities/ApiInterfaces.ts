@@ -1878,6 +1878,7 @@ export interface VueStationGlobals {
     timezone: string;
     offlineText: string | null;
     maxBitrate: number;
+    maxListeners: number;
     maxMounts: number;
     maxHlsStreams: number;
     enablePublicPages: boolean;

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Controller;
+use App\Enums\GlobalPermissions;
 use App\Enums\StationFeatures;
 use App\Enums\StationPermissions;
 use App\Middleware;
@@ -981,7 +982,7 @@ return static function (RouteCollectorProxy $group) {
                     )->add(new Middleware\StationSupportsFeature(StationFeatures::Webhooks))
                         ->add(new Middleware\Permissions(StationPermissions::WebHooks, true));
 
-                    // Custom Liquidsoap Configuration
+                    // Custom Liquidsoap Configuration (server-managed / superadmin)
                     $group->group(
                         '/liquidsoap-config',
                         function (RouteCollectorProxy $group) {
@@ -1005,7 +1006,7 @@ return static function (RouteCollectorProxy $group) {
                                 Controller\Api\Stations\LiquidsoapConfig\ImportAction::class
                             )->setName('api:stations:liquidsoap-config:import');
                         }
-                    )->add(new Middleware\Permissions(StationPermissions::Broadcasting, true));
+                    )->add(new Middleware\Permissions(GlobalPermissions::Stations));
 
                     // StereoTool Configuration
                     $group->group(
@@ -1026,7 +1027,7 @@ return static function (RouteCollectorProxy $group) {
                                 Controller\Api\Stations\StereoTool\DeleteStereoToolConfigurationAction::class
                             );
                         }
-                    )->add(new Middleware\Permissions(StationPermissions::Broadcasting, true));
+                    )->add(new Middleware\Permissions(GlobalPermissions::Stations));
 
                     // Logs
                     $group->group(

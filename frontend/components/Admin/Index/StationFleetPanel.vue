@@ -9,13 +9,13 @@
                 id="hdr_station_fleet"
                 class="card-title mb-0 flex-fill"
             >
-                {{ $gettext('Station Fleet') }}
+                {{ $gettext('Media Services') }}
             </h2>
             <router-link
                 class="btn btn-dark btn-sm py-2"
                 :to="{ name: 'admin:stations:index' }"
             >
-                {{ $gettext('Manage Stations') }}
+                {{ $gettext('Manage Services') }}
             </router-link>
         </div>
 

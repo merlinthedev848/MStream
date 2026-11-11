@@ -33,6 +33,7 @@ const blankStationGlobals: VueStationGlobals = {
     timezone: "UTC",
     offlineText: null,
     maxBitrate: 0,
+    maxListeners: 0,
     maxMounts: 0,
     maxHlsStreams: 0,
     enablePublicPages: true,

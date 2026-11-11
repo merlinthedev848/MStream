@@ -3,7 +3,10 @@
         :label="$gettext('AutoDJ')"
         :item-header-class="tabClass"
     >
-        <div class="row g-3 mb-3">
+        <div
+            v-if="canManageServer"
+            class="row g-3 mb-3"
+        >
             <form-group-multi-check
                 id="edit_form_backend_type"
                 class="col-md-12"
@@ -372,6 +375,7 @@
                     />
 
                     <form-group-field
+                        v-if="canManageServer"
                         id="edit_form_backend_telnet_port"
                         class="col-md-6"
                         :field="r$.backend_config.telnet_port"
@@ -452,10 +456,12 @@ import {
     AudioProcessingMethods,
     BackendAdapters,
     CrossfadeModes,
+    GlobalPermissions,
     MasterMePresets,
 } from "~/entities/ApiInterfaces.ts";
 import { SimpleFormOptionInput } from "~/functions/objectToFormOptions.ts";
 import { useFormTabClass } from "~/functions/useFormTabClass.ts";
+import { useUserAllowed } from "~/functions/useUserAllowed.ts";
 import { useTranslate } from "~/vendor/gettext";
 
 const props = defineProps<{
@@ -465,6 +471,9 @@ const props = defineProps<{
 const { r$, form } = storeToRefs(useAdminStationsForm());
 
 const tabClass = useFormTabClass(computed(() => r$.value.$groups.backendTab));
+
+const { userAllowed } = useUserAllowed();
+const canManageServer = userAllowed(GlobalPermissions.Stations);
 
 const isBackendEnabled = computed(() => {
     return form.value?.backend_type !== BackendAdapters.None;

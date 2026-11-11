@@ -48,7 +48,7 @@ return static function (RouteCollectorProxy $group) {
                 '/billing/provision',
                 Controller\Api\Admin\Billing\BillingController::class
             )->setName('api:admin:billing:provision')
-                ->add(new Middleware\Permissions(GlobalPermissions::Stations));
+                ->add(new Middleware\Permissions(GlobalPermissions::All));
 
             $group->get('/auditlog', Controller\Api\Admin\AuditLogAction::class)
                 ->setName('api:admin:auditlog')
