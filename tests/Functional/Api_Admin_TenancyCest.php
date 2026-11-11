@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Functional;
 
+use App\Acl;
+use App\Entity\ApiKey;
 use App\Entity\Customer;
 use App\Entity\Reseller;
 use App\Entity\Role;
 use App\Entity\RolePermission;
 use App\Entity\User;
 use App\Enums\GlobalPermissions;
+use App\Security\SplitToken;
 use FunctionalTester;
 
 class Api_Admin_TenancyCest extends CestAbstract
@@ -75,12 +78,12 @@ class Api_Admin_TenancyCest extends CestAbstract
         $this->em->flush();
 
         // Authenticate as the reseller admin via API key.
-        $key = \App\Security\SplitToken::generate();
-        $apiKey = new \App\Entity\ApiKey($resellerUser, $key, 'Reseller Test');
+        $key = SplitToken::generate();
+        $apiKey = new ApiKey($resellerUser, $key, 'Reseller Test');
         $this->em->persist($apiKey);
         $this->em->flush();
 
-        $this->di->get(\App\Acl::class)->reload();
+        $this->di->get(Acl::class)->reload();
         $I->amBearerAuthenticated((string)$key);
 
         $I->sendGet('/api/admin/stations', [
