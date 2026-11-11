@@ -73,10 +73,7 @@
 import { useQuery } from "@tanstack/vue-query";
 import { computed } from "vue";
 import CardPage from "~/components/Common/CardPage.vue";
-import {
-    PlaylistSources,
-    StationPlaylist,
-} from "~/entities/ApiInterfaces.ts";
+import { PlaylistSources, StationPlaylist } from "~/entities/ApiInterfaces.ts";
 import { QueryKeys, queryKeyWithStation } from "~/entities/Queries.ts";
 import { useApiRouter } from "~/functions/useApiRouter.ts";
 import { useStationData } from "~/functions/useStationQuery.ts";

@@ -64,8 +64,7 @@ onMounted(() => {
 
     const preferred = props.modelValue;
     const hasPreferred =
-        !!preferred &&
-        state.tabs.some((tab) => tab.computedId === preferred);
+        !!preferred && state.tabs.some((tab) => tab.computedId === preferred);
 
     selectTab(hasPreferred ? preferred : state.tabs[0].computedId);
 });

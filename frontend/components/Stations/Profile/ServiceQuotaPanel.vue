@@ -114,12 +114,13 @@
                         aria-valuemax="100"
                     >
                         <div
-                            class="progress-bar text-bg-secondary"
+                            class="progress-bar"
+                            :class="trafficBarClass"
                             :style="{ width: trafficPercent + '%' }"
                         />
                     </div>
                     <div class="service-quota-meta">
-                        {{ $gettext('Package limit (MB / month)') }}
+                        {{ $gettext('Estimated outbound audio this month') }}
                     </div>
                 </div>
 
@@ -296,11 +297,21 @@ const storageBarClass = computed(() => {
     return "text-bg-primary";
 });
 
+const formatMb = (value: number): string => {
+    if (value >= 1000) {
+        return `${(value / 1000).toFixed(1)} GB`;
+    }
+    return `${Math.round(value)} MB`;
+};
+
 const trafficLabel = computed(() => {
+    const used = stationData.value.trafficUsedMb ?? 0;
     const max = stationData.value.maxTrafficMb;
     if (max > 0) {
-        // Best-effort package display until byte metering lands.
-        return `— / ${max}`;
+        return `${formatMb(used)} / ${formatMb(max)}`;
+    }
+    if (used > 0) {
+        return formatMb(used);
     }
     return "—";
 });
@@ -310,6 +321,17 @@ const trafficPercent = computed(() => {
     if (max <= 0) {
         return null;
     }
-    return 0;
+    const used = stationData.value.trafficUsedMb ?? 0;
+    return Math.min(Math.round((used / max) * 100), 100);
+});
+
+const trafficBarClass = computed(() => {
+    if ((trafficPercent.value ?? 0) > 85) {
+        return "text-bg-danger";
+    }
+    if ((trafficPercent.value ?? 0) > 65) {
+        return "text-bg-warning";
+    }
+    return "text-bg-secondary";
 });
 </script>

@@ -129,7 +129,9 @@ const statsUrl = getApiUrl("/admin/server/stats");
 const menuItems = useAdminMenu();
 
 const { userAllowed } = useUserAllowed();
-const canManageFleet = userAllowed(GlobalPermissions.Stations);
+const canManageFleet =
+    userAllowed(GlobalPermissions.Stations) ||
+    userAllowed(GlobalPermissions.ResellerStations);
 const canViewHostMetrics = userAllowed(GlobalPermissions.Stations);
 
 const { axiosSilent } = useAxios();

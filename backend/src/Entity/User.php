@@ -148,6 +148,19 @@ class User implements Stringable, IdentifiableEntityInterface
     ]
     public int $updated_at;
 
+    #[
+        ORM\ManyToOne,
+        ORM\JoinColumn(name: 'reseller_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL'),
+        DeepNormalize(true),
+        Serializer\MaxDepth(1),
+        Serializer\Groups([EntityGroupsInterface::GROUP_ADMIN, EntityGroupsInterface::GROUP_ALL])
+    ]
+    public ?Reseller $reseller = null;
+
+    public ?int $reseller_id {
+        get => $this->reseller?->id;
+    }
+
     /** @var Collection<int, Role> */
     #[
         OA\Property(type: "array", items: new OA\Items()),

@@ -19,6 +19,11 @@ final readonly class UsersProps
             additionalProperties: new OA\AdditionalProperties(type: 'string')
         )]
         public array $roles,
+        #[OA\Property(
+            type: 'object',
+            additionalProperties: new OA\AdditionalProperties(type: 'string')
+        )]
+        public array $resellers = [],
     ) {
     }
 }

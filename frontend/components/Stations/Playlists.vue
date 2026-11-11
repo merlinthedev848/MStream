@@ -463,12 +463,12 @@ import EditModal from "~/components/Stations/Playlists/EditModal.vue";
 import ImportModal from "~/components/Stations/Playlists/ImportModal.vue";
 import ImportPlaylistConfigModal from "~/components/Stations/Playlists/ImportPlaylistConfigModal.vue";
 import PlaylistGroupingTab from "~/components/Stations/Playlists/PlaylistGroupingTab.vue";
-import {
-    usePlaylistPresets,
-    type PlaylistPresetId,
-} from "~/components/Stations/Playlists/playlistPresets.ts";
 import PlaylistGroupReorderModal from "~/components/Stations/Playlists/PlaylistGroupReorderModal.vue";
 import { usePlaylistOptions } from "~/components/Stations/Playlists/playlistOptions.ts";
+import {
+    type PlaylistPresetId,
+    usePlaylistPresets,
+} from "~/components/Stations/Playlists/playlistPresets.ts";
 import QueueModal from "~/components/Stations/Playlists/QueueModal.vue";
 import ReorderModal from "~/components/Stations/Playlists/ReorderModal.vue";
 import {
@@ -555,8 +555,7 @@ watch(
 
 const jingleFilterActive = computed(
     () =>
-        route.query.filter === "jingle" ||
-        route.query.filter === "commercial",
+        route.query.filter === "jingle" || route.query.filter === "commercial",
 );
 
 const playlistsTabLabel = computed(() => {

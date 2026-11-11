@@ -15,6 +15,7 @@ enum GlobalPermissions: string implements PermissionInterface
     case Settings = 'administer settings';
     case ApiKeys = 'administer api keys';
     case Stations = 'administer stations';
+    case ResellerStations = 'administer reseller stations';
     case CustomFields = 'administer custom fields';
     case Backups = 'administer backups';
     case StorageLocations = 'administer storage locations';
@@ -28,6 +29,7 @@ enum GlobalPermissions: string implements PermissionInterface
             self::Settings => __('Administer Settings'),
             self::ApiKeys => __('Administer API Keys'),
             self::Stations => __('Administer Stations'),
+            self::ResellerStations => __('Administer Reseller Stations'),
             self::CustomFields => __('Administer Custom Fields'),
             self::Backups => __('Administer Backups'),
             self::StorageLocations => __('Administer Storage Locations'),

@@ -116,6 +116,7 @@
             ref="$editModal"
             :create-url="listUrl"
             :roles="props.roles"
+            :resellers="props.resellers"
             @relist="() => relist()"
         />
     </loading>

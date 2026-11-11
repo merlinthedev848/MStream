@@ -17,9 +17,12 @@ use App\Entity\StorageLocation;
 use App\Exception\ValidationException;
 use App\Http\Response;
 use App\Http\ServerRequest;
+use App\Entity\Customer;
+use App\Entity\Reseller;
 use App\Nginx\Nginx;
 use App\OpenApi;
 use App\Radio\Configuration;
+use App\Service\TenancyScope;
 use App\Utilities\File;
 use InvalidArgumentException;
 use OpenApi\Attributes as OA;
@@ -150,6 +153,7 @@ class StationsController extends AbstractApiCrudController
         protected StationQueueRepository $queueRepo,
         protected Configuration $configuration,
         protected Nginx $nginx,
+        protected TenancyScope $tenancyScope,
         Serializer $serializer,
         ValidatorInterface $validator
     ) {
@@ -164,6 +168,8 @@ class StationsController extends AbstractApiCrudController
         $qb = $this->em->createQueryBuilder()
             ->select('e')
             ->from(Station::class, 'e');
+
+        $qb = $this->tenancyScope->applyStationListFilter($qb, $request);
 
         $qb = $this->sortQueryBuilder(
             $request,
@@ -184,6 +190,31 @@ class StationsController extends AbstractApiCrudController
         );
 
         return $this->listPaginatedFromQuery($request, $response, $qb->getQuery());
+    }
+
+    protected function getRecord(ServerRequest $request, array $params): ?object
+    {
+        $record = parent::getRecord($request, $params);
+        if ($record instanceof Station) {
+            $this->tenancyScope->assertStationAccessible($request, $record);
+        }
+
+        return $record;
+    }
+
+    protected function createRecord(ServerRequest $request, array $data): object
+    {
+        if (
+            !$this->tenancyScope->isHostAdmin($request)
+            && $this->tenancyScope->isResellerAdmin($request)
+        ) {
+            $user = $request->getUser();
+            if (null !== $user->reseller) {
+                $data['reseller'] = $user->reseller->id;
+            }
+        }
+
+        return $this->editRecord($data);
     }
 
     protected function viewRecord(object $record, ServerRequest $request): mixed
@@ -237,6 +268,9 @@ class StationsController extends AbstractApiCrudController
             ) => $value->id;
         }
 
+        $context[AbstractNormalizer::CALLBACKS]['reseller'] = static fn(?Reseller $value) => $value?->id;
+        $context[AbstractNormalizer::CALLBACKS]['customer'] = static fn(?Customer $value) => $value?->id;
+
         return parent::toArray($record, $context);
     }
 
@@ -248,6 +282,21 @@ class StationsController extends AbstractApiCrudController
                 $data[$locationKey] = $data[$idKey];
             }
             unset($data[$idKey]);
+        }
+
+        if (array_key_exists('reseller_id', $data)) {
+            $data['reseller'] = $data['reseller_id'] ?: null;
+            unset($data['reseller_id']);
+        }
+        if (array_key_exists('customer_id', $data)) {
+            $data['customer'] = $data['customer_id'] ?: null;
+            unset($data['customer_id']);
+        }
+
+        foreach (['reseller', 'customer'] as $relKey) {
+            if (array_key_exists($relKey, $data) && ($data[$relKey] === '' || $data[$relKey] === 0)) {
+                $data[$relKey] = null;
+            }
         }
 
         return parent::fromArray($data, $record, $context);

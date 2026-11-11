@@ -151,6 +151,7 @@ export enum GlobalPermissions {
     Settings = "administer settings",
     ApiKeys = "administer api keys",
     Stations = "administer stations",
+    ResellerStations = "administer reseller stations",
     CustomFields = "administer custom fields",
     Backups = "administer backups",
     StorageLocations = "administer storage locations",
@@ -621,6 +622,8 @@ export interface ApiAdminVueStationsFormProps {
     isRsasInstalled: boolean;
     isShoutcastInstalled: boolean;
     isStereoToolInstalled: boolean;
+    resellers: Record<string, string>;
+    customers: Record<string, string>;
 }
 
 export interface ApiAdminVueStationsProps {
@@ -637,6 +640,7 @@ export interface ApiAdminVueUpdateProps {
 
 export interface ApiAdminVueUsersProps {
     roles: Record<string, string>;
+    resellers: Record<string, string>;
 }
 
 export interface ApiBatchResult {
@@ -1884,6 +1888,7 @@ export interface VueStationGlobals {
     maxMounts: number;
     maxHlsStreams: number;
     maxTrafficMb: number;
+    trafficUsedMb: number;
     enablePublicPages: boolean;
     publicPageUrl: string;
     enableOnDemand: boolean;
@@ -2494,7 +2499,21 @@ export type Station = HasAutoIncrementId & {
      * @example 10240
      */
     max_traffic_mb?: number;
+    reseller?: number | null;
+    customer?: number | null;
     branding_config?: StationBrandingConfiguration;
+};
+
+export type Reseller = HasAutoIncrementId & {
+    /** @example "Acme Reseller" */
+    name?: string;
+};
+
+export type Customer = HasAutoIncrementId & {
+    /** @example "Acme Radio" */
+    name?: string;
+    reseller?: number;
+    owner_user?: number | null;
 };
 
 export interface StationBackendConfiguration {
@@ -3033,6 +3052,7 @@ export type User = HasAutoIncrementId & {
     /** @example 1609480800 */
     updated_at?: number;
     roles?: any[];
+    reseller?: number | null;
 };
 
 export type UserLoginToken = HasSplitTokenFields & {

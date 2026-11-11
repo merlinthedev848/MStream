@@ -1,1 +1,0 @@
-import{a as e,c as t,u as n}from"./useApiRouter-Dpl4t1zS.js";function r(){let r=n(),i=e();return{mayNeedRestart:()=>{r.invalidateQueries({queryKey:t([],i)})}}}export{r as t};

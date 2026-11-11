@@ -534,6 +534,32 @@ final class Station implements Stringable, IdentifiableEntityInterface
     ]
     public int $max_traffic_mb = 0;
 
+    #[
+        ORM\ManyToOne(inversedBy: 'stations'),
+        ORM\JoinColumn(name: 'reseller_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL'),
+        DeepNormalize(true),
+        Serializer\MaxDepth(1),
+        Serializer\Groups([EntityGroupsInterface::GROUP_ADMIN, EntityGroupsInterface::GROUP_ALL])
+    ]
+    public ?Reseller $reseller = null;
+
+    public ?int $reseller_id {
+        get => $this->reseller?->id;
+    }
+
+    #[
+        ORM\ManyToOne(inversedBy: 'stations'),
+        ORM\JoinColumn(name: 'customer_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL'),
+        DeepNormalize(true),
+        Serializer\MaxDepth(1),
+        Serializer\Groups([EntityGroupsInterface::GROUP_ADMIN, EntityGroupsInterface::GROUP_ALL])
+    ]
+    public ?Customer $customer = null;
+
+    public ?int $customer_id {
+        get => $this->customer?->id;
+    }
+
     /**
      * @var ConfigData|null
      */
@@ -714,6 +740,10 @@ final class Station implements Stringable, IdentifiableEntityInterface
     #[ORM\OneToMany(targetEntity: StationRequest::class, mappedBy: 'station')]
     public private(set) Collection $requests;
 
+    /** @var Collection<int, StationTrafficDaily> */
+    #[ORM\OneToMany(targetEntity: StationTrafficDaily::class, mappedBy: 'station')]
+    public private(set) Collection $traffic_daily;
+
     #[
         ORM\ManyToOne,
         ORM\JoinColumn(name: 'current_song_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL'),
@@ -743,6 +773,7 @@ final class Station implements Stringable, IdentifiableEntityInterface
         $this->streamer_broadcasts = new ArrayCollection();
         $this->sftp_users = new ArrayCollection();
         $this->requests = new ArrayCollection();
+        $this->traffic_daily = new ArrayCollection();
     }
 
     public function supportsAutoDjQueue(): bool
@@ -923,6 +954,7 @@ final class Station implements Stringable, IdentifiableEntityInterface
         $this->streamer_broadcasts = new ArrayCollection();
         $this->sftp_users = new ArrayCollection();
         $this->requests = new ArrayCollection();
+        $this->traffic_daily = new ArrayCollection();
     }
 
     public static function generateShortName(string $str): string

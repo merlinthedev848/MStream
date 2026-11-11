@@ -16,7 +16,11 @@ import { useAppRegle } from "~/vendor/regle.ts";
 
 export type StationRecord = Omit<
     Required<Station>,
-    "id" | "is_streamer_live" | "branding_config"
+    | "id"
+    | "is_streamer_live"
+    | "branding_config"
+    | "reseller"
+    | "customer"
 > & {
     frontend_config: Required<StationFrontendConfiguration>;
     backend_config: Omit<
@@ -32,6 +36,8 @@ export type StationRecord = Omit<
     media_storage_location: string | number;
     recordings_storage_location: string | number;
     podcasts_storage_location: string | number;
+    reseller: string | number | null;
+    customer: string | number | null;
 };
 
 export const useAdminStationsForm = defineStore("form-admin-stations", () => {
@@ -122,6 +128,8 @@ export const useAdminStationsForm = defineStore("form-admin-stations", () => {
         max_hls_streams: 0,
         customer_name: "",
         max_traffic_mb: 0,
+        reseller: "",
+        customer: "",
         radio_base_dir: "",
     });
 
@@ -236,6 +244,8 @@ export const useAdminStationsForm = defineStore("form-admin-stations", () => {
                     fields.max_hls_streams,
                     fields.customer_name,
                     fields.max_traffic_mb,
+                    fields.reseller,
+                    fields.customer,
                     fields.radio_base_dir,
                 ],
             }),

@@ -202,6 +202,8 @@ abstract class CestAbstract
             User::class,
             Role::class,
             Station::class,
+            \App\Entity\Customer::class,
+            \App\Entity\Reseller::class,
             Settings::class,
         ];
 

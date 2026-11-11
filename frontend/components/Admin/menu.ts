@@ -126,7 +126,27 @@ export function useAdminMenu() {
                     url: {
                         name: "admin:stations:index",
                     },
+                    visible: () =>
+                        userAllowed(GlobalPermissions.Stations) ||
+                        userAllowed(GlobalPermissions.ResellerStations),
+                },
+                {
+                    key: "resellers",
+                    label: $gettext("Resellers"),
+                    url: {
+                        name: "admin:resellers:index",
+                    },
                     visible: () => userAllowed(GlobalPermissions.Stations),
+                },
+                {
+                    key: "customers",
+                    label: $gettext("Customers"),
+                    url: {
+                        name: "admin:customers:index",
+                    },
+                    visible: () =>
+                        userAllowed(GlobalPermissions.Stations) ||
+                        userAllowed(GlobalPermissions.ResellerStations),
                 },
                 {
                     key: "billing",

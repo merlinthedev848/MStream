@@ -6,6 +6,7 @@ namespace App\Controller\Api\Admin\Vue;
 
 use App\Controller\SingleActionInterface;
 use App\Entity\Api\Admin\Vue\UsersProps;
+use App\Entity\Repository\ResellerRepository;
 use App\Entity\Repository\RoleRepository;
 use App\Http\Response;
 use App\Http\ServerRequest;
@@ -15,6 +16,7 @@ final readonly class UsersAction implements SingleActionInterface
 {
     public function __construct(
         private RoleRepository $roleRepo,
+        private ResellerRepository $resellerRepo,
     ) {
     }
 
@@ -25,7 +27,8 @@ final readonly class UsersAction implements SingleActionInterface
     ): ResponseInterface {
         return $response->withJson(
             new UsersProps(
-                roles: $this->roleRepo->fetchSelect()
+                roles: $this->roleRepo->fetchSelect(),
+                resellers: $this->resellerRepo->fetchSelect(true),
             )
         );
     }

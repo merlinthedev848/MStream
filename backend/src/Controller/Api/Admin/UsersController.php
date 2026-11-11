@@ -11,6 +11,7 @@ use App\Controller\Frontend\Account\MasqueradeAction;
 use App\Entity\Api\Admin\UserWithDetails;
 use App\Entity\Api\Error;
 use App\Entity\Api\Status;
+use App\Entity\Reseller;
 use App\Entity\User;
 use App\Http\Response;
 use App\Http\ServerRequest;
@@ -18,6 +19,7 @@ use App\OpenApi;
 use App\Utilities\Types;
 use OpenApi\Attributes as OA;
 use Psr\Http\Message\ResponseInterface;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 
 /** @extends AbstractApiCrudController<User> */
 #[
@@ -160,6 +162,13 @@ class UsersController extends AbstractApiCrudController
         return $this->listPaginatedFromQuery($request, $response, $qb->getQuery());
     }
 
+    protected function toArray(object $record, array $context = []): array
+    {
+        $context[AbstractNormalizer::CALLBACKS]['reseller'] = static fn(?Reseller $value) => $value?->id;
+
+        return parent::toArray($record, $context);
+    }
+
     protected function viewRecord(object $record, ServerRequest $request): mixed
     {
         $return = $this->toArray($record);
@@ -215,6 +224,14 @@ class UsersController extends AbstractApiCrudController
 
     protected function fromArray(array $data, ?object $record = null, array $context = []): object
     {
+        if (array_key_exists('reseller_id', $data)) {
+            $data['reseller'] = $data['reseller_id'] ?: null;
+            unset($data['reseller_id']);
+        }
+        if (array_key_exists('reseller', $data) && ($data['reseller'] === '' || $data['reseller'] === 0)) {
+            $data['reseller'] = null;
+        }
+
         $record = parent::fromArray($data, $record, $context);
 
         if (isset($data['new_password'])) {
