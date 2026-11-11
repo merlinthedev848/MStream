@@ -11,17 +11,31 @@
                         id="hdr_music_files"
                         class="card-title"
                     >
-                        {{ $gettext('Music Files') }}
+                        {{ $gettext('Music Library') }}
                     </h2>
                 </div>
                 <div class="col-md-5 text-end">
                     <stations-common-quota
                         ref="$quota"
                         :quota-url="quotaUrl"
+                        @updated="onQuotaUpdated"
                     />
                 </div>
             </div>
         </div>
+
+        <info-card v-if="showEmptyLibraryGuide">
+            <p class="mb-1 fw-semibold">
+                {{ $gettext('Your music library is empty') }}
+            </p>
+            <p class="mb-0">
+                {{
+                    $gettext(
+                        'Drop audio files below. They join the default playlist so AutoDJ can play them automatically.',
+                    )
+                }}
+            </p>
+        </info-card>
 
         <info-card v-if="showSftp">
             <p class="mb-0">
@@ -259,6 +273,7 @@ import NewDirectoryModal from "~/components/Stations/Media/NewDirectoryModal.vue
 import RenameModal from "~/components/Stations/Media/RenameModal.vue";
 import {
     ApiStationMediaPlaylist,
+    ApiStationQuota,
     ApiStationsVueFilesProps,
     CustomField,
     FileTypes,
@@ -307,6 +322,13 @@ const quotaUrl = getStationApiUrl(
 );
 
 const currentDirectory = ref("");
+const mediaFileCount = ref<number | null>(null);
+const showEmptyLibraryGuide = computed(
+    () =>
+        currentDirectory.value === "" &&
+        mediaFileCount.value !== null &&
+        mediaFileCount.value === 0,
+);
 
 const isFilterString = (str: string) =>
     str.substring(0, 9) === "playlist:" || str.substring(0, 8) === "special:";
@@ -498,6 +520,10 @@ const filter = (newFilter: string) => {
 };
 
 const $quota = useTemplateRef("$quota");
+
+const onQuotaUpdated = (quota: Required<ApiStationQuota>) => {
+    mediaFileCount.value = quota.num_files;
+};
 
 const onTriggerRelist = () => {
     void listItemProvider.refresh(false);

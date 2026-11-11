@@ -6,17 +6,33 @@ namespace App\Radio;
 
 use App\Container\EntityManagerAwareTrait;
 use App\Container\EnvironmentAwareTrait;
+use App\Entity\Enums\PlaylistOrders;
+use App\Entity\Enums\PlaylistSources;
 use App\Entity\Enums\PlaylistTypes;
 use App\Entity\Station;
 use App\Entity\StationPlaylist;
+use App\Entity\StationPlaylistFolder;
 use App\Exception;
 use App\Radio\AutoDJ\PlaylistQueueResetter;
 use App\Radio\Enums\BackendAdapters;
+use App\Radio\Enums\CrossfadeModes;
 use App\Radio\Enums\FrontendAdapters;
 use RuntimeException;
 use Supervisor\Exception\SupervisorException;
 use Supervisor\SupervisorInterface;
 
+/**
+ * Station lifecycle helpers: AutoDJ-ready defaults, ascending port blocks, supervisor config.
+ *
+ * Port allocation (ascending):
+ * - Blocks are chosen from AUTO_ASSIGN_PORT_MIN..AUTO_ASSIGN_PORT_MAX (defaults
+ *   {@see self::DEFAULT_PORT_MIN}–{@see self::DEFAULT_PORT_MAX}) in steps of
+ *   {@see self::PORT_RANGE_STEP}, always the lowest free block (no random gaps).
+ * - Within a block for one station:
+ *   - +0  frontend listen port (Icecast / SHOUTcast / RSAS)
+ *   - +4  Liquidsoap telnet
+ *   - +5  DJ harbor (+6 also reserved for harbor adjacency)
+ */
 final class Configuration
 {
     use EntityManagerAwareTrait;
@@ -25,7 +41,21 @@ final class Configuration
     public const int DEFAULT_PORT_MIN = 8000;
     public const int DEFAULT_PORT_MAX = 8499;
 
+    /** Size of each auto-assigned station port block. */
+    public const int PORT_RANGE_STEP = 10;
+
+    /** Offset from the block base port for Liquidsoap telnet. */
+    public const int PORT_OFFSET_TELNET = 4;
+
+    /** Offset from the block base port for the DJ harbor. */
+    public const int PORT_OFFSET_DJ = 5;
+
     public const string PER_STATION_SUPERVISOR_CONF = 'supervisord.conf';
+
+    public const string DEFAULT_PLAYLIST_NAME = 'default';
+
+    /** Media-root playlist folder path (empty string after filterPath). */
+    public const string DEFAULT_MEDIA_FOLDER_PATH = '';
 
     public const array PROTECTED_PORTS = [
         3306, // MariaDB
@@ -36,6 +66,14 @@ final class Configuration
         443,  // HTTPS
         2022, // SFTP
     ];
+
+    /**
+     * Request-scoped map of reserved ports → station reference.
+     * Updated when ports are assigned so sequential creates in one process stay ascending.
+     *
+     * @var array<int, array{id: int|null, name: string, object_id?: int}>|null
+     */
+    private ?array $usedPorts = null;
 
     public function __construct(
         private readonly Adapters $adapters,
@@ -54,21 +92,11 @@ final class Configuration
             $station->generateAdapterApiKey();
         }
 
-        // Ensure all directories exist.
+        // Ensure all directories exist (including media storage path).
         $station->ensureDirectoriesExist();
 
-        // Check for at least one playlist, and create one if it doesn't exist.
-        $defaultPlaylists = $station->playlists->filter(
-            function (StationPlaylist $row) {
-                return $row->is_enabled && PlaylistTypes::default() === $row->type;
-            }
-        );
-
-        if (0 === $defaultPlaylists->count()) {
-            $defaultPlaylist = new StationPlaylist($station);
-            $defaultPlaylist->name = 'default';
-            $this->em->persist($defaultPlaylist);
-        }
+        // Persist AutoDJ-ready backend + default playlist (admin create and billing provision).
+        $this->ensureAutoDjReadyDefaults($station);
 
         $this->em->persist($station);
         foreach ($station->getAllStorageLocations() as $storageLocation) {
@@ -78,6 +106,98 @@ final class Configuration
         $this->em->flush();
 
         $this->playlistQueueResetter->resetAllQueues($station);
+    }
+
+    /**
+     * Ensure a new (or incomplete) station can AutoDJ after media upload only:
+     * Liquidsoap-friendly backend defaults, enabled default playlist, media-root folder link.
+     */
+    public function ensureAutoDjReadyDefaults(Station $station): void
+    {
+        if ($station->backend_type->isEnabled()) {
+            $backendConfig = $station->backend_config;
+
+            // Prefer Liquidsoap AutoDJ (not manual cueing) with a sensible crossfade.
+            $backendConfig->use_manual_autodj = false;
+
+            if ('' === $backendConfig->crossfade_type) {
+                $backendConfig->crossfade_type = CrossfadeModes::default()->value;
+            }
+
+            if ($backendConfig->crossfade <= 0) {
+                $backendConfig->crossfade = 2.0;
+            }
+
+            if ($backendConfig->autodj_queue_length < 1) {
+                $backendConfig->autodj_queue_length = 3;
+            }
+
+            $station->backend_config = $backendConfig;
+        }
+
+        $defaultPlaylist = $this->findEnabledDefaultPlaylist($station);
+
+        if (null === $defaultPlaylist) {
+            $defaultPlaylist = new StationPlaylist($station);
+            $defaultPlaylist->name = self::DEFAULT_PLAYLIST_NAME;
+            $defaultPlaylist->type = PlaylistTypes::default();
+            $defaultPlaylist->source = PlaylistSources::Songs;
+            $defaultPlaylist->order = PlaylistOrders::Shuffle;
+            $defaultPlaylist->weight = StationPlaylist::DEFAULT_WEIGHT;
+            $defaultPlaylist->is_enabled = true;
+            $defaultPlaylist->include_in_requests = true;
+            $station->playlists->add($defaultPlaylist);
+            $this->em->persist($defaultPlaylist);
+        } else {
+            // Re-enable / re-weight only — do not clobber operator playlist source/order on edits.
+            $defaultPlaylist->is_enabled = true;
+            if ($defaultPlaylist->weight < 1) {
+                $defaultPlaylist->weight = StationPlaylist::DEFAULT_WEIGHT;
+            }
+            $this->em->persist($defaultPlaylist);
+        }
+
+        $this->ensureDefaultPlaylistMediaFolder($station, $defaultPlaylist);
+    }
+
+    private function findEnabledDefaultPlaylist(Station $station): ?StationPlaylist
+    {
+        foreach ($station->playlists as $playlist) {
+            if ($playlist->is_enabled && PlaylistTypes::default() === $playlist->type) {
+                return $playlist;
+            }
+        }
+
+        // Also accept a disabled playlist literally named "default" so we can re-enable it.
+        foreach ($station->playlists as $playlist) {
+            if (self::DEFAULT_PLAYLIST_NAME === $playlist->name) {
+                return $playlist;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Wire the station media root to the default playlist so root uploads join AutoDJ.
+     */
+    private function ensureDefaultPlaylistMediaFolder(
+        Station $station,
+        StationPlaylist $defaultPlaylist
+    ): void {
+        foreach ($defaultPlaylist->folders as $folder) {
+            if (self::DEFAULT_MEDIA_FOLDER_PATH === $folder->path) {
+                return;
+            }
+        }
+
+        $folder = new StationPlaylistFolder(
+            $station,
+            $defaultPlaylist,
+            self::DEFAULT_MEDIA_FOLDER_PATH
+        );
+        $defaultPlaylist->folders->add($folder);
+        $this->em->persist($folder);
     }
 
     /**
@@ -245,7 +365,10 @@ final class Configuration
     }
 
     /**
-     * Assign the first available port range to this station, or ensure it already is configured properly.
+     * Assign the next ascending free port block to this station, or ensure offsets are filled.
+     *
+     * Base port selection walks AUTO_ASSIGN_PORT_MIN → MAX in {@see self::PORT_RANGE_STEP}
+     * increments and always picks the lowest unused block (ascending, not random).
      */
     public function assignRadioPorts(Station $station, bool $force = false): void
     {
@@ -266,40 +389,41 @@ final class Configuration
 
             $djPort = $backendConfig->dj_port;
             if ($force || null === $djPort) {
-                $backendConfig->dj_port = $basePort + 5;
+                $backendConfig->dj_port = $basePort + self::PORT_OFFSET_DJ;
                 $station->backend_config = $backendConfig;
             }
 
             $telnetPort = $backendConfig->telnet_port;
             if ($force || null === $telnetPort) {
-                $backendConfig->telnet_port = $basePort + 4;
+                $backendConfig->telnet_port = $basePort + self::PORT_OFFSET_TELNET;
                 $station->backend_config = $backendConfig;
             }
 
             $this->em->persist($station);
+            $this->rememberStationPorts($station);
         }
     }
 
     /**
-     * Determine the first available 10-port block that has no stations occupying it.
+     * Determine the lowest available PORT_RANGE_STEP-sized block with no stations occupying it.
      */
     public function getFirstAvailableRadioPort(?Station $station = null): int
     {
         $usedPorts = $this->getUsedPorts($station);
 
-        // Iterate from port 8000 to 9000, in increments of 10
+        // Ascending walk: first free block wins (no random / scattered assignment).
         $protectedPorts = self::PROTECTED_PORTS;
 
         $portMin = $this->environment->getAutoAssignPortMin();
         $portMax = $this->environment->getAutoAssignPortMax();
 
-        for ($port = $portMin; $port <= $portMax; $port += 10) {
+        for ($port = $portMin; $port <= $portMax; $port += self::PORT_RANGE_STEP) {
             if (in_array($port, $protectedPorts, true)) {
                 continue;
             }
 
             $rangeInUse = false;
-            for ($i = $port; $i < $port + 10; $i++) {
+            for ($i = $port; $i < $port + self::PORT_RANGE_STEP; $i++) {
                 if (isset($usedPorts[$i])) {
                     $rangeInUse = true;
                     break;
@@ -315,69 +439,157 @@ final class Configuration
     }
 
     /**
+     * Drop the request-scoped used-port cache (tests / long-running workers after external changes).
+     */
+    public function clearUsedPortsCache(): void
+    {
+        $this->usedPorts = null;
+    }
+
+    /**
      * Get an array of all used ports across the system, except the ones used by the station specified (if specified).
      *
      * @return array<int, array{
-     *   id: int,
-     *   name: string
+     *   id: int|null,
+     *   name: string,
+     *   object_id?: int
      * }>
      */
     public function getUsedPorts(?Station $exceptStation = null): array
     {
-        static $usedPorts;
-
-        if (null === $usedPorts) {
-            $usedPorts = [];
-
-            // Get all station used ports.
-            $stationConfigs = $this->em->createQuery(
-                <<<'DQL'
-                    SELECT s.id, s.name, s.frontend_type, s.frontend_config_raw AS frontend_config,
-                        s.backend_type, s.backend_config_raw AS backend_config
-                    FROM App\Entity\Station s
-                DQL
-            )->getArrayResult();
-
-            /** @var array<array-key, int|string|array> $row */
-            foreach ($stationConfigs as $row) {
-                $stationReference = ['id' => $row['id'], 'name' => $row['name']];
-
-                if ($row['frontend_type'] !== FrontendAdapters::Remote->value) {
-                    $frontendConfig = (array)$row['frontend_config'];
-
-                    if (!empty($frontendConfig['port'])) {
-                        $port = (int)$frontendConfig['port'];
-                        $usedPorts[$port] = $stationReference;
-                    }
-                }
-
-                if ($row['backend_type'] !== BackendAdapters::None->value) {
-                    $backendConfig = (array)$row['backend_config'];
-
-                    // For DJ port, consider both the assigned port and port+1 to be reserved and in-use.
-                    if (!empty($backendConfig['dj_port'])) {
-                        $port = (int)$backendConfig['dj_port'];
-                        $usedPorts[$port] = $stationReference;
-                        $usedPorts[$port + 1] = $stationReference;
-                    }
-                    if (!empty($backendConfig['telnet_port'])) {
-                        $port = (int)$backendConfig['telnet_port'];
-                        $usedPorts[$port] = $stationReference;
-                    }
-                }
-            }
+        if (null === $this->usedPorts) {
+            $this->usedPorts = $this->loadUsedPortsFromDatabase();
         }
 
-        if (null !== $exceptStation && isset($exceptStation->id)) {
-            return array_filter(
-                $usedPorts,
-                static function ($stationReference) use ($exceptStation) {
-                    return ($stationReference['id'] !== $exceptStation->id);
+        if (null === $exceptStation) {
+            return $this->usedPorts;
+        }
+
+        $exceptId = $exceptStation->id ?? null;
+        $exceptObjectId = spl_object_id($exceptStation);
+
+        return array_filter(
+            $this->usedPorts,
+            static function (array $stationReference) use ($exceptId, $exceptObjectId): bool {
+                if (null !== $exceptId && ($stationReference['id'] ?? null) === $exceptId) {
+                    return false;
                 }
+
+                return ($stationReference['object_id'] ?? null) !== $exceptObjectId;
+            }
+        );
+    }
+
+    /**
+     * @return array<int, array{id: int|null, name: string, object_id?: int}>
+     */
+    private function loadUsedPortsFromDatabase(): array
+    {
+        $usedPorts = [];
+
+        /** @var list<array{
+         *   id: int,
+         *   name: string,
+         *   frontend_type: string,
+         *   frontend_config: array<string, mixed>|null,
+         *   backend_type: string,
+         *   backend_config: array<string, mixed>|null
+         * }> $stationConfigs */
+        $stationConfigs = $this->em->createQuery(
+            <<<'DQL'
+                SELECT s.id, s.name, s.frontend_type, s.frontend_config_raw AS frontend_config,
+                    s.backend_type, s.backend_config_raw AS backend_config
+                FROM App\Entity\Station s
+            DQL
+        )->getArrayResult();
+
+        foreach ($stationConfigs as $row) {
+            $stationReference = ['id' => $row['id'], 'name' => $row['name']];
+            $this->mergeStationPortsIntoMap(
+                $usedPorts,
+                $stationReference,
+                $row['frontend_type'],
+                (array)$row['frontend_config'],
+                $row['backend_type'],
+                (array)$row['backend_config'],
             );
         }
 
         return $usedPorts;
+    }
+
+    /**
+     * Reserve this station's ports in the request-scoped map so the next assign stays ascending.
+     */
+    private function rememberStationPorts(Station $station): void
+    {
+        // Force cache load so we merge into a complete map.
+        $this->getUsedPorts();
+
+        $exceptId = $station->id ?? null;
+        $exceptObjectId = spl_object_id($station);
+
+        // Drop any previously reserved ports for this station (force-reassign / offset fill).
+        $this->usedPorts = array_filter(
+            $this->usedPorts ?? [],
+            static function (array $stationReference) use ($exceptId, $exceptObjectId): bool {
+                if (null !== $exceptId && ($stationReference['id'] ?? null) === $exceptId) {
+                    return false;
+                }
+
+                return ($stationReference['object_id'] ?? null) !== $exceptObjectId;
+            }
+        );
+
+        $stationReference = [
+            'id' => $exceptId,
+            'name' => $station->name,
+            'object_id' => $exceptObjectId,
+        ];
+
+        $this->mergeStationPortsIntoMap(
+            $this->usedPorts,
+            $stationReference,
+            $station->frontend_type->value,
+            $station->frontend_config->toArray(true) ?? [],
+            $station->backend_type->value,
+            $station->backend_config->toArray(true) ?? [],
+        );
+    }
+
+    /**
+     * @param array<int, array{id: int|null, name: string, object_id?: int}> $usedPorts
+     * @param array{id: int|null, name: string, object_id?: int} $stationReference
+     * @param array<array-key, mixed> $frontendConfig
+     * @param array<array-key, mixed> $backendConfig
+     */
+    private function mergeStationPortsIntoMap(
+        array &$usedPorts,
+        array $stationReference,
+        string $frontendType,
+        array $frontendConfig,
+        string $backendType,
+        array $backendConfig,
+    ): void {
+        if ($frontendType !== FrontendAdapters::Remote->value) {
+            if (!empty($frontendConfig['port'])) {
+                $port = (int)$frontendConfig['port'];
+                $usedPorts[$port] = $stationReference;
+            }
+        }
+
+        if ($backendType !== BackendAdapters::None->value) {
+            // For DJ port, consider both the assigned port and port+1 to be reserved and in-use.
+            if (!empty($backendConfig['dj_port'])) {
+                $port = (int)$backendConfig['dj_port'];
+                $usedPorts[$port] = $stationReference;
+                $usedPorts[$port + 1] = $stationReference;
+            }
+            if (!empty($backendConfig['telnet_port'])) {
+                $port = (int)$backendConfig['telnet_port'];
+                $usedPorts[$port] = $stationReference;
+            }
+        }
     }
 
     /**
@@ -447,14 +659,14 @@ final class Configuration
     ): array {
         $defaultPorts = [];
 
-        for ($i = $rangeMin; $i < $rangeMax; $i += 10) {
+        for ($i = $rangeMin; $i < $rangeMax; $i += self::PORT_RANGE_STEP) {
             if (in_array($i, self::PROTECTED_PORTS, true)) {
                 continue;
             }
 
             $defaultPorts[] = $i;
-            $defaultPorts[] = $i + 5;
-            $defaultPorts[] = $i + 6;
+            $defaultPorts[] = $i + self::PORT_OFFSET_DJ;
+            $defaultPorts[] = $i + self::PORT_OFFSET_DJ + 1;
         }
 
         return $defaultPorts;

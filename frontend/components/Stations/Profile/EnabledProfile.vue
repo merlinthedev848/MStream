@@ -6,6 +6,8 @@
         class="row row-of-cards"
     >
         <div class="col-lg-7">
+            <getting-started-panel />
+
             <template v-if="stationData.hasStarted">
                 <profile-now-playing/>
 
@@ -44,6 +46,7 @@ import { computed } from "vue";
 import ProfileBackendNone from "~/components/Stations/Profile/BackendNonePanel.vue";
 import ProfileBackend from "~/components/Stations/Profile/BackendPanel.vue";
 import ProfileFrontend from "~/components/Stations/Profile/FrontendPanel.vue";
+import GettingStartedPanel from "~/components/Stations/Profile/GettingStartedPanel.vue";
 import ProfileHeader from "~/components/Stations/Profile/HeaderPanel.vue";
 import NowPlayingNotStartedPanel from "~/components/Stations/Profile/NowPlayingNotStartedPanel.vue";
 import ProfileNowPlaying from "~/components/Stations/Profile/NowPlayingPanel.vue";

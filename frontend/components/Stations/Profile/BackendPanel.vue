@@ -67,7 +67,7 @@
                     class="btn btn-link btn-sm px-0 text-secondary"
                     :to="{name: 'stations:queue:index'}"
                 >
-                    {{ $gettext('View Upcoming Song Queue') }}
+                    {{ $gettext('View Upcoming Songs') }}
                 </router-link>
             </div>
         </div>

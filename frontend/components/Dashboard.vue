@@ -178,6 +178,7 @@
                         </span>
                         <template v-if="item.links.listeners">
                             <a
+                                class="broadcast-mono"
                                 :href="item.links.listeners"
                                 :aria-label="$gettext('View Listener Report')"
                             >
@@ -185,7 +186,7 @@
                             </a>
                         </template>
                         <template v-else>
-                            {{ item.listeners.total }}
+                            <span class="broadcast-mono">{{ item.listeners.total }}</span>
                         </template>
                     </template>
                     <template #cell(now_playing)="{ item }">
@@ -199,14 +200,21 @@
 
                             <div
                                 v-if="!item.is_online"
-                                class="flex-fill text-muted"
+                                class="flex-fill"
                             >
-                                {{ $gettext('Station Offline') }}
+                                <span class="badge broadcast-tally-standby">
+                                    {{ $gettext('OFFLINE') }}
+                                </span>
                             </div>
                             <div
                                 v-else-if="item.now_playing?.song?.title !== ''"
                                 class="flex-fill"
                             >
+                                <div class="mb-1">
+                                    <span class="badge broadcast-tally-onair">
+                                        {{ $gettext('ON AIR') }}
+                                    </span>
+                                </div>
                                 <strong><span class="nowplaying-title">
                                     {{ item.now_playing?.song?.title }}
                                 </span></strong><br>
@@ -216,6 +224,11 @@
                                 v-else
                                 class="flex-fill"
                             >
+                                <div class="mb-1">
+                                    <span class="badge broadcast-tally-onair">
+                                        {{ $gettext('ON AIR') }}
+                                    </span>
+                                </div>
                                 <strong><span class="nowplaying-title">
                                     {{ item.now_playing?.song?.text }}
                                 </span></strong>
@@ -233,7 +246,7 @@
                             }"
                             role="button"
                         >
-                            {{ $gettext('Manage') }}
+                            {{ $gettext('Open Station') }}
                         </router-link>
                     </template>
                 </data-table>

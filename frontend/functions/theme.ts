@@ -15,11 +15,8 @@ export const useTheme = defineStore("global-theme", () => {
     const storedTheme = useOptionalStorage<Theme | null>("theme", null);
 
     const getPreferredTheme = (): Theme => {
-        return storedTheme.value
-            ? storedTheme.value
-            : window.matchMedia("(prefers-color-scheme: dark)").matches
-              ? "dark"
-              : "light";
+        // Broadcast console defaults to dark charcoal; honor an explicit user choice.
+        return storedTheme.value ? storedTheme.value : "dark";
     };
 
     const setTheme = (newTheme: Theme): void => {

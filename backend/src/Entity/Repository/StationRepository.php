@@ -156,6 +156,8 @@ final class StationRepository extends Repository
             $record->enable_autodj = true;
             $record->autodj_format = StreamFormats::Mp3;
             $record->autodj_bitrate = $station->max_bitrate !== 0 ? $station->max_bitrate : 192;
+            // Guaranteed Icecast fallback asset (see util/docker/stations/icecast/web).
+            $record->fallback_mount = '/error.mp3';
             $this->em->persist($record);
         }
 

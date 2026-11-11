@@ -9,6 +9,9 @@ $autoloader->addClassMap([
 // in-memory test harness can subclass them with lightweight fakes
 DG\BypassFinals::allowPaths([
     '*/backend/src/Entity/Repository/*',
+    // Configuration unit tests mock these constructor deps (final classes).
+    '*/backend/src/Radio/Adapters.php',
+    '*/backend/src/Radio/AutoDJ/PlaylistQueueResetter.php',
 ]);
 DG\BypassFinals::enable(bypassReadOnly: false, bypassFinal: true);
 

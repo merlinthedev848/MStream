@@ -26,19 +26,18 @@ div.flow-upload {
   div.file-drop-target {
     padding: 30px 20px;
     text-align: center;
-    border: 2px dashed rgba(99, 102, 241, 0.35);
-    background: rgba(99, 102, 241, 0.03);
-    border-radius: 1rem;
+    border: 2px dashed #475569;
+    background: #0f1420;
+    border-radius: 4px;
     color: var(--bs-secondary-color);
-    transition: all 0.2s ease;
+    transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
 
     &.drag_over {
       cursor: copy;
-      border-color: #6366f1;
-      background: rgba(99, 102, 241, 0.1);
-      color: #818cf8;
-      transform: scale(1.01);
-      box-shadow: 0 0 20px rgba(99, 102, 241, 0.25);
+      border-color: #0284c7;
+      background: #131a29;
+      color: #38bdf8;
+      box-shadow: none;
     }
 
     input {
