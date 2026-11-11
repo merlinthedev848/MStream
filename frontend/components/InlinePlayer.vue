@@ -1,15 +1,17 @@
 <template>
     <div
-        v-if="isCurrentChannel && isPlaying"
         v-bind="$attrs"
         class="player-inline"
+        :class="{ 'is-active': isActive }"
+        :aria-hidden="isActive ? undefined : 'true'"
     >
         <div
-            v-if="!current.isStream && duration !== 0"
+            v-if="canSeek"
             class="inline-seek d-inline-flex align-items-center ms-1"
+            :class="{ 'is-visible': showSeek }"
         >
-            <div class="flex-shrink-0 mx-1 text-white-50 time-display">
-                {{ currentTimeText }}
+            <div class="flex-shrink-0 mx-1 text-white-50 time-display broadcast-mono">
+                {{ showSeek ? currentTimeText : '--:--' }}
             </div>
             <div class="flex-fill mx-2">
                 <input
@@ -20,10 +22,11 @@
                     min="0"
                     max="100"
                     step="1"
+                    :disabled="!showSeek"
                 >
             </div>
-            <div class="flex-shrink-0 mx-1 text-white-50 time-display">
-                {{ durationText }}
+            <div class="flex-shrink-0 mx-1 text-white-50 time-display broadcast-mono">
+                {{ showSeek ? durationText : '--:--' }}
             </div>
         </div>
 
@@ -31,6 +34,7 @@
             type="button"
             class="btn p-2 ms-2 text-reset"
             :aria-label="$gettext('Stop')"
+            :disabled="!isActive"
             @click="stop()"
         >
             <icon-ic-stop/>
@@ -56,6 +60,7 @@
                     min="0"
                     max="100"
                     step="1"
+                    :disabled="!isActive"
                 >
             </div>
         </div>
@@ -100,6 +105,18 @@ const isCurrentChannel = computed(
     () => props.channel === current.value.channel,
 );
 
+const isActive = computed(() => isCurrentChannel.value && isPlaying.value);
+
+/** File/on-demand media can seek; keep the seek rail mounted while that track is current. */
+const canSeek = computed(
+    () =>
+        isCurrentChannel.value &&
+        !current.value.isStream &&
+        duration.value !== 0,
+);
+
+const showSeek = computed(() => isActive.value && canSeek.value);
+
 const seekPosition = computed({
     get: () => progress.value.position,
     set: (prog) => {
@@ -114,14 +131,30 @@ defineExpose({
 
 <style lang="scss">
 .player-inline {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.5rem;
+    min-width: 3rem;
+    opacity: 0.45;
+
+    &.is-active {
+        opacity: 1;
+    }
+
+    &:not(.is-active) {
+        pointer-events: none;
+    }
+
     .inline-seek {
         width: 300px;
+        visibility: hidden;
+
+        &.is-visible {
+            visibility: visible;
+        }
 
         div.time-display {
             font-size: 85%;
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-            font-variant-numeric: tabular-nums;
-            letter-spacing: -0.02em;
         }
     }
 

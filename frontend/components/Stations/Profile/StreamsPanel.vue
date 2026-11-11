@@ -39,6 +39,12 @@
                         <td class="ps-1">
                             <h6 class="mb-1">
                                 {{ mount.name }}
+                                <small
+                                    v-if="showFormatAndBitrate(mount.format, mount.bitrate)"
+                                    class="text-muted broadcast-mono ms-2"
+                                >
+                                    {{ showFormatAndBitrate(mount.format, mount.bitrate) }}
+                                </small>
                             </h6>
                             <a
                                 :href="mount.url"
@@ -87,6 +93,12 @@
                         <td class="ps-1">
                             <h6 class="mb-1">
                                 {{ remote.name }}
+                                <small
+                                    v-if="showFormatAndBitrate(remote.format, remote.bitrate)"
+                                    class="text-muted broadcast-mono ms-2"
+                                >
+                                    {{ showFormatAndBitrate(remote.format, remote.bitrate) }}
+                                </small>
                             </h6>
                             <a
                                 :href="remote.url"
@@ -136,16 +148,29 @@
                                 target="_blank"
                             >{{ profileData.station.hls_url }}</a>
                         </td>
-                        <td class="ps-1 text-end">
+                        <td class="ps-1 text-end broadcast-mono">
                             <icon-ic-headphones class="sm align-middle"/>
-                            <span class="listeners-total ps-1">
+                            <span class="listeners-total ps-1 font-weight-bold">
                                 {{ profileData.station.hls_listeners }}
+                            </span><br>
+                            <small class="text-muted">
                                 {{ $gettext('Unique') }}
-                            </span>
+                            </small>
                         </td>
                     </tr>
                 </tbody>
             </template>
+
+            <tbody v-if="!hasAnyStreams">
+                <tr class="align-middle streams-empty-row">
+                    <td
+                        colspan="3"
+                        class="text-muted py-3"
+                    >
+                        {{ $gettext('No streams are configured for this station.') }}
+                    </td>
+                </tr>
+            </tbody>
         </table>
 
         <template #footer_actions>
@@ -173,11 +198,22 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
 import PlayButton from "~/components/Common/Audio/PlayButton.vue";
 import CardPage from "~/components/Common/CardPage.vue";
 import { useStationProfileData } from "~/components/Stations/Profile/useProfileQuery.ts";
+import showFormatAndBitrate from "~/functions/showFormatAndBitrate";
 import IconIcCloudDownload from "~icons/ic/baseline-cloud-download";
 import IconIcHeadphones from "~icons/ic/baseline-headphones";
 
 const profileData = useStationProfileData();
+
+const hasAnyStreams = computed(() => {
+    const station = profileData.value.station;
+    return (
+        station.mounts.length > 0 ||
+        station.remotes.length > 0 ||
+        station.hls_enabled
+    );
+});
 </script>
