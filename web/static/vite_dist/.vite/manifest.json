@@ -1562,7 +1562,7 @@
     ]
   },
   "components/Admin/BackupsWrapper.vue": {
-    "file": "BackupsWrapper-DcPcuBWt.js",
+    "file": "BackupsWrapper-jbIk5B-9.js",
     "name": "BackupsWrapper",
     "src": "components/Admin/BackupsWrapper.vue",
     "isDynamicEntry": true,
@@ -1917,7 +1917,7 @@
     ]
   },
   "components/Dashboard.vue": {
-    "file": "Dashboard-S6HDrBjp.js",
+    "file": "Dashboard-DPt09kp2.js",
     "name": "Dashboard",
     "src": "components/Dashboard.vue",
     "isDynamicEntry": true,
@@ -2096,7 +2096,7 @@
     ]
   },
   "components/Stations/Logs.vue": {
-    "file": "Logs-DPp1Er8V.js",
+    "file": "Logs-CJlg60zX.js",
     "name": "Logs",
     "src": "components/Stations/Logs.vue",
     "isDynamicEntry": true,
@@ -2198,7 +2198,7 @@
     ]
   },
   "components/Stations/Playlists.vue": {
-    "file": "Playlists-BtS0KgAb.js",
+    "file": "Playlists-BVJMyJZX.js",
     "name": "Playlists",
     "src": "components/Stations/Playlists.vue",
     "isDynamicEntry": true,
@@ -2327,7 +2327,7 @@
     ]
   },
   "components/Stations/Profile.vue": {
-    "file": "Profile-CFP75xsc.js",
+    "file": "Profile-X3kK47Fb.js",
     "name": "Profile",
     "src": "components/Stations/Profile.vue",
     "isDynamicEntry": true,
@@ -2707,7 +2707,7 @@
     "src": "img/hexbg_dark.webp"
   },
   "js/layout.js": {
-    "file": "assets/Layout-D9rJBxXl.js",
+    "file": "assets/Layout-BvmhaIpi.js",
     "name": "Layout",
     "src": "js/layout.js",
     "isEntry": true,
@@ -2715,7 +2715,7 @@
       "_bootstrap.esm-DcX7NFU4.js"
     ],
     "css": [
-      "assets/Layout-C5a2Etei.css"
+      "assets/Layout-Bw2RLuUL.css"
     ],
     "assets": [
       "assets/Roboto-Light-DHTugVNA.woff2",
@@ -2737,7 +2737,7 @@
     ]
   },
   "js/pages/Dashboard.js": {
-    "file": "assets/Dashboard-C2W1Ypyt.js",
+    "file": "assets/Dashboard-C9e9v8eY.js",
     "name": "Dashboard",
     "src": "js/pages/Dashboard.js",
     "isEntry": true,

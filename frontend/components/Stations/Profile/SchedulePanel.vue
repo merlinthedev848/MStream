@@ -1,15 +1,15 @@
 <template>
     <card-page
-        v-if="processedScheduleItems.length > 0"
         class="scheduled"
         header-id="hdr_scheduled"
         :title="$gettext('Scheduled')"
     >
-        <table class="table table-striped mb-0">
+        <table class="table table-striped mb-0 schedule-table">
             <tbody>
                 <tr
                     v-for="row in processedScheduleItems"
                     :key="row.id"
+                    class="schedule-row"
                 >
                     <td>
                         <div class="d-flex w-100 justify-content-between align-items-center">
@@ -25,9 +25,9 @@
                                 {{ row.name }}
                             </h5>
                             <p class="text-end m-0">
-                                <small>{{ row.start_formatted }} - {{ row.end_formatted }}</small>
+                                <small class="broadcast-mono">{{ row.start_formatted }} - {{ row.end_formatted }}</small>
                                 <br>
-                                <strong>
+                                <strong class="broadcast-mono">
                                     <template v-if="row.is_now">
                                         {{ $gettext('Now') }}
                                     </template>
@@ -35,6 +35,14 @@
                                 </strong>
                             </p>
                         </div>
+                    </td>
+                </tr>
+                <tr
+                    v-if="processedScheduleItems.length === 0"
+                    class="schedule-row schedule-row--empty"
+                >
+                    <td class="text-muted">
+                        {{ $gettext('No upcoming scheduled items.') }}
                     </td>
                 </tr>
             </tbody>
