@@ -8,6 +8,7 @@ use App\Acl;
 use App\Entity\ApiKey;
 use App\Entity\Role;
 use App\Entity\RolePermission;
+use App\Entity\Station;
 use App\Entity\User;
 use App\Enums\StationPermissions;
 use App\Security\SplitToken;
@@ -75,7 +76,7 @@ class Api_Stations_ProfileEditServerFieldsCest extends CestAbstract
         $I->seeResponseCodeIs(200);
 
         $this->em->clear();
-        $reloaded = $this->em->find(\App\Entity\Station::class, $station->id);
+        $reloaded = $this->em->find(Station::class, $station->id);
         $I->assertNotNull($reloaded);
 
         // Streaming config (name) may change; server-managed ports/quotas must not.
@@ -111,7 +112,7 @@ class Api_Stations_ProfileEditServerFieldsCest extends CestAbstract
         $I->seeResponseCodeIs(200);
 
         $this->em->clear();
-        $reloaded = $this->em->find(\App\Entity\Station::class, $station->id);
+        $reloaded = $this->em->find(Station::class, $station->id);
         $I->assertNotNull($reloaded);
         $I->assertSame($newPort, $reloaded->frontend_config->port);
     }

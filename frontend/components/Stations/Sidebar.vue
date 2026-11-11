@@ -81,8 +81,8 @@
 import { toRefs, useIntervalFn } from "@vueuse/core";
 import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
-import SidebarMenu from "~/components/Common/SidebarMenu.vue";
 import { useDialog } from "~/components/Common/Dialogs/useDialog.ts";
+import SidebarMenu from "~/components/Common/SidebarMenu.vue";
 import { useNotify } from "~/components/Common/Toasts/useNotify.ts";
 import { useStationsMenu } from "~/components/Stations/menu";
 import {
@@ -98,8 +98,8 @@ import {
 import { useUserAllowed } from "~/functions/useUserAllowed.ts";
 import { useUserAllowedForStation } from "~/functions/useUserallowedForStation.ts";
 import { useAxios } from "~/vendor/axios.ts";
-import { useLuxon } from "~/vendor/luxon.ts";
 import { useTranslate } from "~/vendor/gettext.ts";
+import { useLuxon } from "~/vendor/luxon.ts";
 
 const menuItems = useStationsMenu();
 const { userAllowedForStation } = useUserAllowedForStation();
@@ -120,9 +120,7 @@ const { getApiUrl } = useApiRouter();
 const router = useRouter();
 const clearStationQueries = useClearAllStationQueries();
 
-const adminStationUrl = getApiUrl(
-    computed(() => `/admin/station/${id.value}`),
-);
+const adminStationUrl = getApiUrl(computed(() => `/admin/station/${id.value}`));
 
 const adminBusy = ref(false);
 
