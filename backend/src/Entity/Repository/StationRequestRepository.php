@@ -49,6 +49,19 @@ final class StationRequestRepository extends AbstractStationBasedRepository
             ->execute();
     }
 
+    public function getPendingRequestCount(Station $station): int
+    {
+        return (int)$this->em->createQuery(
+            <<<'DQL'
+                SELECT COUNT(sr.id)
+                FROM App\Entity\StationRequest sr
+                WHERE sr.station = :station
+                AND sr.played_at IS NULL
+            DQL
+        )->setParameter('station', $station)
+            ->getSingleScalarResult();
+    }
+
     /**
      * Check if the song is already enqueued as a request.
      */

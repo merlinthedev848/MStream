@@ -20,6 +20,58 @@
             </div>
         </template>
 
+        <div class="card-body py-3">
+            <div class="broadcast-ops-grid">
+                <div class="broadcast-ops-cell">
+                    <div class="broadcast-ops-label">
+                        {{ $gettext('Queue Depth') }}
+                    </div>
+                    <div
+                        class="broadcast-ops-value broadcast-mono"
+                        :class="queueDepthClass"
+                    >
+                        {{ queueDepthDisplay }}
+                    </div>
+                </div>
+                <div class="broadcast-ops-cell">
+                    <div class="broadcast-ops-label">
+                        {{ $gettext('Queue Status') }}
+                    </div>
+                    <div class="broadcast-ops-value">
+                        <span
+                            v-if="showQueueEmpty"
+                            class="badge broadcast-tally-standby"
+                        >
+                            {{ $gettext('QUEUE EMPTY') }}
+                        </span>
+                        <span
+                            v-else-if="profileData.services.backendRunning"
+                            class="badge broadcast-tally-onair"
+                        >
+                            {{ $gettext('QUEUED') }}
+                        </span>
+                        <span
+                            v-else
+                            class="badge broadcast-tally-standby"
+                        >
+                            {{ $gettext('STANDBY') }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div
+                v-if="userAllowedForStation(StationPermissions.Broadcasting) && stationData.features.autoDjQueue"
+                class="mt-2"
+            >
+                <router-link
+                    class="btn btn-link btn-sm px-0 text-secondary"
+                    :to="{name: 'stations:queue:index'}"
+                >
+                    {{ $gettext('View Upcoming Song Queue') }}
+                </router-link>
+            </div>
+        </div>
+
         <template
             v-if="userAllowedForStation(StationPermissions.Broadcasting) && stationData.hasStarted"
             #footer_actions
@@ -95,6 +147,26 @@ const backendName = computed(() => {
         return "Liquidsoap";
     }
     return "";
+});
+
+const queueDepth = computed(() => profileData.value.ops?.queueDepth ?? 0);
+
+const queueDepthDisplay = computed(() =>
+    String(queueDepth.value).padStart(2, "0"),
+);
+
+const showQueueEmpty = computed(() => {
+    return profileData.value.services.backendRunning && queueDepth.value === 0;
+});
+
+const queueDepthClass = computed(() => {
+    if (showQueueEmpty.value) {
+        return "text-warning";
+    }
+    if (profileData.value.services.backendRunning) {
+        return "text-success";
+    }
+    return "text-muted";
 });
 
 const { $gettext } = useTranslate();

@@ -1352,9 +1352,21 @@ export interface ApiStationPlaylistQueue {
     last_played?: number | null;
 }
 
+export interface ApiStationProfileOps {
+    /** Number of unplayed AutoDJ queue rows for this station. */
+    queueDepth: number;
+    /** Number of pending (unplayed) listener song requests. */
+    pendingRequests: number;
+    /** Whether a live streamer/DJ is currently connected. */
+    isStreamerLive: boolean;
+    /** Display name of the currently connected streamer/DJ, if any. */
+    connectedStreamer: string | null;
+}
+
 export interface ApiStationProfile {
     station: ApiNowPlayingStation;
     services: ApiStationServiceStatus;
+    ops: ApiStationProfileOps;
     schedule: ApiStationSchedule[];
 }
 

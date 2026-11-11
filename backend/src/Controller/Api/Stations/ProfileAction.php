@@ -6,8 +6,11 @@ namespace App\Controller\Api\Stations;
 
 use App\Controller\SingleActionInterface;
 use App\Entity\Api\StationProfile;
+use App\Entity\Api\StationProfileOps;
 use App\Entity\Api\StationServiceStatus;
 use App\Entity\ApiGenerator\StationApiGenerator;
+use App\Entity\Repository\StationQueueRepository;
+use App\Entity\Repository\StationRequestRepository;
 use App\Entity\Repository\StationScheduleRepository;
 use App\Http\Response;
 use App\Http\ServerRequest;
@@ -40,6 +43,8 @@ final readonly class ProfileAction implements SingleActionInterface
 {
     public function __construct(
         private StationScheduleRepository $scheduleRepo,
+        private StationQueueRepository $queueRepo,
+        private StationRequestRepository $requestRepo,
         private StationApiGenerator $stationApiGenerator,
         private Adapters $adapters,
     ) {
@@ -63,6 +68,17 @@ final readonly class ProfileAction implements SingleActionInterface
         $apiResponse->services = new StationServiceStatus(
             backendRunning: null !== $backend && $backend->isRunning($station),
             frontendRunning: null !== $frontend && $frontend->isRunning($station),
+        );
+
+        $currentStreamer = $station->current_streamer;
+
+        $apiResponse->ops = new StationProfileOps(
+            queueDepth: $this->queueRepo->getUnplayedQueueDepth($station),
+            pendingRequests: $this->requestRepo->getPendingRequestCount($station),
+            isStreamerLive: $station->is_streamer_live,
+            connectedStreamer: $station->is_streamer_live
+                ? $currentStreamer?->display_name
+                : null,
         );
 
         $apiResponse->schedule = $this->scheduleRepo->getUpcomingSchedule($station);
