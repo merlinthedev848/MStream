@@ -1,11 +1,12 @@
 // MStream Enterprise Broadcast Console Palette
-$primary: #0284c7; // Broadcast Console Blue
-$indigo: #3b82f6;
-$purple: #7c3aed;
+$primary: #0284c7; // Broadcast Console Blue (sky)
+$indigo: #0284c7;  // Remap Bootstrap indigo → console sky (no SaaS purple)
+$purple: #334155;  // Remap Bootstrap purple → slate (unused in console chrome)
 $teal: #0d9488;
 $red: #dc2626;     // Broadcast Tally Red
 $green: #16a34a;   // Broadcast Active Green
 $yellow: #d97706;  // Broadcast Standby Amber
+
 
 $body-bg: #f8fafc;
 $body-bg-dark: #0b0f19; // Crisp Deep Slate/Charcoal Console Surface

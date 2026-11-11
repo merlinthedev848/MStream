@@ -1,6 +1,6 @@
 <template>
     <span
-        class="badge status-pill rounded-pill ms-2"
+        class="badge status-pill ms-2"
         :class="badgeClass"
     >
         <span

@@ -42,7 +42,11 @@
                     class="schedule-row schedule-row--empty"
                 >
                     <td class="text-muted">
-                        {{ $gettext('No upcoming scheduled items.') }}
+                        {{
+                            $gettext(
+                                'Nothing scheduled. AutoDJ will rotate from your playlists.',
+                            )
+                        }}
                     </td>
                 </tr>
             </tbody>

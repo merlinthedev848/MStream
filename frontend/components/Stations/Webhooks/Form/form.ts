@@ -117,7 +117,7 @@ export const useStationsWebhooksForm = defineStore(
                             author: "{{ live.streamer_name }}",
                             thumbnail: "{{ now_playing.song.art }}",
                             footer: $gettext("Powered by MStream"),
-                            color: "#6366f1",
+                            color: "#0284c7",
                             include_timestamp: true,
                         },
                     };

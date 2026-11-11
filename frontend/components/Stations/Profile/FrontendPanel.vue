@@ -60,7 +60,7 @@
                                 {{ $gettext('Port') }}
                             </td>
                             <td
-                                class="ps-0"
+                                class="ps-0 broadcast-mono"
                                 colspan="2"
                             >
                                 {{ profileData.frontendPort }}

@@ -1,7 +1,7 @@
 <template>
     <card-page
         header-id="hdr_streams"
-        :title="$gettext('Streams')"
+        :title="$gettext('Listener Streams')"
     >
         <table class="table table-striped table-responsive mb-0">
             <colgroup>
@@ -167,7 +167,11 @@
                         colspan="3"
                         class="text-muted py-3"
                     >
-                        {{ $gettext('No streams are configured for this station.') }}
+                        {{
+                            $gettext(
+                                'No listener streams yet. Add a stream under On-Air Tools → Listener Streams.',
+                            )
+                        }}
                     </td>
                 </tr>
             </tbody>

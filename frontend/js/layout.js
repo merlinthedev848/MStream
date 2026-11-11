@@ -16,20 +16,14 @@ const getPreferredTheme = () => {
         return storedTheme;
     }
 
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    // Broadcast console defaults to dark charcoal.
+    return 'dark';
 }
 
 const currentTheme = document.documentElement.getAttribute('data-bs-theme');
 if (currentTheme !== 'light' && currentTheme !== 'dark') {
     document.documentElement.setAttribute('data-bs-theme', getPreferredTheme());
 }
-
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-    const storedTheme = getStoredTheme();
-    if (storedTheme !== 'light' && storedTheme !== 'dark') {
-        document.documentElement.setAttribute('data-bs-theme', getPreferredTheme());
-    }
-});
 
 ready(() => {
     // If in a frame, notify the parent frame of the frame dimensions.

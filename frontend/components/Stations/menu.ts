@@ -29,7 +29,7 @@ export function useStationsMenu() {
     const fullMenu: RawMenuCategory[] = [
         {
             key: "profile",
-            label: $gettext("Overview"),
+            label: $gettext("Station Console"),
             icon: () => IconIcImage,
             url: {
                 name: "stations:index",
@@ -37,7 +37,7 @@ export function useStationsMenu() {
         },
         {
             key: "edit_profile",
-            label: $gettext("Edit Station Settings"),
+            label: $gettext("Station Settings"),
             icon: () => IconIcSettingsApplication,
             url: {
                 name: "stations:settings:index",
@@ -92,13 +92,13 @@ export function useStationsMenu() {
         },
         {
             key: "media",
-            label: $gettext("Media"),
+            label: $gettext("Music Library"),
             icon: () => IconIcLibraryMusic,
             visible: () => station.value.features.media,
             items: [
                 {
                     key: "music_files",
-                    label: $gettext("Music Files"),
+                    label: $gettext("Upload & Manage Music"),
                     url: {
                         name: "stations:files:index",
                     },
@@ -119,7 +119,7 @@ export function useStationsMenu() {
                 },
                 {
                     key: "unprocessable",
-                    label: $gettext("Unprocessable Files"),
+                    label: $gettext("Files That Need Attention"),
                     url: {
                         name: "stations:files:index",
                         params: {
@@ -131,7 +131,7 @@ export function useStationsMenu() {
                 },
                 {
                     key: "unassigned",
-                    label: $gettext("Unassigned Files"),
+                    label: $gettext("Songs Not in a Playlist"),
                     url: {
                         name: "stations:files:index",
                         params: {
@@ -143,14 +143,14 @@ export function useStationsMenu() {
                 },
                 {
                     key: "ondemand",
-                    label: $gettext("On-Demand Media"),
+                    label: $gettext("On-Demand Library"),
                     url: station.value.onDemandUrl,
                     external: true,
                     visible: () => station.value.enableOnDemand,
                 },
                 {
                     key: "sftp_users",
-                    label: $gettext("SFTP Users"),
+                    label: $gettext("SFTP Upload Accounts"),
                     url: {
                         name: "stations:sftp_users:index",
                     },
@@ -160,7 +160,7 @@ export function useStationsMenu() {
                 },
                 {
                     key: "bulk_media",
-                    label: $gettext("Bulk Media Import/Export"),
+                    label: $gettext("Import / Export Music List"),
                     url: {
                         name: "stations:bulk-media",
                     },
@@ -193,7 +193,7 @@ export function useStationsMenu() {
         },
         {
             key: "streaming",
-            label: $gettext("Live Streaming"),
+            label: $gettext("Live DJs"),
             icon: () => IconIcMic,
             visible: () =>
                 userAllowedForStation(StationPermissions.Streamers) &&
@@ -201,7 +201,7 @@ export function useStationsMenu() {
             items: [
                 {
                     key: "streamers",
-                    label: $gettext("Streamer/DJ Accounts"),
+                    label: $gettext("DJ Accounts"),
                     url: {
                         name: "stations:streamers:index",
                     },
@@ -210,7 +210,7 @@ export function useStationsMenu() {
                 },
                 {
                     key: "webdj",
-                    label: $gettext("Web DJ"),
+                    label: $gettext("Browser DJ"),
                     url: station.value?.webDjUrl,
                     external: true,
                     visible: () => station.value.enablePublicPages,
@@ -219,7 +219,7 @@ export function useStationsMenu() {
         },
         {
             key: "webhooks",
-            label: $gettext("Web Hooks"),
+            label: $gettext("Alerts & Integrations"),
             icon: () => IconIcCode,
             url: {
                 name: "stations:webhooks:index",
@@ -277,12 +277,12 @@ export function useStationsMenu() {
         },
         {
             key: "broadcasting",
-            label: $gettext("Broadcasting"),
+            label: $gettext("On-Air Tools"),
             icon: () => IconBiBroadcast,
             items: [
                 {
                     key: "mounts",
-                    label: $gettext("Mount Points"),
+                    label: $gettext("Listener Streams"),
                     url: {
                         name: "stations:mounts:index",
                     },
@@ -302,7 +302,7 @@ export function useStationsMenu() {
                 },
                 {
                     key: "remotes",
-                    label: $gettext("Remote Relays"),
+                    label: $gettext("Remote Streams"),
                     url: {
                         name: "stations:remotes:index",
                     },
@@ -313,7 +313,7 @@ export function useStationsMenu() {
                 },
                 {
                     key: "fallback",
-                    label: $gettext("Custom Fallback File"),
+                    label: $gettext("Offline Fallback Audio"),
                     url: {
                         name: "stations:fallback",
                     },
@@ -324,7 +324,7 @@ export function useStationsMenu() {
                 },
                 {
                     key: "ls_config",
-                    label: $gettext("Edit Liquidsoap Configuration"),
+                    label: $gettext("Advanced AutoDJ Config"),
                     url: {
                         name: "stations:util:ls_config",
                     },
@@ -335,7 +335,7 @@ export function useStationsMenu() {
                 },
                 {
                     key: "stereo_tool",
-                    label: $gettext("Upload Stereo Tool Configuration"),
+                    label: $gettext("Stereo Tool Config"),
                     url: {
                         name: "stations:stereo_tool_config",
                     },
@@ -346,7 +346,7 @@ export function useStationsMenu() {
                 },
                 {
                     key: "queue",
-                    label: $gettext("Upcoming Song Queue"),
+                    label: $gettext("Upcoming Songs"),
                     url: {
                         name: "stations:queue:index",
                     },
@@ -357,7 +357,7 @@ export function useStationsMenu() {
                 },
                 {
                     key: "restart",
-                    label: $gettext("Restart Broadcasting"),
+                    label: $gettext("Restart Station"),
                     url: {
                         name: "stations:restart:index",
                     },
@@ -368,7 +368,7 @@ export function useStationsMenu() {
         },
         {
             key: "logs",
-            label: $gettext("Logs"),
+            label: $gettext("Station Logs"),
             icon: () => IconIcAssignment,
             url: {
                 name: "stations:logs",
