@@ -1,3 +1,5 @@
+# Offline Liquidsoap generator for Icecast webroot fallback-* assets.
+# Docker image builds generate the same set via util/docker/stations/icecast/install_web_assets.sh (ffmpeg).
 input = once(single("fallback.flac"));
 
 clock.assign_new(sync="none",[input])

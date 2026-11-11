@@ -255,16 +255,7 @@ class Icecast extends AbstractFrontend
                 );
             }
 
-            if (!empty($mountRow->fallback_mount)) {
-                $mount['fallback-mount'] = $mountRow->fallback_mount;
-                $mount['fallback-override'] = 1;
-            } elseif ($mountRow->enable_autodj) {
-                $autoDjFormat = $mountRow->autodj_format ?? StreamFormats::default();
-                $autoDjBitrate = $mountRow->autodj_bitrate;
-
-                $mount['fallback-mount'] = '/fallback-[' . $autoDjBitrate . '].' . $autoDjFormat->getExtension();
-                $mount['fallback-override'] = 1;
-            }
+            $this->writeMountFallback($mount, $mountRow);
 
             if ($mountRow->max_listener_duration) {
                 $mount['max-listener-duration'] = $mountRow->max_listener_duration;
@@ -375,6 +366,51 @@ class Icecast extends AbstractFrontend
         $publicUrl = $this->getPublicUrl($station, $baseUrl);
         return $publicUrl
             ->withPath($publicUrl->getPath() . '/admin.html');
+    }
+
+    /**
+     * Set Icecast/RSAS fallback-mount for a mount point.
+     *
+     * Prefers an explicit mount fallback, then a packaged bitrate/format-matched
+     * `/fallback-[{bitrate}].{ext}` asset, then the guaranteed `/error.mp3` jingle.
+     *
+     * @param array<string, mixed> $mount
+     */
+    protected function writeMountFallback(array &$mount, StationMount $mountRow): void
+    {
+        $fallbackMount = self::resolveFallbackMount($mountRow);
+        if (null === $fallbackMount) {
+            return;
+        }
+
+        $mount['fallback-mount'] = $fallbackMount;
+        $mount['fallback-override'] = 1;
+    }
+
+    /**
+     * Resolve the Icecast web path used when a mount's source disconnects.
+     */
+    public static function resolveFallbackMount(
+        StationMount $mountRow,
+        string $webroot = self::WEBROOT
+    ): ?string {
+        if (!empty($mountRow->fallback_mount)) {
+            return $mountRow->fallback_mount;
+        }
+
+        if (!$mountRow->enable_autodj) {
+            return null;
+        }
+
+        $autoDjFormat = $mountRow->autodj_format ?? StreamFormats::default();
+        $autoDjBitrate = $mountRow->autodj_bitrate ?? 128;
+        $fallbackMount = '/fallback-[' . $autoDjBitrate . '].' . $autoDjFormat->getExtension();
+
+        if (is_file($webroot . $fallbackMount)) {
+            return $fallbackMount;
+        }
+
+        return '/error.mp3';
     }
 
     public function getLogTypes(Station $station): array
