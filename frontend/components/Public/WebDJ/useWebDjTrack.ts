@@ -1,10 +1,10 @@
-// noinspection JSDeprecatedSymbols
-
-import { computed, ref, watch } from "vue";
+import { computed, onUnmounted, ref, watch } from "vue";
 import { useInjectWebDjNode } from "~/components/Public/WebDJ/useWebDjNode";
 
+const METER_INTERVAL_MS = 50;
+
 export function useWebDjTrack() {
-    const { context, sink, channelCount, bufferSize } = useInjectWebDjNode();
+    const { context, sink, channelCount } = useInjectWebDjNode();
 
     const trackGain = ref(55);
     const trackPassThrough = ref(false);
@@ -13,94 +13,108 @@ export function useWebDjTrack() {
 
     const source = ref<any>(null);
 
-    const createControlsNode = () => {
-        const bufferLog = Math.log(Number(bufferSize.value));
-        const log10 = 2.0 * Math.log(10);
-
-        const newSource = context.value.createScriptProcessor(
-            bufferSize.value,
-            channelCount.value,
-            channelCount.value,
-        );
-
-        newSource.onaudioprocess = (buf) => {
-            if (typeof source.value?.position === "function") {
-                position.value = source.value.position();
-            }
-
-            for (
-                let channel = 0;
-                channel < buf.inputBuffer.numberOfChannels;
-                channel++
-            ) {
-                const channelData = buf.inputBuffer.getChannelData(channel);
-
-                let rms = 0.0;
-                for (let i = 0; i < channelData.length; i++) {
-                    rms += channelData[i] ** 2;
-                }
-
-                volume.value =
-                    100 * Math.exp((Math.log(rms) - bufferLog) / log10);
-
-                buf.outputBuffer.getChannelData(channel).set(channelData);
-            }
-        };
-
-        return newSource;
-    };
-
-    const createPassThrough = () => {
-        const newSource = context.value.createScriptProcessor(
-            bufferSize.value,
-            channelCount.value,
-            channelCount.value,
-        );
-
-        newSource.onaudioprocess = (buf) => {
-            for (
-                let channel = 0;
-                channel < buf.inputBuffer.numberOfChannels;
-                channel++
-            ) {
-                const channelData = buf.inputBuffer.getChannelData(channel);
-
-                if (trackPassThrough.value) {
-                    buf.outputBuffer.getChannelData(channel).set(channelData);
-                } else {
-                    buf.outputBuffer.getChannelData(channel).fill(0);
-                }
-            }
-        };
-
-        return newSource;
-    };
-
-    let controlsNode: ScriptProcessorNode | null = null;
     let trackGainNode: GainNode | null = null;
-    let passThroughNode: ScriptProcessorNode | null = null;
+    let trackCueGainNode: GainNode | null = null;
+    let analyserNode: AnalyserNode | null = null;
+    let meterTimer: ReturnType<typeof setInterval> | null = null;
+    let positionTimer: ReturnType<typeof setInterval> | null = null;
+    let meterBuffer: Float32Array | null = null;
 
     const setTrackGain = (newGain: number) => {
-        if (trackGainNode?.gain?.value) {
+        if (trackGainNode) {
             trackGainNode.gain.value = Number(newGain) / 100.0;
         }
     };
 
     watch(trackGain, setTrackGain);
 
+    watch(trackPassThrough, (enabled) => {
+        if (trackCueGainNode) {
+            trackCueGainNode.gain.value = enabled ? 1 : 0;
+        }
+    });
+
+    const stopMeter = () => {
+        if (meterTimer !== null) {
+            clearInterval(meterTimer);
+            meterTimer = null;
+        }
+        if (positionTimer !== null) {
+            clearInterval(positionTimer);
+            positionTimer = null;
+        }
+        volume.value = 0;
+    };
+
+    const startMeter = () => {
+        stopMeter();
+
+        if (!analyserNode) {
+            return;
+        }
+
+        const analyser = analyserNode;
+        meterBuffer = new Float32Array(analyser.fftSize);
+
+        meterTimer = setInterval(() => {
+            if (!analyserNode || !meterBuffer) {
+                return;
+            }
+
+            analyserNode.getFloatTimeDomainData(
+                meterBuffer as Float32Array<ArrayBuffer>,
+            );
+
+            let sumSquares = 0;
+            for (let i = 0; i < meterBuffer.length; i++) {
+                const sample = meterBuffer[i] ?? 0;
+                sumSquares += sample * sample;
+            }
+
+            // Match prior ScriptProcessor loudness mapping (sum-of-squares vs log N).
+            const bufferLog = Math.log(meterBuffer.length);
+            const log10 = 2.0 * Math.log(10);
+            if (sumSquares > 0) {
+                volume.value =
+                    100 * Math.exp((Math.log(sumSquares) - bufferLog) / log10);
+            } else {
+                volume.value = 0;
+            }
+        }, METER_INTERVAL_MS);
+
+        positionTimer = setInterval(() => {
+            if (typeof source.value?.position === "function") {
+                position.value = source.value.position();
+            }
+        }, METER_INTERVAL_MS);
+    };
+
     const prepare = () => {
-        controlsNode = createControlsNode();
-        controlsNode.connect(sink.value);
+        stopMeter();
 
-        trackGainNode = context.value.createGain();
+        trackGainNode?.disconnect();
+        trackCueGainNode?.disconnect();
+        analyserNode?.disconnect();
+
+        const ctx = context.value;
+
+        trackGainNode = ctx.createGain();
         trackGainNode.gain.value = Number(trackGain.value) / 100.0;
-        trackGainNode.connect(controlsNode);
+        trackGainNode.connect(sink.value);
 
-        passThroughNode = createPassThrough();
-        passThroughNode.connect(context.value.destination);
-        trackGainNode.connect(passThroughNode);
+        // Per-track cue monitor — GainNode mute, not ScriptProcessor silence fills.
+        trackCueGainNode = ctx.createGain();
+        trackCueGainNode.gain.value = trackPassThrough.value ? 1 : 0;
+        trackGainNode.connect(trackCueGainNode);
+        trackCueGainNode.connect(ctx.destination);
 
-        void context.value.resume();
+        analyserNode = ctx.createAnalyser();
+        analyserNode.fftSize = 2048;
+        analyserNode.channelCount = channelCount.value;
+        trackGainNode.connect(analyserNode);
+
+        void ctx.resume();
+        startMeter();
 
         return trackGainNode;
     };
@@ -129,14 +143,25 @@ export function useWebDjTrack() {
         source.value?.stop();
         source.value?.disconnect();
 
-        trackGainNode?.disconnect();
-        controlsNode?.disconnect();
-        passThroughNode?.disconnect();
+        stopMeter();
 
-        source.value = trackGainNode = controlsNode = passThroughNode = null;
+        trackGainNode?.disconnect();
+        trackCueGainNode?.disconnect();
+        analyserNode?.disconnect();
+
+        source.value =
+            trackGainNode =
+            trackCueGainNode =
+            analyserNode =
+            meterBuffer =
+                null;
 
         position.value = 0.0;
     };
+
+    onUnmounted(() => {
+        stopMeter();
+    });
 
     return {
         source,

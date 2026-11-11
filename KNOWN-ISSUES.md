@@ -14,12 +14,21 @@ issue.
 
 ## WebDJ Audio Quality Issues
 
-The WebDJ feature, on some browsers and in some situations, can broadcast sound that seems "crackly" and intermittent to
-stream listeners. This is a known issue, but the cause of it is currently
-unknown. [#5116](https://github.com/merlinthedev848/MStream/issues/5116)
+The WebDJ feature historically could broadcast crackly or intermittent audio on some browsers (especially Chromium) when
+the client used main-thread `ScriptProcessorNode` copies and browser microphone processing (AEC/AGC/NS). See the
+original report lineage in [AzuraCast #5116](https://github.com/AzuraCast/AzuraCast/issues/5116).
 
-The upstream Webstreamer software that we use has been updated and may possibly resolve this, but incorporating it will
-require significant development effort on our end.
+MStream's WebDJ path has been upgraded toward the modern webcast.js MediaRecorder flow:
+
+- GainNode mix/cue bus (no ScriptProcessor on the encode path)
+- AnalyserNode metering instead of ScriptProcessor RMS taps
+- Preferred Opus mime selection (`audio/ogg;codecs=opus` when supported, else WebM Opus)
+- 48 kHz / 256 kbps defaults and 250 ms MediaRecorder timeslices
+- Microphone capture with echo cancellation / AGC / noise suppression disabled
+- Existing webcast socket ring-buffer / backpressure / reconnect hardening retained
+
+Residual browser MediaRecorder quirks can still appear on some Chromium builds; Firefox + HTTPS remains the most
+reliable combination for live browser DJ sessions.
 
 ## Can't Skip Songs After DJ Disconnects
 
