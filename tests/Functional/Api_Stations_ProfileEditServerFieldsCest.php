@@ -72,6 +72,9 @@ class Api_Stations_ProfileEditServerFieldsCest extends CestAbstract
         $I->assertArrayNotHasKey('max_listeners', $payload['frontend_config'] ?? []);
         $I->assertArrayNotHasKey('dj_port', $payload['backend_config'] ?? []);
         $I->assertArrayNotHasKey('telnet_port', $payload['backend_config'] ?? []);
+        // Adapter types stay on GET so Configure renders the correct broadcasting tabs.
+        $I->assertArrayHasKey('frontend_type', $payload);
+        $I->assertArrayHasKey('backend_type', $payload);
 
         $payload['frontend_config'] = is_array($payload['frontend_config'] ?? null)
             ? $payload['frontend_config']

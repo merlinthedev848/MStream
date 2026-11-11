@@ -10,6 +10,8 @@
                 :class="getLinkClass(category)"
                 :to="category.url"
                 class="nav-link"
+                active-class=""
+                exact-active-class=""
             >
                 <component
                     v-if="category.icon"
@@ -42,7 +44,7 @@
                 v-if="category.items"
                 :id="'sidebar-submenu-'+category.key"
                 class="collapse pb-2"
-                :class="(isActiveItem(category)) ? 'show' : ''"
+                :class="(isExpandedCategory(category)) ? 'show' : ''"
             >
                 <ul class="navdrawer-nav">
                     <li
@@ -56,6 +58,8 @@
                             class="nav-link ps-4 py-2"
                             :class="getLinkClass(item)"
                             :title="item.title"
+                            active-class=""
+                            exact-active-class=""
                         >
                             <span class="might-overflow">{{ item.label }}</span>
                         </router-link>
@@ -91,6 +95,7 @@ import {
     MenuRouteUrl,
     MenuSubCategory,
 } from "~/functions/filterMenu.ts";
+import { isMenuRouteActive } from "~/functions/isMenuRouteActive.ts";
 import IconIcOpenInNew from "~icons/ic/baseline-open-in-new";
 
 defineProps<{
@@ -109,16 +114,32 @@ const isCategory = (
     return "items" in item;
 };
 
-const isActiveItem = (item: MenuCategory | MenuSubCategory) => {
-    if (isCategory(item) && some(item.items ?? [], isActiveItem)) {
+const isActiveLeaf = (item: MenuCategory | MenuSubCategory): boolean => {
+    return isRouteLink(item.url) && isMenuRouteActive(item.url, currentRoute);
+};
+
+const isExpandedCategory = (item: MenuCategory): boolean => {
+    if (isActiveLeaf(item)) {
+        return true;
+    }
+    return some(item.items ?? [], isActiveLeaf);
+};
+
+const isActiveItem = (item: MenuCategory | MenuSubCategory): boolean => {
+    // Accordion parents without their own route only expand — leaf carries .active.
+    if (
+        isCategory(item) &&
+        (item.items?.length ?? 0) > 0 &&
+        !isRouteLink(item.url)
+    ) {
+        return false;
+    }
+
+    if (isActiveLeaf(item)) {
         return true;
     }
 
-    return (
-        isRouteLink(item.url) &&
-        !("params" in item.url) &&
-        item.url.name === currentRoute.name
-    );
+    return false;
 };
 
 const getLinkClass = (item: MenuSubCategory) => {

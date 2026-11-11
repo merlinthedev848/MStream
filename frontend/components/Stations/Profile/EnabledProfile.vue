@@ -18,12 +18,13 @@
                 <usage-graphs-panel />
 
                 <profile-schedule/>
-
-                <profile-streams/>
             </template>
             <template v-else>
                 <now-playing-not-started-panel />
             </template>
+
+            <!-- Always mount streams so Getting Started / share links stay honest pre-start. -->
+            <profile-streams/>
 
             <profile-public-pages/>
         </div>
