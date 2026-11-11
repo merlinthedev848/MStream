@@ -47,7 +47,11 @@ class Api_Stations_VisualRadioCest extends CestAbstract
         $I->seeResponseCodeIs(403);
 
         // Authenticated Broadcasting-capable user (test admin has GlobalPermissions::All) can manage config.
-        $I->amBearerAuthenticated($this->login_api_key);
+        $apiKey = $this->login_api_key;
+        if ($apiKey === null) {
+            throw new \RuntimeException('Expected test API key after setupComplete.');
+        }
+        $I->amBearerAuthenticated($apiKey);
         $I->haveHttpHeader('Content-Type', 'application/json');
 
         $I->sendGET($url);
