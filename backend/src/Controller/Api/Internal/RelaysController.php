@@ -20,6 +20,7 @@ use App\OpenApi;
 use App\Radio\Adapters;
 use App\Radio\Enums\FrontendAdapters;
 use App\Radio\Enums\RemoteAdapters;
+use App\Utilities\Time;
 use OpenApi\Attributes as OA;
 use Psr\Http\Message\ResponseInterface;
 
@@ -179,6 +180,11 @@ final class RelaysController
                 $this->em->remove($existingRemote);
             }
         }
+
+        // Heartbeats often repeat unchanged fields. Doctrine will not mark the Relay dirty
+        // in that case, so PreUpdate never runs and updated_at goes stale — then
+        // CleanupRelaysTask deletes still-live relays (and cascaded StationRemote rows).
+        $relay->updated_at = Time::nowUtc();
 
         $this->em->flush();
 
