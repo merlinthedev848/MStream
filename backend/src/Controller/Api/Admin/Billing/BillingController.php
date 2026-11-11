@@ -73,7 +73,7 @@ use Throwable;
                     new OA\Property(
                         property: 'disk_quota_mb',
                         type: 'integer',
-                        description: 'Maximum storage quota in MB (applied to media/recordings/podcasts locations; 0 clears quota)'
+                        description: 'Max storage quota in MB for media/recordings/podcasts; 0 clears'
                     ),
                 ],
             )
@@ -309,7 +309,11 @@ final class BillingController
      */
     private function applyDiskQuota(Station $station, array $data): void
     {
-        if (!array_key_exists('disk_quota_mb', $data) || $data['disk_quota_mb'] === null || $data['disk_quota_mb'] === '') {
+        if (
+            !array_key_exists('disk_quota_mb', $data)
+            || $data['disk_quota_mb'] === null
+            || $data['disk_quota_mb'] === ''
+        ) {
             return;
         }
 
