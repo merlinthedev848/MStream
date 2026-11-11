@@ -21,6 +21,20 @@
                 :show-toolbar="false"
                 :provider="itemProvider"
             >
+                <template #empty>
+                    <div class="admin-guided-empty admin-console">
+                        <div class="admin-guided-empty-title">
+                            {{ $gettext('No custom fields') }}
+                        </div>
+                        <p class="admin-guided-empty-text mb-0">
+                            {{
+                                $gettext(
+                                    'Optional metadata fields for music library tracks across stations.',
+                                )
+                            }}
+                        </p>
+                    </div>
+                </template>
                 <template #cell(name)="{ item }">
                     {{ item.name }} <code>{{ item.short_name }}</code>
                 </template>

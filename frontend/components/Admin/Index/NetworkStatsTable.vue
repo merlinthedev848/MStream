@@ -19,6 +19,7 @@
                     <td
                         v-for="key in fields"
                         :key="`row-${index}-${key}`"
+                        class="broadcast-mono"
                     >
                         {{ get(row, key, null) }}
                     </td>

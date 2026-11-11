@@ -1,6 +1,6 @@
 <template>
     <h2 class="outside-card-header mb-1">
-        {{ $gettext('System Debugger') }}
+        {{ $gettext('Debugger') }}
     </h2>
 
     <div class="row row-of-cards">

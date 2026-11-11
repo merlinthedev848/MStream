@@ -48,17 +48,17 @@
                 <div class="col">
                     <span class="badge text-bg-danger me-1">&nbsp;&nbsp;</span>
                     {{ $gettext('Steal') }}
-                    : {{ cpuStats.total.steal }}%
+                    : <span class="broadcast-mono">{{ cpuStats.total.steal }}%</span>
                 </div>
                 <div class="col">
                     <span class="badge text-bg-warning me-1">&nbsp;&nbsp;</span>
                     {{ $gettext('Wait') }}
-                    : {{ cpuStats.total.io_wait }}%
+                    : <span class="broadcast-mono">{{ cpuStats.total.io_wait }}%</span>
                 </div>
                 <div class="col">
                     <span class="badge text-bg-primary me-1">&nbsp;&nbsp;</span>
                     {{ $gettext('Use') }}
-                    : {{ cpuStats.total.usage }}%
+                    : <span class="broadcast-mono">{{ cpuStats.total.usage }}%</span>
                 </div>
             </div>
 
@@ -95,7 +95,7 @@
                         />
                     </div>
 
-                    <div class="row mb-2 mt-1">
+                    <div class="row mb-2 mt-1 broadcast-mono">
                         <div class="col">
                             St: {{ core.steal }}%
                         </div>
@@ -114,7 +114,7 @@
             <h6 class="mb-1 text-center">
                 {{ $gettext('Load Average') }}
             </h6>
-            <div class="row text-center">
+            <div class="row text-center broadcast-mono">
                 <div class="col">
                     <h6>1-Min</h6>
                     {{ cpuStats.load[0].toFixed(2) }}

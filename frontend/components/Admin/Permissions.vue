@@ -1,15 +1,16 @@
 <template>
+    <div class="admin-console">
     <card-page :title="$gettext('Roles & Permissions')">
         <template #info>
             <p class="card-text">
                 {{
-                    $gettext('MStream uses a role-based access control system. Roles are given permissions to certain sections of the site, then users are assigned into those roles.')
+                    $gettext('Roles grant access to admin areas and individual stations. Assign roles to accounts to control who can manage what.')
                 }}
             </p>
         </template>
         <template #actions>
             <add-button
-                :text="$gettext('Add Role')"
+                :text="$gettext('New Role')"
                 @click="doCreate"
             />
         </template>
@@ -20,6 +21,20 @@
             :fields="fields"
             :provider="listItemProvider"
         >
+            <template #empty>
+                <div class="admin-guided-empty">
+                    <div class="admin-guided-empty-title">
+                        {{ $gettext('No roles defined') }}
+                    </div>
+                    <p class="admin-guided-empty-text mb-0">
+                        {{
+                            $gettext(
+                                'Create a role, pick global and station permissions, then assign it to accounts.',
+                            )
+                        }}
+                    </p>
+                </div>
+            </template>
             <template #cell(permissions)="{item}">
                 <div v-if="item.permissions.global.length > 0">
                     <b>{{ $gettext('Global') }}:</b>
@@ -69,6 +84,7 @@
             @relist="() => relist()"
         />
     </card-page>
+    </div>
 </template>
 
 <script setup lang="ts">

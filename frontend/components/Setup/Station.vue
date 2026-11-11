@@ -16,7 +16,7 @@
                     id="hdr_new_station"
                     class="card-title flex-fill"
                 >
-                    {{ $gettext('Station Setup') }}
+                    {{ $gettext('Create Your First Station') }}
                 </h3>
                 <div class="flex-shrink-0">
                     <a
@@ -30,7 +30,7 @@
 
             <info-card>
                 {{
-                    $gettext('A default station with full AutoDJ is already configured and ready to broadcast. You can create or customize a station below, or skip and proceed with the default.')
+                    $gettext('A default AutoDJ-ready station is already available. Create a custom station below, or skip and continue with the default — uploads will play automatically either way.')
                 }}
             </info-card>
 

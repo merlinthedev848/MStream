@@ -86,7 +86,7 @@
                     >
                         <icon-ic-settings/>
 
-                        {{ $gettext('System Administration') }}
+                        {{ $gettext('Admin Console') }}
                     </router-link>
                 </li>
                 <li>

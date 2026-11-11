@@ -1,80 +1,98 @@
 <template>
     <dashboard-no-sidebar>
-        <h2 class="outside-card-header mb-1">
-            {{ $gettext('Administration') }}
-        </h2>
+        <div
+            id="admin-index"
+            class="admin-console"
+        >
+            <h2 class="outside-card-header mb-1">
+                {{ $gettext('Admin Console') }}
+            </h2>
+            <p class="admin-section-lead">
+                {{
+                    $gettext(
+                        'Manage stations, people, storage, and host health from one place.',
+                    )
+                }}
+            </p>
 
-        <div class="row row-of-cards">
-            <div class="col-sm-12 col-lg-4">
-                <menu-block :items="menuItems.slice(0, 1)"/>
-            </div>
-            <div class="col-sm-12 col-lg-4">
-                <menu-block :items="menuItems.slice(1, 2)"/>
-            </div>
-            <div class="col-sm-12 col-lg-4">
-                <menu-block :items="menuItems.slice(2)"/>
-            </div>
-        </div>
-
-        <h2 class="outside-card-header mb-1">
-            {{ $gettext('Server Status') }}
-        </h2>
-
-        <div class="row row-of-cards">
-            <div class="col-sm-12 col-lg-6 col-xl-6">
-                <loading
-                    :loading="isLoading"
-                    lazy
-                >
-                    <memory-stats-panel
-                        v-if="stats && stats.memory"
-                        :memory-stats="stats.memory"
-                    />
-                </loading>
+            <div class="row row-of-cards">
+                <div class="col-sm-12 col-lg-4">
+                    <menu-block :items="menuItems.slice(0, 1)"/>
+                </div>
+                <div class="col-sm-12 col-lg-4">
+                    <menu-block :items="menuItems.slice(1, 2)"/>
+                </div>
+                <div class="col-sm-12 col-lg-4">
+                    <menu-block :items="menuItems.slice(2)"/>
+                </div>
             </div>
 
-            <div class="col-sm-12 col-lg-6 col-xl-6">
-                <loading
-                    :loading="isLoading"
-                    lazy
-                >
-                    <disk-usage-panel
-                        v-if="stats && stats.disk"
-                        :disk-stats="stats.disk"
-                    />
-                </loading>
-            </div>
-        </div>
+            <h2 class="outside-card-header mb-1">
+                {{ $gettext('Station Fleet') }}
+            </h2>
 
-        <div class="row row-of-cards">
-            <div class="col-sm-12 col-lg-8 col-xl-6">
-                <loading
-                    :loading="isLoading"
-                    lazy
-                >
-                    <cpu-stats-panel
-                        v-if="stats && stats.cpu"
-                        :cpu-stats="stats.cpu"
-                    />
-                </loading>
+            <station-fleet-panel />
+
+            <h2 class="outside-card-header mb-1">
+                {{ $gettext('Host Metrics') }}
+            </h2>
+
+            <div class="row row-of-cards">
+                <div class="col-sm-12 col-lg-6 col-xl-6">
+                    <loading
+                        :loading="isLoading"
+                        lazy
+                    >
+                        <memory-stats-panel
+                            v-if="stats && stats.memory"
+                            :memory-stats="stats.memory"
+                        />
+                    </loading>
+                </div>
+
+                <div class="col-sm-12 col-lg-6 col-xl-6">
+                    <loading
+                        :loading="isLoading"
+                        lazy
+                    >
+                        <disk-usage-panel
+                            v-if="stats && stats.disk"
+                            :disk-stats="stats.disk"
+                        />
+                    </loading>
+                </div>
             </div>
 
-            <div class="col-sm-12 col-lg-4 col-xl-6">
-                <services-panel />
-            </div>
-        </div>
+            <div class="row row-of-cards">
+                <div class="col-sm-12 col-lg-8 col-xl-6">
+                    <loading
+                        :loading="isLoading"
+                        lazy
+                    >
+                        <cpu-stats-panel
+                            v-if="stats && stats.cpu"
+                            :cpu-stats="stats.cpu"
+                        />
+                    </loading>
+                </div>
 
-        <div class="row row-of-cards">
-            <div class="col">
-                <loading
-                    :loading="isLoading"
-                    lazy
-                >
-                    <network-stats-panel
-                        v-if="stats && stats.network"
-                        :network-stats="stats.network"
-                    />
-                </loading>
+                <div class="col-sm-12 col-lg-4 col-xl-6">
+                    <services-panel />
+                </div>
+            </div>
+
+            <div class="row row-of-cards">
+                <div class="col">
+                    <loading
+                        :loading="isLoading"
+                        lazy
+                    >
+                        <network-stats-panel
+                            v-if="stats && stats.network"
+                            :network-stats="stats.network"
+                        />
+                    </loading>
+                </div>
             </div>
         </div>
     </dashboard-no-sidebar>
@@ -88,6 +106,7 @@ import MemoryStatsPanel from "~/components/Admin/Index/MemoryStatsPanel.vue";
 import MenuBlock from "~/components/Admin/Index/MenuBlock.vue";
 import NetworkStatsPanel from "~/components/Admin/Index/NetworkStatsPanel.vue";
 import ServicesPanel from "~/components/Admin/Index/ServicesPanel.vue";
+import StationFleetPanel from "~/components/Admin/Index/StationFleetPanel.vue";
 import { useAdminMenu } from "~/components/Admin/menu";
 import Loading from "~/components/Common/Loading.vue";
 import DashboardNoSidebar from "~/components/Layout/DashboardNoSidebar.vue";

@@ -1,6 +1,6 @@
 <template>
     <tab
-        :label="$gettext('Administration')"
+        :label="$gettext('Admin Limits')"
         :item-header-class="tabClass"
     >
         <div class="row g-3 mb-3">
@@ -17,8 +17,8 @@
                 class="col-md-6"
                 :field="r$.radio_base_dir"
                 advanced
-                :label="$gettext('Base Station Directory')"
-                :description="$gettext('The parent directory where station playlist and configuration files are stored. Leave blank to use default directory.')"
+                :label="$gettext('Station Files Directory')"
+                :description="$gettext('Parent directory for playlist and configuration files. Leave blank to use the default.')"
             />
         </div>
 
@@ -27,8 +27,8 @@
                 id="edit_form_max_bitrate"
                 class="col-md-4"
                 :field="r$.max_bitrate"
-                :label="$gettext('Maximum Bitrate')"
-                :description="$gettext('The maximum bitrate in which the station allowed to broadcast at, in Kbps. 0 for unlimited.')"
+                :label="$gettext('Max Bitrate (Kbps)')"
+                :description="$gettext('Highest bitrate allowed for this station. 0 means unlimited.')"
                 input-number
             />
 
@@ -36,8 +36,8 @@
                 id="edit_form_max_mounts"
                 class="col-md-4"
                 :field="r$.max_mounts"
-                :label="$gettext('Maximum Mounts')"
-                :description="$gettext('The maximum number of mount points allowed. 0 for unlimited.')"
+                :label="$gettext('Max Listener Streams')"
+                :description="$gettext('Maximum mount points allowed. 0 means unlimited.')"
                 input-number
             />
 
@@ -45,8 +45,8 @@
                 id="edit_form_max_hls_streams"
                 class="col-md-4"
                 :field="r$.max_hls_streams"
-                :label="$gettext('Maximum HLS Streams')"
-                :description="$gettext('The maximum number of HLS streams allowed. 0 for unlimited.')"
+                :label="$gettext('Max HLS Streams')"
+                :description="$gettext('Maximum HLS streams allowed. 0 means unlimited.')"
                 input-number
             />
         </div>
@@ -58,7 +58,7 @@
                     class="col-md-12"
                     :field="r$.media_storage_location"
                     :options="storageLocationOptions.media_storage_location"
-                    :label="$gettext('Media Storage Location')"
+                    :label="$gettext('Music Library Storage')"
                 />
 
                 <form-group-select
@@ -66,7 +66,7 @@
                     class="col-md-12"
                     :field="r$.recordings_storage_location"
                     :options="storageLocationOptions.recordings_storage_location"
-                    :label="$gettext('Live Recordings Storage Location')"
+                    :label="$gettext('Live Recordings Storage')"
                 />
 
                 <form-group-select
@@ -74,7 +74,7 @@
                     class="col-md-12"
                     :field="r$.podcasts_storage_location"
                     :options="storageLocationOptions.podcasts_storage_location"
-                    :label="$gettext('Podcasts Storage Location')"
+                    :label="$gettext('Podcasts Storage')"
                 />
             </div>
         </loading>

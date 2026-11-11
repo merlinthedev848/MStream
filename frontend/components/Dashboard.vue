@@ -25,7 +25,7 @@
                         :to="{ name: 'admin:index' }"
                     >
                         <icon-ic-settings/>
-                        <span>{{ $gettext('Administration') }}</span>
+                        <span>{{ $gettext('Admin Console') }}</span>
                     </router-link>
                 </user-info-panel>
 

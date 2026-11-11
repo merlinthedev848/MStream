@@ -22,7 +22,7 @@
             <h6 class="mb-1 text-center">
                 {{ $gettext('Total RAM') }}
                 :
-                {{ memoryStats.total_readable }}
+                <span class="broadcast-mono">{{ memoryStats.total_readable }}</span>
             </h6>
 
             <div
@@ -46,13 +46,13 @@
                 <div class="col">
                     <span class="badge text-bg-primary me-1">&nbsp;&nbsp;</span>
                     {{ $gettext('Used') }}
-                    : {{ memoryStats.used_readable }}
+                    : <span class="broadcast-mono">{{ memoryStats.used_readable }}</span>
                 </div>
                 <div class="col">
                     <span class="badge text-bg-warning me-1">&nbsp;&nbsp;</span>&nbsp;
 
                     {{ $gettext('Cached') }}
-                    : {{ memoryStats.cached_readable }}
+                    : <span class="broadcast-mono">{{ memoryStats.cached_readable }}</span>
                 </div>
             </div>
         </div>

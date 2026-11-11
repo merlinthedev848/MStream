@@ -2,7 +2,7 @@
     <div class="row-of-cards">
         <card-page
             header-id="hdr_system_logs"
-            :title="$gettext('System Logs')"
+            :title="$gettext('Logs')"
         >
             <loading :loading="isLoading" lazy>
                 <log-list

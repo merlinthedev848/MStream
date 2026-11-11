@@ -1,6 +1,6 @@
 <template>
     <h2 class="outside-card-header mb-1">
-        {{ $gettext('Custom Branding') }}
+        {{ $gettext('Branding') }}
     </h2>
 
     <card-page
