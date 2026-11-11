@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Functional;
 
 use FunctionalTester;
+use RuntimeException;
 
 class Api_Stations_VisualRadioCest extends CestAbstract
 {
@@ -49,7 +50,7 @@ class Api_Stations_VisualRadioCest extends CestAbstract
         // Authenticated Broadcasting-capable user (test admin has GlobalPermissions::All) can manage config.
         $apiKey = $this->login_api_key;
         if ($apiKey === null) {
-            throw new \RuntimeException('Expected test API key after setupComplete.');
+            throw new RuntimeException('Expected test API key after setupComplete.');
         }
         $I->amBearerAuthenticated($apiKey);
         $I->haveHttpHeader('Content-Type', 'application/json');
