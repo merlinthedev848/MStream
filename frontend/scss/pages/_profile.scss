@@ -38,6 +38,59 @@
     font-weight: 700;
   }
 
+  .nowplaying-body {
+    min-height: 9.5rem;
+  }
+
+  .nowplaying-grid {
+    min-height: 7.5rem;
+  }
+
+  .nowplaying-art {
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+    background: var(--bs-tertiary-bg, #0f1420);
+    border: 1px solid var(--border-color-dark, #242f44);
+    border-radius: 4px;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    &--lg {
+      width: 50px;
+      height: 50px;
+      min-width: 50px;
+      min-height: 50px;
+    }
+
+    &--sm {
+      width: 40px;
+      height: 40px;
+      min-width: 40px;
+      min-height: 40px;
+    }
+  }
+
+  .nowplaying-meta {
+    min-height: 2.4rem;
+  }
+
+  .nowplaying-playlist-well {
+    min-height: 1.75rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .nowplaying-progress-well {
+    min-height: 1.6rem;
+  }
+
   .nowplaying-progress {
     font-family: $font-family-monospace;
     font-variant-numeric: tabular-nums;
@@ -48,6 +101,75 @@
     border-radius: 3px;
     border: 1px solid var(--border-color-dark, #242f44);
     display: inline-block;
+    min-width: 7.5rem;
+
+    &.is-empty {
+      color: #64748b;
+      opacity: 0.7;
+    }
+  }
+
+  .nowplaying-side-well {
+    position: relative;
+    min-height: 6.75rem;
+  }
+
+  .nowplaying-side-panel {
+    min-height: 6.75rem;
+  }
+
+  .nowplaying-next-panel {
+    display: block;
+  }
+
+  .nowplaying-live-panel {
+    display: none;
+  }
+
+  .nowplaying-side-well.is-live {
+    .nowplaying-next-panel {
+      display: none;
+    }
+
+    .nowplaying-live-panel {
+      display: block;
+    }
+  }
+
+  .nowplaying-live-heading {
+    margin: 0 0 0.5rem 22px;
+  }
+
+  .nowplaying-live-name {
+    margin-left: 22px;
+    min-height: 1.75rem;
+  }
+
+  .nowplaying-transport {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    min-height: 2.5rem;
+  }
+
+  .nowplaying-transport-slot {
+    display: grid;
+    grid-template-areas: "transport-action";
+    align-items: center;
+    min-width: 12rem;
+    min-height: 2.5rem;
+  }
+
+  .nowplaying-transport-btn {
+    grid-area: transport-action;
+    justify-self: start;
+    text-align: start;
+
+    &:not(.is-active) {
+      visibility: hidden;
+      pointer-events: none;
+    }
   }
 }
 
@@ -112,5 +234,19 @@
     border-radius: 2px;
     font-size: 0.7rem;
     padding: 0.3rem 0.45rem;
+  }
+
+  .scheduled {
+    .schedule-table {
+      min-height: 3.25rem;
+    }
+
+    .schedule-row--empty td {
+      min-height: 3.25rem;
+      height: 3.25rem;
+      vertical-align: middle;
+      padding-top: 0.9rem;
+      padding-bottom: 0.9rem;
+    }
   }
 }
