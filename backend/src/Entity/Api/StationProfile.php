@@ -20,6 +20,9 @@ final class StationProfile
     #[OA\Property]
     public StationServiceStatus $services;
 
+    #[OA\Property]
+    public StationProfileOps $ops;
+
     /** @var StationSchedule[] */
     #[OA\Property(
         type: 'array',

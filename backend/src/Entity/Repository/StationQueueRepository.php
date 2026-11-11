@@ -160,6 +160,15 @@ final class StationQueueRepository extends AbstractStationBasedRepository
         return $this->getUnplayedBaseQuery($station)->getQuery()->execute();
     }
 
+    public function getUnplayedQueueDepth(Station $station): int
+    {
+        return (int)$this->getUnplayedBaseQuery($station)
+            ->select('count(sq.id)')
+            ->resetDQLPart('orderBy')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
     public function clearUpcomingQueue(Station $station): void
     {
         $this->em->getConnection()->transactional(function () use ($station): void {

@@ -13,6 +13,48 @@
                 </div>
             </div>
         </template>
+
+        <div class="card-body py-3">
+            <div class="broadcast-ops-grid">
+                <div class="broadcast-ops-cell">
+                    <div class="broadcast-ops-label">
+                        {{ $gettext('Connection') }}
+                    </div>
+                    <div class="broadcast-ops-value">
+                        <span
+                            v-if="isLive"
+                            class="badge broadcast-tally-live"
+                        >
+                            {{ $gettext('LIVE') }}
+                        </span>
+                        <span
+                            v-else-if="!stationData.enableStreamers"
+                            class="badge broadcast-tally-standby"
+                        >
+                            {{ $gettext('OFF') }}
+                        </span>
+                        <span
+                            v-else
+                            class="badge broadcast-tally-standby"
+                        >
+                            {{ $gettext('STANDBY') }}
+                        </span>
+                    </div>
+                </div>
+                <div class="broadcast-ops-cell">
+                    <div class="broadcast-ops-label">
+                        {{ $gettext('Connected Streamer') }}
+                    </div>
+                    <div
+                        class="broadcast-ops-value broadcast-ops-streamer"
+                        :class="isLive ? 'text-success' : 'text-muted'"
+                    >
+                        {{ connectedStreamerLabel }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <template
             v-if="(stationData.enableStreamers && (stationData.enablePublicPages || userAllowedForStation(StationPermissions.Streamers))) || userAllowedForStation(StationPermissions.Profile)"
             #footer_actions
@@ -76,18 +118,33 @@
 import { computed } from "vue";
 import EnabledBadge from "~/components/Common/Badges/EnabledBadge.vue";
 import CardPage from "~/components/Common/CardPage.vue";
+import { useStationProfileData } from "~/components/Stations/Profile/useProfileQuery.ts";
 import useToggleFeature from "~/components/Stations/Profile/useToggleFeature";
 import { StationPermissions } from "~/entities/ApiInterfaces.ts";
 import { useStationData } from "~/functions/useStationQuery.ts";
 import { useUserAllowedForStation } from "~/functions/useUserallowedForStation.ts";
+import { useTranslate } from "~/vendor/gettext";
 import IconIcCheck from "~icons/ic/baseline-check";
 import IconIcClose from "~icons/ic/baseline-close";
 import IconIcMic from "~icons/ic/baseline-mic";
 import IconIcSettings from "~icons/ic/baseline-settings";
 
 const stationData = useStationData();
+const profileData = useStationProfileData();
 
 const { userAllowedForStation } = useUserAllowedForStation();
+const { $gettext } = useTranslate();
+
+const isLive = computed(() => Boolean(profileData.value.ops?.isStreamerLive));
+
+const connectedStreamerLabel = computed(() => {
+    if (!isLive.value) {
+        return $gettext("None");
+    }
+
+    const name = profileData.value.ops?.connectedStreamer?.trim();
+    return name && name.length > 0 ? name : $gettext("Live DJ");
+});
 
 const toggleStreamers = useToggleFeature(
     "enable_streamers",

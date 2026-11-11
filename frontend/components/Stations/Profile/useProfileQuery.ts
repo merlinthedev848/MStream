@@ -59,6 +59,12 @@ const blankServices: StationProfileRequired = {
         backendRunning: false,
         frontendRunning: false,
     },
+    ops: {
+        queueDepth: 0,
+        pendingRequests: 0,
+        isStreamerLive: false,
+        connectedStreamer: null,
+    },
     schedule: [],
 };
 
