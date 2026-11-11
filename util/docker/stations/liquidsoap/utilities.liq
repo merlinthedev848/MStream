@@ -53,3 +53,41 @@ def mstream.utilities.add_custom_metadata_command(
         insert
     )
 end
+
+# Attach stereo VU (RMS) + sample-peak meters on the master bus and expose
+# a telnet command `radio.meters` that returns compact JSON for the console.
+# Levels are linear PCM analysis from Liquidsoap (dBFS); peak is sample peak.
+def mstream.utilities.attach_meters(s) =
+    vu_src = rms.stereo(id="mstream_vu", duration=0.25, s)
+    peak_src = peak.stereo(id="mstream_peak", duration=0.05, vu_src)
+
+    def db_of_lin_safe(v) =
+        if v > 0. then
+            dB_of_lin(v)
+        else
+            -90.
+        end
+    end
+
+    def meters(_) =
+        let (vu_l, vu_r) = vu_src.rms()
+        let (pk_l, pk_r) = peak_src.peak()
+
+        j = json()
+        j.add("vu_l", db_of_lin_safe(vu_l))
+        j.add("vu_r", db_of_lin_safe(vu_r))
+        j.add("peak_l", db_of_lin_safe(pk_l))
+        j.add("peak_r", db_of_lin_safe(pk_r))
+        json.stringify(compact=true, j)
+    end
+
+    server.register(
+        namespace="radio",
+        usage="meters",
+        description="Return current stereo VU (RMS) and sample-peak levels in dBFS as JSON.",
+        "meters",
+        meters
+    )
+
+    peak_src
+end

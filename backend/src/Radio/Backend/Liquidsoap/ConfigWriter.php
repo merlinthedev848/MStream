@@ -697,6 +697,9 @@ final class ConfigWriter implements EventSubscriberInterface
 
             # Handle "Jingle Mode" tracks by replaying the previous metadata.
             radio = mstream.handle_jingle_mode(radio)
+
+            # Master-bus VU / peak meters for the station console (radio.meters).
+            radio = mstream.utilities.attach_meters(radio)
             LIQ
         );
 
