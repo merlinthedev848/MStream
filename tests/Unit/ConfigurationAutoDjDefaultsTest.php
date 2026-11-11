@@ -10,6 +10,7 @@ use App\Entity\Enums\PlaylistSources;
 use App\Entity\Enums\PlaylistTypes;
 use App\Entity\Station;
 use App\Entity\StationPlaylist;
+use App\Entity\StationPlaylistFolder;
 use App\Environment;
 use App\Radio\Adapters;
 use App\Radio\AutoDJ\PlaylistQueueResetter;
@@ -64,8 +65,8 @@ final class ConfigurationAutoDjDefaultsTest extends Unit
 
         self::assertCount(1, $station->playlists);
 
-        /** @var StationPlaylist $playlist */
         $playlist = $station->playlists->first();
+        self::assertInstanceOf(StationPlaylist::class, $playlist);
         self::assertSame(Configuration::DEFAULT_PLAYLIST_NAME, $playlist->name);
         self::assertTrue($playlist->is_enabled);
         self::assertSame(PlaylistTypes::Standard, $playlist->type);
@@ -74,9 +75,11 @@ final class ConfigurationAutoDjDefaultsTest extends Unit
         self::assertSame(StationPlaylist::DEFAULT_WEIGHT, $playlist->weight);
 
         self::assertCount(1, $playlist->folders);
+        $folder = $playlist->folders->first();
+        self::assertInstanceOf(StationPlaylistFolder::class, $folder);
         self::assertSame(
             Configuration::DEFAULT_MEDIA_FOLDER_PATH,
-            $playlist->folders->first()->path
+            $folder->path
         );
     }
 
@@ -94,7 +97,9 @@ final class ConfigurationAutoDjDefaultsTest extends Unit
         $configuration->ensureAutoDjReadyDefaults($station);
 
         self::assertCount(1, $station->playlists);
-        self::assertCount(1, $station->playlists->first()->folders);
+        $playlist = $station->playlists->first();
+        self::assertInstanceOf(StationPlaylist::class, $playlist);
+        self::assertCount(1, $playlist->folders);
     }
 
     private function createConfiguration(): Configuration

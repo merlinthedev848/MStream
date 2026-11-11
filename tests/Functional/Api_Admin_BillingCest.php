@@ -6,7 +6,9 @@ namespace Functional;
 
 use App\Entity\Enums\PlaylistTypes;
 use App\Entity\Station;
+use App\Entity\StationMount;
 use App\Entity\StationPlaylist;
+use App\Entity\StationPlaylistFolder;
 use App\Radio\Configuration;
 use App\Radio\Enums\CrossfadeModes;
 use FunctionalTester;
@@ -72,11 +74,13 @@ class Api_Admin_BillingCest extends CestAbstract
         $I->assertInstanceOf(StationPlaylist::class, $defaultPlaylist);
 
         $hasMediaRootFolder = $defaultPlaylist->folders->exists(
-            static fn(int $key, $folder): bool => Configuration::DEFAULT_MEDIA_FOLDER_PATH === $folder->path
+            static fn(int $key, StationPlaylistFolder $folder): bool => Configuration::DEFAULT_MEDIA_FOLDER_PATH === $folder->path
         );
         $I->assertTrue($hasMediaRootFolder);
 
-        $I->assertSame('/error.mp3', $station->mounts->first()->fallback_mount);
+        $defaultMount = $station->mounts->first();
+        $I->assertInstanceOf(StationMount::class, $defaultMount);
+        $I->assertSame('/error.mp3', $defaultMount->fallback_mount);
 
         // Status
         $I->sendPost('/api/admin/billing/provision', [
