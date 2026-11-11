@@ -47,19 +47,9 @@ return static function (RouteCollectorProxy $group) {
                     $group->get('/schedule', Controller\Api\Stations\ScheduleAction::class)
                         ->setName('api:stations:schedule');
 
-                    // VAST / DAI Dynamic Audio Ad Insertion Endpoint
+                    // VAST / DAI Dynamic Audio Ad Insertion Endpoint (read-only XML for players)
                     $group->get('/vast', Controller\Api\Stations\Media\VastAdController::class)
                         ->setName('api:stations:vast');
-
-                    // Visual Radio & Video Re-Streaming Configuration
-                    $group->get(
-                        '/visual-radio',
-                        Controller\Api\Stations\Media\VisualRadioController::class . ':getConfig'
-                    )->setName('api:stations:visual-radio:get');
-                    $group->post(
-                        '/visual-radio',
-                        Controller\Api\Stations\Media\VisualRadioController::class . ':setConfig'
-                    )->setName('api:stations:visual-radio:set');
 
                     // Song Requests
                     $group->get('/requests', Controller\Api\Stations\Requests\ListAction::class)
@@ -166,6 +156,22 @@ return static function (RouteCollectorProxy $group) {
                         ['GET', 'POST'],
                         '/nowplaying/update',
                         Controller\Api\Stations\UpdateMetadataAction::class
+                    )->add(new Middleware\Permissions(StationPermissions::Broadcasting, true));
+
+                    // Visual Radio & Video Re-Streaming Configuration (contains restream secrets)
+                    $group->group(
+                        '/visual-radio',
+                        function (RouteCollectorProxy $group) {
+                            $group->get(
+                                '',
+                                Controller\Api\Stations\Media\VisualRadioController::class . ':getConfig'
+                            )->setName('api:stations:visual-radio:get');
+
+                            $group->post(
+                                '',
+                                Controller\Api\Stations\Media\VisualRadioController::class . ':setConfig'
+                            )->setName('api:stations:visual-radio:set');
+                        }
                     )->add(new Middleware\Permissions(StationPermissions::Broadcasting, true));
 
                     $group->get('/profile', Controller\Api\Stations\ProfileAction::class)
