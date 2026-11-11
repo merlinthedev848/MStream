@@ -83,6 +83,7 @@ class Api_Admin_BillingCest extends CestAbstract
 
         $this->em->clear();
         $station = $this->em->find(Station::class, $stationId);
+        $I->assertInstanceOf(Station::class, $station);
         $I->assertFalse($station->is_enabled);
 
         // Unsuspend restarts via writeConfiguration + nginx rewrite.
