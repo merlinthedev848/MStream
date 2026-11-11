@@ -7,7 +7,6 @@ namespace App\Entity\Api\Admin;
 use App\Entity\ApiKeyPermission;
 use App\Entity\RolePermission;
 use App\Enums\GlobalPermissions;
-use Doctrine\Common\Collections\Collection;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
@@ -36,8 +35,7 @@ final readonly class RolePermissions
     }
 
     /**
-     * @param Collection<int, RolePermission>|Collection<int, ApiKeyPermission>|iterable<RolePermission|ApiKeyPermission> $permissions
-     * @return self
+     * @param iterable<int, RolePermission|ApiKeyPermission> $permissions
      */
     public static function fromRolePermissions(iterable $permissions): self
     {

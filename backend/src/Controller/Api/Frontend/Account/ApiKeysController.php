@@ -53,7 +53,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
         path: '/frontend/account/api-keys',
         operationId: 'addMyApiKey',
         summary: 'Create a new API key associated with your account.',
-        description: 'Optional `permissions` scopes restrict the key. Omit or leave empty to inherit the full account ACL.',
+        description: 'Optional permissions scopes; omit/empty inherits full account ACL.',
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(
                 properties: [

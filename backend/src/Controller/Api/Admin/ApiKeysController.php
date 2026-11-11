@@ -54,7 +54,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
         path: '/admin/api-keys',
         operationId: 'adminCreateApiKey',
         summary: 'Create a new API key for a specified user.',
-        description: 'Optional `permissions` scopes restrict the key. Omit or leave empty to inherit the target user\'s full ACL.',
+        description: 'Optional permissions scopes; omit/empty inherits target user ACL.',
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(ref: NewApiKey::class)
         ),

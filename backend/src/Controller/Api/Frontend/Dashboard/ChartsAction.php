@@ -6,6 +6,7 @@ namespace App\Controller\Api\Frontend\Dashboard;
 
 use App\Container\EntityManagerAwareTrait;
 use App\Controller\SingleActionInterface;
+use App\Entity\Api\Account\DashboardCharts;
 use App\Entity\Api\Error;
 use App\Entity\Enums\AnalyticsIntervals;
 use App\Entity\Station;
@@ -13,7 +14,6 @@ use App\Enums\GlobalPermissions;
 use App\Enums\StationPermissions;
 use App\Http\Response;
 use App\Http\ServerRequest;
-use App\Entity\Api\Account\DashboardCharts;
 use App\OpenApi;
 use Carbon\CarbonImmutable;
 use OpenApi\Attributes as OA;
