@@ -27,7 +27,7 @@ final class StationTrafficRepository extends Repository
         ]);
 
         if ($existing instanceof StationTrafficDaily) {
-            $existing->bytes = (string)$bytes;
+            $existing->bytes = $bytes;
             $this->em->persist($existing);
             return $existing;
         }
@@ -35,7 +35,7 @@ final class StationTrafficRepository extends Repository
         $row = new StationTrafficDaily();
         $row->station = $station;
         $row->day = $dayDate;
-        $row->bytes = (string)$bytes;
+        $row->bytes = $bytes;
         $this->em->persist($row);
         return $row;
     }

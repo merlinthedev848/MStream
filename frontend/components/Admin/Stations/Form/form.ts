@@ -16,11 +16,7 @@ import { useAppRegle } from "~/vendor/regle.ts";
 
 export type StationRecord = Omit<
     Required<Station>,
-    | "id"
-    | "is_streamer_live"
-    | "branding_config"
-    | "reseller"
-    | "customer"
+    "id" | "is_streamer_live" | "branding_config" | "reseller" | "customer"
 > & {
     frontend_config: Required<StationFrontendConfiguration>;
     backend_config: Omit<

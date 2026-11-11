@@ -38,5 +38,5 @@ final class StationTrafficDaily implements IdentifiableEntityInterface, StationA
         OA\Property(description: 'Estimated outbound audio bytes for the day.'),
         ORM\Column(type: 'bigint')
     ]
-    public string $bytes = '0';
+    public string|int $bytes = 0;
 }
