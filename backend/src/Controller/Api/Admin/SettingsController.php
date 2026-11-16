@@ -119,7 +119,8 @@ final class SettingsController extends AbstractApiCrudController
         ) {
             throw new ValidationException(
                 __(
-                    'MStream Instance Name must be the panel/hoster brand (e.g. your company name), not a station or customer name.'
+                    'Panel / Instance Brand Name must be the hoster or company name, '
+                    . 'not a station or customer name.'
                 )
             );
         }
