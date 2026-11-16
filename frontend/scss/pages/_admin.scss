@@ -48,6 +48,30 @@
     line-height: 1.2;
   }
 
+  .admin-kpi-card {
+    height: 100%;
+
+    .card-body {
+      padding: 0.85rem 1rem;
+    }
+  }
+
+  .admin-menu-details {
+    summary {
+      cursor: pointer;
+      list-style: none;
+
+      &::-webkit-details-marker {
+        display: none;
+      }
+    }
+  }
+
+  .create-wizard-type {
+    min-height: 7rem;
+    text-align: center;
+  }
+
   .admin-guided-empty {
     text-align: left;
     max-width: 36rem;

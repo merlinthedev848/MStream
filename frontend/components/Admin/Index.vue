@@ -10,30 +10,100 @@
             <p class="admin-section-lead">
                 {{
                     $gettext(
-                        'Manage stations, people, storage, and host health from one place.',
+                        'Fleet health first — then people, packages, and host tools.',
                     )
                 }}
             </p>
 
-            <template v-if="canManageFleet">
-                <h2 class="outside-card-header mb-1">
-                    {{ $gettext('Media Services') }}
-                </h2>
-
-                <station-fleet-panel />
-            </template>
-
-            <div class="row row-of-cards">
-                <div class="col-sm-12 col-lg-4">
-                    <menu-block :items="menuItems.slice(0, 1)"/>
+            <div
+                v-if="canManageFleet"
+                class="row row-of-cards mb-3"
+            >
+                <div class="col-6 col-md-3">
+                    <div class="card admin-kpi-card">
+                        <div class="card-body">
+                            <div class="admin-fleet-label">
+                                {{ $gettext('Online') }}
+                            </div>
+                            <div class="admin-fleet-value broadcast-mono text-success">
+                                {{ fleet.online }}
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-sm-12 col-lg-4">
-                    <menu-block :items="menuItems.slice(1, 2)"/>
+                <div class="col-6 col-md-3">
+                    <div class="card admin-kpi-card">
+                        <div class="card-body">
+                            <div class="admin-fleet-label">
+                                {{ $gettext('Offline') }}
+                            </div>
+                            <div class="admin-fleet-value broadcast-mono">
+                                {{ fleet.offline }}
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-sm-12 col-lg-4">
-                    <menu-block :items="menuItems.slice(2)"/>
+                <div class="col-6 col-md-3">
+                    <div class="card admin-kpi-card">
+                        <div class="card-body">
+                            <div class="admin-fleet-label">
+                                {{ $gettext('Customers') }}
+                            </div>
+                            <div class="admin-fleet-value broadcast-mono">
+                                {{ customerCount }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card admin-kpi-card">
+                        <div class="card-body">
+                            <div class="admin-fleet-label">
+                                {{ $gettext('Listeners') }}
+                            </div>
+                            <div class="admin-fleet-value broadcast-mono">
+                                {{ fleet.listeners }}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
+
+            <template v-if="canManageFleet">
+                <station-fleet-panel />
+
+                <div
+                    v-if="fleet.stations === 0"
+                    class="card mb-3"
+                >
+                    <div class="card-body admin-guided-empty">
+                        <div class="admin-guided-empty-title">
+                            {{ $gettext('Getting Started') }}
+                        </div>
+                        <p class="admin-guided-empty-text">
+                            {{
+                                $gettext(
+                                    'Create a customer, then create a media service. Ports and AutoDJ are assigned automatically.',
+                                )
+                            }}
+                        </p>
+                        <div class="d-flex flex-wrap gap-2">
+                            <router-link
+                                class="btn btn-outline-primary"
+                                :to="{ name: 'admin:customers:index' }"
+                            >
+                                {{ $gettext('Create Customer') }}
+                            </router-link>
+                            <router-link
+                                class="btn btn-primary"
+                                :to="{ name: 'admin:stations:index' }"
+                            >
+                                {{ $gettext('Create Service') }}
+                            </router-link>
+                        </div>
+                    </div>
+                </div>
+            </template>
 
             <template v-if="canViewHostMetrics">
                 <h2 class="outside-card-header mb-1">
@@ -41,7 +111,7 @@
                 </h2>
 
                 <div class="row row-of-cards">
-                    <div class="col-sm-12 col-lg-6 col-xl-6">
+                    <div class="col-sm-12 col-lg-4">
                         <loading
                             :loading="isLoading"
                             lazy
@@ -53,7 +123,7 @@
                         </loading>
                     </div>
 
-                    <div class="col-sm-12 col-lg-6 col-xl-6">
+                    <div class="col-sm-12 col-lg-4">
                         <loading
                             :loading="isLoading"
                             lazy
@@ -64,10 +134,8 @@
                             />
                         </loading>
                     </div>
-                </div>
 
-                <div class="row row-of-cards">
-                    <div class="col-sm-12 col-lg-8 col-xl-6">
+                    <div class="col-sm-12 col-lg-4">
                         <loading
                             :loading="isLoading"
                             lazy
@@ -78,45 +146,46 @@
                             />
                         </loading>
                     </div>
-
-                    <div class="col-sm-12 col-lg-4 col-xl-6">
-                        <services-panel />
-                    </div>
-                </div>
-
-                <div class="row row-of-cards">
-                    <div class="col">
-                        <loading
-                            :loading="isLoading"
-                            lazy
-                        >
-                            <network-stats-panel
-                                v-if="stats && stats.network"
-                                :network-stats="stats.network"
-                            />
-                        </loading>
-                    </div>
                 </div>
             </template>
+
+            <details class="admin-menu-details mt-3 mb-3">
+                <summary class="outside-card-header mb-2">
+                    {{ $gettext('All Admin Tools') }}
+                </summary>
+                <div class="row row-of-cards">
+                    <div class="col-sm-12 col-lg-4">
+                        <menu-block :items="menuItems.slice(0, 1)"/>
+                    </div>
+                    <div class="col-sm-12 col-lg-4">
+                        <menu-block :items="menuItems.slice(1, 2)"/>
+                    </div>
+                    <div class="col-sm-12 col-lg-4">
+                        <menu-block :items="menuItems.slice(2)"/>
+                    </div>
+                </div>
+            </details>
         </div>
     </dashboard-no-sidebar>
 </template>
 
 <script setup lang="ts">
 import { useQuery } from "@tanstack/vue-query";
+import { computed } from "vue";
 import CpuStatsPanel from "~/components/Admin/Index/CpuStatsPanel.vue";
 import DiskUsagePanel from "~/components/Admin/Index/DiskUsagePanel.vue";
 import MemoryStatsPanel from "~/components/Admin/Index/MemoryStatsPanel.vue";
 import MenuBlock from "~/components/Admin/Index/MenuBlock.vue";
-import NetworkStatsPanel from "~/components/Admin/Index/NetworkStatsPanel.vue";
-import ServicesPanel from "~/components/Admin/Index/ServicesPanel.vue";
 import StationFleetPanel from "~/components/Admin/Index/StationFleetPanel.vue";
 import { useAdminMenu } from "~/components/Admin/menu";
 import Loading from "~/components/Common/Loading.vue";
 import DashboardNoSidebar from "~/components/Layout/DashboardNoSidebar.vue";
 import {
     ApiAdminServerStats,
+    ApiNowPlaying,
+    Customer,
     GlobalPermissions,
+    HasLinks,
 } from "~/entities/ApiInterfaces.ts";
 import { QueryKeys } from "~/entities/Queries.ts";
 import { useApiRouter } from "~/functions/useApiRouter.ts";
@@ -125,6 +194,8 @@ import { useAxios } from "~/vendor/axios";
 
 const { getApiUrl } = useApiRouter();
 const statsUrl = getApiUrl("/admin/server/stats");
+const stationsUrl = getApiUrl("/frontend/dashboard/stations");
+const customersUrl = getApiUrl("/admin/customers");
 
 const menuItems = useAdminMenu();
 
@@ -136,12 +207,68 @@ const canViewHostMetrics = userAllowed(GlobalPermissions.Stations);
 
 const { axiosSilent } = useAxios();
 
+type LiveRow = ApiNowPlaying & Required<HasLinks>;
+
+const { data: liveStations } = useQuery<LiveRow[]>({
+    queryKey: [QueryKeys.AdminIndex, "fleet-kpis"],
+    queryFn: async ({ signal }) => {
+        const { data } = await axiosSilent.get(stationsUrl.value, {
+            signal,
+            params: { rowCount: 0, internal: true },
+        });
+        if (Array.isArray(data)) {
+            return data;
+        }
+        if (data && Array.isArray(data.rows)) {
+            return data.rows;
+        }
+        return [];
+    },
+    enabled: canManageFleet,
+    placeholderData: () => [],
+    refetchInterval: 15 * 1000,
+});
+
+const fleet = computed(() => {
+    const rows = liveStations.value ?? [];
+    let online = 0;
+    let listeners = 0;
+    for (const row of rows) {
+        if (row.is_online) {
+            online += 1;
+        }
+        listeners += row.listeners?.total ?? 0;
+    }
+    return {
+        stations: rows.length,
+        online,
+        offline: Math.max(rows.length - online, 0),
+        listeners,
+    };
+});
+
+const { data: customerRows } = useQuery<Customer[]>({
+    queryKey: [QueryKeys.AdminIndex, "customer-count"],
+    queryFn: async ({ signal }) => {
+        const { data } = await axiosSilent.get(customersUrl.value, {
+            signal,
+            params: { rowCount: 0 },
+        });
+        return data?.rows ?? [];
+    },
+    enabled: canManageFleet,
+    placeholderData: () => [],
+});
+
+const customerCount = computed(() => customerRows.value?.length ?? 0);
+
 const { data: stats, isLoading } = useQuery<ApiAdminServerStats>({
     queryKey: [QueryKeys.AdminIndex, "stats"],
     queryFn: async ({ signal }) => {
         const { data } = await axiosSilent.get(statsUrl.value, { signal });
         return data;
     },
+    enabled: canViewHostMetrics,
     placeholderData: () => ({
         cpu: {
             total: {

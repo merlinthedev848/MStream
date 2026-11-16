@@ -149,7 +149,7 @@
                         </span>
                     </div>
                     <div
-                        v-if="profileData.frontendPort"
+                        v-if="canManageServer && profileData.frontendPort"
                         class="service-quota-meta broadcast-mono mt-2"
                     >
                         {{ $gettext('Port') }}: {{ profileData.frontendPort }}
@@ -167,6 +167,7 @@ import { computed } from "vue";
 import { useStationProfileData } from "~/components/Stations/Profile/useProfileQuery.ts";
 import {
     ApiStationQuota,
+    GlobalPermissions,
     StationPermissions,
     StorageLocationTypes,
 } from "~/entities/ApiInterfaces.ts";
@@ -174,6 +175,7 @@ import { QueryKeys, queryKeyWithStation } from "~/entities/Queries.ts";
 import { useApiRouter } from "~/functions/useApiRouter.ts";
 import useNowPlaying from "~/functions/useNowPlaying";
 import { useStationData } from "~/functions/useStationQuery.ts";
+import { useUserAllowed } from "~/functions/useUserAllowed.ts";
 import { useUserAllowedForStation } from "~/functions/useUserallowedForStation.ts";
 import { useAxios } from "~/vendor/axios";
 import { useTranslate } from "~/vendor/gettext";
@@ -185,6 +187,7 @@ const { nowPlayingProps } = toRefs(profileData);
 const { np } = useNowPlaying(nowPlayingProps);
 
 const { userAllowedForStation } = useUserAllowedForStation();
+const { userAllowed } = useUserAllowed();
 const { getStationApiUrl } = useApiRouter();
 const { axiosSilent } = useAxios();
 
@@ -194,6 +197,7 @@ const canManageMedia = computed(() =>
 const canViewListeners = computed(() =>
     userAllowedForStation(StationPermissions.Reports),
 );
+const canManageServer = computed(() => userAllowed(GlobalPermissions.Stations));
 
 const listenersTotal = computed(() => np.value?.listeners?.total ?? 0);
 

@@ -23,7 +23,7 @@
             <p class="getting-started-lead mb-3">
                 {{
                     $gettext(
-                        'Your station is ready. Upload music and AutoDJ will start playing it for listeners.',
+                        'Your station is ready. Upload music — new tracks join the default playlist automatically — then use Start AutoDJ above.',
                     )
                 }}
             </p>
@@ -38,7 +38,7 @@
                         <p class="getting-started-step-text mb-2">
                             {{
                                 $gettext(
-                                    'Add songs to your music library. New uploads join the default playlist automatically.',
+                                    'Add songs to your music library. They join the default playlist automatically.',
                                 )
                             }}
                         </p>
@@ -55,56 +55,15 @@
                     <span class="getting-started-step-index broadcast-mono">2</span>
                     <div class="getting-started-step-body">
                         <div class="getting-started-step-title">
-                            {{ $gettext('AutoDJ plays') }}
+                            {{ $gettext('Start AutoDJ') }}
                         </div>
                         <p class="getting-started-step-text mb-0">
                             {{
                                 $gettext(
-                                    'Keep AutoDJ running. It builds the queue and fills the air when you are not live.',
+                                    'Use the Start AutoDJ button in Service Status. Then copy the Listener URL to share.',
                                 )
                             }}
                         </p>
-                    </div>
-                </li>
-                <li class="getting-started-step">
-                    <span class="getting-started-step-index broadcast-mono">3</span>
-                    <div class="getting-started-step-body">
-                        <div class="getting-started-step-title">
-                            {{ $gettext('Share your stream') }}
-                        </div>
-                        <template v-if="stationData.hasStarted">
-                            <p class="getting-started-step-text mb-0">
-                                {{
-                                    $gettext(
-                                        'Copy a listener link from Listener Streams below once tracks are on the air.',
-                                    )
-                                }}
-                            </p>
-                        </template>
-                        <template v-else>
-                            <p class="getting-started-step-text mb-2">
-                                {{
-                                    $gettext(
-                                        'Start broadcasting to go on the air. Listener stream URLs are listed below, and you can manage mounts under Mount Points.',
-                                    )
-                                }}
-                            </p>
-                            <div class="d-flex flex-wrap gap-2">
-                                <router-link
-                                    v-if="canBroadcast"
-                                    class="btn btn-primary btn-sm"
-                                    :to="{ name: 'stations:restart:index' }"
-                                >
-                                    {{ $gettext('Start Station') }}
-                                </router-link>
-                                <router-link
-                                    class="btn btn-outline-primary btn-sm"
-                                    :to="{ name: 'stations:mounts:index' }"
-                                >
-                                    {{ $gettext('Manage Mounts') }}
-                                </router-link>
-                            </div>
-                        </template>
                     </div>
                 </li>
             </ol>
@@ -137,10 +96,6 @@ const { axiosSilent } = useAxios();
 
 const canManageMedia = computed(() =>
     userAllowedForStation(StationPermissions.Media),
-);
-
-const canBroadcast = computed(() =>
-    userAllowedForStation(StationPermissions.Broadcasting),
 );
 
 const hasAutoDj = computed(
@@ -188,8 +143,6 @@ const showPanel = computed(() => {
     if (!canManageMedia.value) {
         return false;
     }
-    // Prefer explicit empty library; fall back to empty AutoDJ queue
-    // when quota is unavailable so new stations still get guidance.
     if (quotaLoaded.value) {
         return libraryIsEmpty.value;
     }

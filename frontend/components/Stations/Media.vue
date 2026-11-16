@@ -37,20 +37,63 @@
             </p>
         </info-card>
 
-        <info-card v-if="showSftp">
-            <p class="mb-0">
-                {{ $gettext('You can also upload files in bulk via SFTP.') }}
-            </p>
-
-            <template #action>
-                <router-link
-                    class="btn btn-sm btn-info"
-                    :to="{name: 'stations:sftp_users:index'}"
+        <div class="card-body border-bottom py-2">
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+                <button
+                    type="button"
+                    class="btn btn-sm btn-outline-secondary"
+                    :class="{ active: showAdvanced }"
+                    @click="showAdvanced = !showAdvanced"
                 >
-                    {{ $gettext('Manage SFTP Accounts') }}
-                </router-link>
-            </template>
-        </info-card>
+                    {{ $gettext('Advanced') }}
+                </button>
+                <template v-if="showAdvanced">
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-outline-primary"
+                        @click="filter('special:duplicates')"
+                    >
+                        {{ $gettext('Duplicates') }}
+                    </button>
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-outline-primary"
+                        @click="filter('special:unprocessable')"
+                    >
+                        {{ $gettext('Needs Attention') }}
+                    </button>
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-outline-primary"
+                        @click="filter('special:unassigned')"
+                    >
+                        {{ $gettext('Not in a Playlist') }}
+                    </button>
+                    <router-link
+                        v-if="showSftp"
+                        class="btn btn-sm btn-outline-info"
+                        :to="{ name: 'stations:sftp_users:index' }"
+                    >
+                        {{ $gettext('SFTP Accounts') }}
+                    </router-link>
+                    <router-link
+                        class="btn btn-sm btn-outline-info"
+                        :to="{ name: 'stations:bulk-media' }"
+                    >
+                        {{ $gettext('Import / Export') }}
+                    </router-link>
+                    <a
+                        v-if="stationData.enableOnDemand"
+                        class="btn btn-sm btn-outline-info"
+                        :href="stationData.onDemandUrl"
+                        target="_blank"
+                        rel="noopener"
+                    >
+                        {{ $gettext('On-Demand Library') }}
+                    </a>
+                </template>
+            </div>
+        </div>
 
         <div class="card-body">
             <breadcrumb
@@ -309,6 +352,7 @@ export type MediaSelectedItems = {
 
 const stationData = useStationData();
 const showSftp = computed(() => stationData.value.features.sftp ?? false);
+const showAdvanced = ref(false);
 
 const { getStationApiUrl } = useApiRouter();
 const listUrl = getStationApiUrl("/files/list");

@@ -60,70 +60,12 @@ export function useStationsMenu() {
             key: "media",
             label: $gettext("Media"),
             icon: () => IconIcLibraryMusic,
+            url: {
+                name: "stations:files:index",
+            },
             visible: () =>
                 station.value.features.media &&
                 userAllowedForStation(StationPermissions.Media),
-            items: [
-                {
-                    key: "music_files",
-                    label: $gettext("Music Library"),
-                    url: {
-                        name: "stations:files:index",
-                    },
-                },
-                {
-                    key: "duplicate_songs",
-                    label: $gettext("Duplicate Songs"),
-                    url: {
-                        name: "stations:files:index",
-                        params: {
-                            path: "special:duplicates",
-                        },
-                    },
-                },
-                {
-                    key: "unprocessable",
-                    label: $gettext("Needs Attention"),
-                    url: {
-                        name: "stations:files:index",
-                        params: {
-                            path: "special:unprocessable",
-                        },
-                    },
-                },
-                {
-                    key: "unassigned",
-                    label: $gettext("Not in a Playlist"),
-                    url: {
-                        name: "stations:files:index",
-                        params: {
-                            path: "special:unassigned",
-                        },
-                    },
-                },
-                {
-                    key: "ondemand",
-                    label: $gettext("On-Demand Library"),
-                    url: station.value.onDemandUrl,
-                    external: true,
-                    visible: () => station.value.enableOnDemand,
-                },
-                {
-                    key: "sftp_users",
-                    label: $gettext("SFTP Upload Accounts"),
-                    url: {
-                        name: "stations:sftp_users:index",
-                    },
-                    visible: () => station.value.features.sftp,
-                },
-                {
-                    key: "bulk_media",
-                    label: $gettext("Import / Export List"),
-                    url: {
-                        name: "stations:bulk-media",
-                    },
-                },
-            ],
         },
         {
             key: "playlists",

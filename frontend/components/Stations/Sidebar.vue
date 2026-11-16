@@ -17,20 +17,7 @@
 
     <template v-if="userAllowedForStation(StationPermissions.Broadcasting)">
         <div
-            v-if="!hasStarted"
-            class="navdrawer-alert bg-success-subtle text-success-emphasis"
-        >
-            <router-link
-                :to="{name: 'stations:restart:index'}"
-            >
-                <span class="fw-bold">{{ $gettext('Start Station') }}</span><br>
-                <small>
-                    {{ $gettext('Ready to start broadcasting? Click to start your station.') }}
-                </small>
-            </router-link>
-        </div>
-        <div
-            v-else-if="needsRestart"
+            v-if="needsRestart && hasStarted"
             class="navdrawer-alert bg-warning-subtle text-warning-emphasis"
         >
             <router-link

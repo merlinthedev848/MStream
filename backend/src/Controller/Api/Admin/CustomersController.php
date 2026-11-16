@@ -7,6 +7,7 @@ namespace App\Controller\Api\Admin;
 use App\Controller\Api\AbstractApiCrudController;
 use App\Controller\Api\Traits\CanSearchResults;
 use App\Controller\Api\Traits\CanSortResults;
+use App\Controller\Frontend\Account\MasqueradeAction;
 use App\Entity\Customer;
 use App\Entity\Reseller;
 use App\Http\Response;
@@ -179,5 +180,28 @@ final class CustomersController extends AbstractApiCrudController
         }
 
         return parent::fromArray($data, $record, $context);
+    }
+
+    protected function viewRecord(object $record, ServerRequest $request): mixed
+    {
+        /** @var Customer $record */
+        $return = parent::viewRecord($record, $request);
+
+        if ($record->owner_user !== null) {
+            $router = $request->getRouter();
+            $csrf = $request->getCsrf();
+            $isInternal = $request->isInternal();
+
+            $return['links']['masquerade'] = $router->fromHere(
+                routeName: 'account:masquerade',
+                routeParams: [
+                    'id' => $record->owner_user->id,
+                    'csrf' => $csrf->generate(MasqueradeAction::CSRF_NAMESPACE),
+                ],
+                absolute: !$isInternal
+            );
+        }
+
+        return $return;
     }
 }

@@ -1,1 +1,0 @@
-function e(e){return e===`__proto__`||e===`constructor`||e===`prototype`}export{e as t};

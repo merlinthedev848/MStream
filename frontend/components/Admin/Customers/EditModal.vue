@@ -23,6 +23,15 @@
                 :options="resellerSelectOptions"
                 :label="$gettext('Reseller')"
             />
+
+            <form-group-select
+                id="edit_form_owner_user"
+                class="col-md-12"
+                :field="r$.owner_user"
+                :options="userSelectOptions"
+                :label="$gettext('Owner User (Login-as)')"
+                :description="$gettext('Optional panel user used for Login-as from this customer row.')"
+            />
         </div>
     </modal-form>
 </template>
@@ -45,6 +54,7 @@ import { useAppRegle } from "~/vendor/regle.ts";
 const props = defineProps<
     BaseEditModalProps & {
         resellers: Record<string, string>;
+        users: Record<string, string>;
     }
 >();
 const emit = defineEmits<BaseEditModalEmits>();
@@ -55,6 +65,7 @@ const { r$ } = useAppRegle(
     {
         name: "",
         reseller: "",
+        owner_user: "",
     },
     {
         name: { required },
@@ -86,18 +97,31 @@ const {
             toState: mergeExisting(r$.$value, {
                 ...data,
                 reseller: data.reseller != null ? String(data.reseller) : "",
+                owner_user:
+                    data.owner_user != null ? String(data.owner_user) : "",
             }),
         });
     },
     async () => {
         const { valid, data } = await r$.$validate();
-        return { valid, data };
+        return {
+            valid,
+            data: {
+                ...data,
+                owner_user: data.owner_user ? data.owner_user : null,
+            },
+        };
     },
 );
 
 const resellerSelectOptions = computed(() =>
     Object.entries(props.resellers).map(([value, text]) => ({ value, text })),
 );
+
+const userSelectOptions = computed(() => [
+    { value: "", text: "—" },
+    ...Object.entries(props.users).map(([value, text]) => ({ value, text })),
+]);
 
 const { $gettext } = useTranslate();
 

@@ -1,0 +1,1 @@
+import{a as e,t}from"./identity-DKKgtSee.js";import{t as n}from"./range-CYTESHT1.js";function r(r,i=t){if(!r)return r;typeof i!=`function`&&(i=t);let a=e(r)?n(0,r.length):Object.keys(r);for(let e=0;e<a.length;e++){let t=a[e],n=r[t];if(i(n,t,r)===!1)break}return r}export{r as t};
