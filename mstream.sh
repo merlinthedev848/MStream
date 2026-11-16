@@ -3,6 +3,13 @@
 
 PODMAN_MODE=0
 
+# Shared MediaCP-style progress helpers (GHCR pull heartbeats / timeouts)
+SCRIPT_DIR_BOOTSTRAP="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+if [[ -f "${SCRIPT_DIR_BOOTSTRAP}/util/docker/install_progress.sh" ]]; then
+  # shellcheck disable=SC1091
+  . "${SCRIPT_DIR_BOOTSTRAP}/util/docker/install_progress.sh"
+fi
+
 # Docker and Docker Compose aliases
 d() {
   if [[ $PODMAN_MODE -ne 0 ]]; then
@@ -10,6 +17,37 @@ d() {
   else
     docker "$@"
   fi
+}
+
+# Progress-aware pull of compose services (web + updater by default).
+pull-images() {
+  local services=("$@")
+  if [[ "${#services[@]}" -eq 0 ]]; then
+    services=(web updater)
+  fi
+  # Prevent ensure-config-files from nesting another pull while we pull.
+  MSTREAM_IN_PULL=1
+  if declare -F mstream_pull_compose_services >/dev/null 2>&1; then
+    mstream_pull_compose_services "${services[@]}"
+    local rc=$?
+    MSTREAM_IN_PULL=0
+    return $rc
+  fi
+
+  echo "==> Pulling container images (${services[*]})…"
+  echo "    Quiet for ~60s usually means a slow registry (often GHCR), not a frozen update."
+  local svc
+  for svc in "${services[@]}"; do
+    echo "==> Pulling ${svc}…"
+    if ! dc pull "$svc"; then
+      echo "[FAIL] Pull failed for service: ${svc}"
+      MSTREAM_IN_PULL=0
+      return 1
+    fi
+    echo "[PASS] ${svc} ready"
+  done
+  MSTREAM_IN_PULL=0
+  return 0
 }
 
 ensure-config-files() {
@@ -25,12 +63,34 @@ ensure-config-files() {
     echo "Auto-provisioning mstream.env from sample..."
     cp mstream.sample.env mstream.env
   fi
+  if [[ "${MSTREAM_IN_PULL:-0}" -eq 1 ]]; then
+    return 0
+  fi
   if ! d image inspect "ghcr.io/merlinthedev848/mstream:latest" >/dev/null 2>&1; then
-    if ! d pull "ghcr.io/merlinthedev848/mstream:latest" >/dev/null 2>&1; then
+    echo "==> Pulling web (GHCR) — required image missing locally…"
+    echo "    GHCR pulls can take several minutes; status lines should keep appearing."
+    echo "    Quiet for ~60s usually means a slow registry, not a frozen command."
+    if declare -F mstream_pull_image >/dev/null 2>&1; then
+      if ! mstream_pull_image "ghcr.io/merlinthedev848/mstream:latest" "web (GHCR)"; then
+        echo "Building local MStream image (ghcr.io/merlinthedev848/mstream:latest)..."
+        local BASE_RT="ghcr.io/merlinthedev848/mstream:latest"
+        DOCKER_BUILDKIT=1 d build -t "ghcr.io/merlinthedev848/mstream:latest" -f - . << DOCKERFILE_EOF
+FROM ${BASE_RT}
+LABEL org.opencontainers.image.title="MStream"
+USER root
+RUN (id -u mstream >/dev/null 2>&1 || useradd -m -d /var/mstream -G www-data -s /bin/bash mstream || true) && \
+    echo 'mstream ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
+COPY --chown=1000:1000 backend /var/mstream/www/backend
+COPY --chown=1000:1000 resources /var/mstream/www/resources
+COPY --chown=1000:1000 plugins /var/mstream/www/plugins
+COPY --chown=1000:1000 web/static /var/mstream/www/web/static
+COPY --chmod=0755 util/docker/web/scripts/mstream_* /usr/local/bin/
+DOCKERFILE_EOF
+      fi
+    elif ! d pull "ghcr.io/merlinthedev848/mstream:latest"; then
       echo "Building local MStream image (ghcr.io/merlinthedev848/mstream:latest)..."
       local BASE_RT="ghcr.io/merlinthedev848/mstream:latest"
-      d pull "${BASE_RT}" >/dev/null 2>&1 || true
-      DOCKER_BUILDKIT=1 d build -q -t "ghcr.io/merlinthedev848/mstream:latest" -f - . >/dev/null << DOCKERFILE_EOF
+      DOCKER_BUILDKIT=1 d build -t "ghcr.io/merlinthedev848/mstream:latest" -f - . << DOCKERFILE_EOF
 FROM ${BASE_RT}
 LABEL org.opencontainers.image.title="MStream"
 USER root
@@ -491,8 +551,13 @@ run-installer() {
 
   curl -fsSL https://raw.githubusercontent.com/merlinthedev848/MStream/$MSTREAM_RELEASE_BRANCH/docker-compose.installer.yml -o docker-compose.installer.yml
 
-  dc -p mstream_installer -f docker-compose.installer.yml pull || \
+  echo "==> Pulling installer image…"
+  echo "    This is usually the GHCR web image; expect several minutes on a normal VPS."
+  if ! dc -p mstream_installer -f docker-compose.installer.yml pull; then
+    echo "[WARN] Installer image pull failed; building locally…"
     DOCKER_BUILDKIT=1 docker build --target final -t "ghcr.io/merlinthedev848/mstream:${MSTREAM_VERSION:-latest}" .
+  fi
+  echo "==> Running installer…"
   dc -p mstream_installer -f docker-compose.installer.yml run --rm installer install "$@"
 
   rm docker-compose.installer.yml
@@ -503,8 +568,11 @@ run-installer() {
 # Usage: ./mstream.sh install
 #
 install() {
+  local install_started_at
+  install_started_at=$(date +%s)
   check-install-requirements
 
+  echo "==> Installing Docker…"
   if [[ $PODMAN_MODE -ne 0 ]]; then
     echo "Podman was detected and will be used instead of Docker..."
 
@@ -518,18 +586,19 @@ install() {
     fi
   else
     if [[ $(command -v docker) && $(docker --version) ]]; then
-      echo "Docker is already installed! Continuing..."
+      echo "[PASS] Docker is already installed! Continuing..."
     else
       if ask "Docker does not appear to be installed. Install Docker now?" Y; then
         install-docker
       fi
     fi
 
+    echo "==> Verifying Docker Compose…"
     if [[ $(docker compose version) ]]; then
-      echo "Docker Compose v2 is already installed. Continuing..."
+      echo "[PASS] Docker Compose v2 is already installed. Continuing..."
     else
       if [[ $(command -v docker-compose) ]]; then
-        echo "Docker Compose is already installed. Continuing..."
+        echo "[PASS] Docker Compose is already installed. Continuing..."
       else
         if ask "Docker Compose does not appear to be installed. Install Docker Compose now?" Y; then
           install-docker-compose
@@ -538,8 +607,10 @@ install() {
     fi
   fi
 
+  echo "==> Selecting release channel…"
   setup-release
 
+  echo "==> Running configuration installer…"
   run-installer "$@"
 
   # Installer creates a file at docker-compose.new.yml; copy it to the main spot.
@@ -561,10 +632,14 @@ install() {
     .env --file .env set MSTREAM_PODMAN_MODE=true
   fi
 
-  dc pull
+  # Per-service pull with heartbeats (avoids silent "dc pull" hang on GHCR)
+  pull-images web updater
 
+  echo "==> Starting services / migrations…"
   dc run --rm web -- mstream_install "$@"
+  echo "==> Starting services…"
   dc up -d
+  echo "[PASS] Install complete in $(( $(date +%s) - install_started_at ))s (typical healthy-network target: ≤15 minutes)."
   exit
 }
 
@@ -626,13 +701,18 @@ install-dev() {
 # Usage: ./mstream.sh update
 #
 update() {
+  local update_started_at
+  update_started_at=$(date +%s)
   echo "[NOTICE] Before you continue, please make sure you have a recent snapshot of your system and or backed it up."
+  echo "[INFO] Typical update: a few minutes to ~15 minutes. GHCR image pulls are usually the longest step."
+  echo "[INFO] \"Stuck\" means no layer/download activity for 10–15+ minutes — not a quiet progress heartbeat."
   if ask "Are you ready to continue with the update?" Y; then
 
     # Check for a new Docker Utility Script.
     local MSTREAM_RELEASE_BRANCH
     MSTREAM_RELEASE_BRANCH=$(get-release-branch-name)
 
+    echo "==> Checking for an updated management script…"
     curl -fsSL https://raw.githubusercontent.com/merlinthedev848/MStream/$MSTREAM_RELEASE_BRANCH/mstream.sh -o docker.new.sh
 
     local UTILITY_FILES_MATCH
@@ -665,7 +745,7 @@ update() {
       DOCKER_VERSION_MAJOR=$(echo "$DOCKER_VERSION"| cut -d'.' -f 1)
 
       if [ "${DOCKER_VERSION_MAJOR}" -ge 20 ]; then
-        echo "Docker server (version ${DOCKER_VERSION}) meets minimum version requirements."
+        echo "[PASS] Docker server (version ${DOCKER_VERSION}) meets minimum version requirements."
       else
         if ask "Docker is out of date on this server. Attempt automatic upgrade?" Y; then
           install-docker
@@ -674,6 +754,7 @@ update() {
       fi
     fi
 
+    echo "==> Running configuration updater…"
     run-installer --update "$@"
 
     # Check for updated Docker Compose config.
@@ -689,7 +770,23 @@ update() {
     )"
 
     if [[ ${COMPOSE_FILES_MATCH} -ne 0 ]]; then
-      dc -f docker-compose.new.yml pull
+      echo "==> Compose file changed; pulling images for the new compose file…"
+      MSTREAM_IN_PULL=1
+      local images_list img pulled_any=0
+      images_list="$(dc -f docker-compose.new.yml config --images 2>/dev/null || true)"
+      if declare -F mstream_pull_image >/dev/null 2>&1 && [[ -n "$images_list" ]]; then
+        while IFS= read -r img; do
+          [[ -z "$img" ]] && continue
+          mstream_pull_image "$img" "$img" || true
+          pulled_any=1
+        done <<<"$images_list"
+      fi
+      if [[ "$pulled_any" -eq 0 ]]; then
+        echo "    Falling back to compose pull (watch for GHCR progress)…"
+        dc -f docker-compose.new.yml pull
+      fi
+      MSTREAM_IN_PULL=0
+      echo "==> Stopping services…"
       dc down --timeout 60
 
       cp docker-compose.yml docker-compose.backup.yml
@@ -697,18 +794,21 @@ update() {
     else
       rm docker-compose.new.yml
 
-      dc pull
+      pull-images web updater
+      echo "==> Stopping services…"
       dc down --timeout 60
     fi
 
+    echo "==> Running migrations / update…"
     dc run --rm web -- mstream_update "$@"
+    echo "==> Starting services…"
     dc up -d
 
     if ask "Clean up all stopped Docker containers and images to save space?" Y; then
       d system prune -f
     fi
 
-    echo "Update complete!"
+    echo "Update complete in $(( $(date +%s) - update_started_at ))s!"
   fi
   exit
 }
@@ -952,7 +1052,7 @@ rollback() {
 
     .env --file .env set MSTREAM_VERSION=${MSTREAM_ROLLBACK_VERSION}
 
-    dc pull
+    pull-images web updater
     dc run --rm web -- mstream_update
     dc up -d
 

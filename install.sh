@@ -87,6 +87,8 @@ done
 
 print_banner
 
+INSTALL_STARTED_AT=$(date +%s)
+
 # Check Root / Sudo Privileges
 if [ "${EUID:-$(id -u)}" -ne 0 ]; then
     echo -e "${CLR_RED}[ERROR]${CLR_RESET} This script must be run as root or with sudo:"
@@ -94,6 +96,10 @@ if [ "${EUID:-$(id -u)}" -ne 0 ]; then
     echo -e "  or: ${CLR_BOLD}sudo bash install.sh${CLR_RESET}"
     exit 1
 fi
+
+echo -e "${CLR_BLUE}==>${CLR_RESET} ${CLR_BOLD}Preparing installation…${CLR_RESET}"
+echo -e "      ${CLR_CYAN}[INFO]${CLR_RESET} Typical duration: 5–15 minutes on a normal VPS when the network is fine."
+echo -e "      ${CLR_CYAN}[INFO]${CLR_RESET} Quiet GHCR pulls are normal; \"stuck\" means no download activity for 10–15+ minutes."
 
 # Detect Architecture
 ARCH=$(uname -m)
@@ -109,7 +115,7 @@ esac
 echo -e "${CLR_GREEN}[PASS]${CLR_RESET} Detected architecture: ${CLR_BOLD}${ARCH_NAME}${CLR_RESET}"
 
 # Install System Package Dependencies (Cached check: skip network index fetch if already present)
-echo -e "\n${CLR_BLUE}==>${CLR_RESET} ${CLR_BOLD}Checking system prerequisites...${CLR_RESET}"
+echo -e "\n${CLR_BLUE}==>${CLR_RESET} ${CLR_BOLD}Installing system prerequisites…${CLR_RESET}"
 
 install_packages() {
     local missing=0
@@ -140,7 +146,7 @@ install_packages() {
 install_packages >/dev/null 2>&1 || true
 
 # Check & Install Docker
-echo -e "${CLR_BLUE}==>${CLR_RESET} ${CLR_BOLD}Verifying Docker Engine and Docker Compose...${CLR_RESET}"
+echo -e "\n${CLR_BLUE}==>${CLR_RESET} ${CLR_BOLD}Installing Docker…${CLR_RESET}"
 
 if ! command -v docker >/dev/null 2>&1; then
     echo -e "      ${CLR_YELLOW}[INFO]${CLR_RESET} Docker not detected. Automatically installing official Docker Engine..."
@@ -155,6 +161,7 @@ fi
 systemctl start docker >/dev/null 2>&1 || service docker start >/dev/null 2>&1 || true
 
 # Check Docker Compose v2
+echo -e "\n${CLR_BLUE}==>${CLR_RESET} ${CLR_BOLD}Verifying Docker Compose…${CLR_RESET}"
 if docker compose version >/dev/null 2>&1; then
     echo -e "      ${CLR_GREEN}[PASS]${CLR_RESET} Docker Compose v2 is available ($(docker compose version --short))."
 elif command -v docker-compose >/dev/null 2>&1; then
@@ -176,10 +183,12 @@ fi
 CURRENT_DIR="$(pwd)"
 if [ -f "${CURRENT_DIR}/docker-compose.sample.yml" ] && [ -f "${CURRENT_DIR}/mstream.sample.env" ]; then
     WORK_DIR="${CURRENT_DIR}"
-    echo -e "\n${CLR_BLUE}==>${CLR_RESET} Using current repository directory: ${CLR_BOLD}${WORK_DIR}${CLR_RESET}"
+    echo -e "\n${CLR_BLUE}==>${CLR_RESET} ${CLR_BOLD}Using repository directory…${CLR_RESET}"
+    echo -e "      ${CLR_GREEN}[PASS]${CLR_RESET} ${WORK_DIR}"
 else
     WORK_DIR="${INSTALL_DIR}"
-    echo -e "\n${CLR_BLUE}==>${CLR_RESET} Target installation directory: ${CLR_BOLD}${WORK_DIR}${CLR_RESET}"
+    echo -e "\n${CLR_BLUE}==>${CLR_RESET} ${CLR_BOLD}Fetching MStream source…${CLR_RESET}"
+    echo -e "      Target: ${CLR_BOLD}${WORK_DIR}${CLR_RESET}"
     mkdir -p "${WORK_DIR}"
     cd "${WORK_DIR}"
 
@@ -193,6 +202,19 @@ else
     fi
 fi
 cd "${WORK_DIR}"
+
+# Load shared progress helpers (available after source checkout)
+if [ -f "${WORK_DIR}/util/docker/install_progress.sh" ]; then
+    # shellcheck disable=SC1091
+    . "${WORK_DIR}/util/docker/install_progress.sh"
+    MSTREAM_CLR_RESET="${CLR_RESET}"
+    MSTREAM_CLR_BOLD="${CLR_BOLD}"
+    MSTREAM_CLR_CYAN="${CLR_CYAN}"
+    MSTREAM_CLR_BLUE="${CLR_BLUE}"
+    MSTREAM_CLR_GREEN="${CLR_GREEN}"
+    MSTREAM_CLR_YELLOW="${CLR_YELLOW}"
+    MSTREAM_CLR_RED="${CLR_RED}"
+fi
 
 # Safe interactive input function (supports curl | bash and direct run)
 prompt_read() {
@@ -256,7 +278,7 @@ if [ "$UNATTENDED" = false ] && ([ -e /dev/tty ] || [ -t 0 ]); then
 fi
 
 # Automatic Provisioning of Configurations (Minimized Disk I/O)
-echo -e "\n${CLR_BLUE}==>${CLR_RESET} ${CLR_BOLD}Provisioning configuration files...${CLR_RESET}"
+echo -e "\n${CLR_BLUE}==>${CLR_RESET} ${CLR_BOLD}Provisioning configuration…${CLR_RESET}"
 
 # 1. Provision docker-compose.yml (only write if missing or changed)
 if [ ! -f docker-compose.yml ] || ! cmp -s docker-compose.sample.yml docker-compose.yml; then
@@ -374,52 +396,97 @@ IP_TMP_FILE=$(mktemp /tmp/mstream_ip.XXXXXX 2>/dev/null || echo "/tmp/mstream_ip
 (curl -4 -s --max-time 3 https://icanhazip.com 2>/dev/null || hostname -I 2>/dev/null | awk '{print $1}' || echo "your-server-ip") > "${IP_TMP_FILE}" &
 IP_PID=$!
 
-# Launch Containers (Parallel Image Pulls)
-echo -e "\n${CLR_BLUE}==>${CLR_RESET} ${CLR_BOLD}Preparing Docker containers and starting MStream services...${CLR_RESET}"
-
+# Launch Containers — per-image progress (never a silent parallel hang)
 MSTREAM_TARGET_IMAGE="ghcr.io/merlinthedev848/mstream:${RELEASE_CHANNEL}"
 UPDATER_TARGET_IMAGE="containrrr/watchtower:latest"
 
-echo -e "      Pulling container images in parallel..."
-docker pull "${UPDATER_TARGET_IMAGE}" >/dev/null 2>&1 &
-PULL_UPDATER_PID=$!
-
-PULL_MSTREAM_OK=0
-(docker pull "${MSTREAM_TARGET_IMAGE}" >/dev/null 2>&1) &
-PULL_MSTREAM_PID=$!
-
-wait "$PULL_UPDATER_PID" 2>/dev/null || true
-if wait "$PULL_MSTREAM_PID" 2>/dev/null; then
-    PULL_MSTREAM_OK=1
+# Prefer image names from .env when present
+if [ -f .env ]; then
+    # shellcheck disable=SC1091
+    set -a
+    # Only pull safe KEY=value lines
+    # shellcheck disable=SC2046
+    eval "$(grep -E '^(MSTREAM_IMAGE|MSTREAM_VERSION|MSTREAM_UPDATER_IMAGE)=' .env | sed 's/^/export /')" 2>/dev/null || true
+    set +a
+    MSTREAM_TARGET_IMAGE="${MSTREAM_IMAGE:-ghcr.io/merlinthedev848/mstream}:${MSTREAM_VERSION:-${RELEASE_CHANNEL}}"
+    UPDATER_TARGET_IMAGE="${MSTREAM_UPDATER_IMAGE:-containrrr/watchtower}:latest"
 fi
+
 wait "$CHMOD_PID" 2>/dev/null || true
 
-if [ "$PULL_MSTREAM_OK" -eq 1 ]; then
-    echo -e "      ${CLR_GREEN}[PASS]${CLR_RESET} Pulled ${MSTREAM_TARGET_IMAGE}"
+PULL_MSTREAM_OK=0
+if declare -F mstream_pull_image >/dev/null 2>&1; then
+    # Web (GHCR) first — largest / slowest; full heartbeat progress
+    if mstream_pull_image "${MSTREAM_TARGET_IMAGE}" "web (GHCR)"; then
+        PULL_MSTREAM_OK=1
+    fi
 else
-    echo -e "      ${CLR_CYAN}[INFO]${CLR_RESET} Building local MStream image (${MSTREAM_TARGET_IMAGE})..."
+    echo -e "\n${CLR_BLUE}==>${CLR_RESET} ${CLR_BOLD}Pulling web (GHCR)…${CLR_RESET}"
+    echo -e "      Image: ${CLR_BOLD}${MSTREAM_TARGET_IMAGE}${CLR_RESET}"
+    echo -e "      ${CLR_CYAN}[INFO]${CLR_RESET} GHCR can take several minutes; progress lines should appear below."
+    if docker pull "${MSTREAM_TARGET_IMAGE}"; then
+        PULL_MSTREAM_OK=1
+    fi
+fi
+
+if [ "$PULL_MSTREAM_OK" -ne 1 ]; then
+    echo -e "\n${CLR_BLUE}==>${CLR_RESET} ${CLR_BOLD}Building web image locally (GHCR pull unavailable)…${CLR_RESET}"
     DOCKER_BUILDKIT=1 docker build --target final -t "${MSTREAM_TARGET_IMAGE}" .
     echo -e "      ${CLR_GREEN}[PASS]${CLR_RESET} Built ${MSTREAM_TARGET_IMAGE}"
 fi
 
-$DC_CMD up -d
+# Start web immediately so the panel can come up while updater pulls
+echo -e "\n${CLR_BLUE}==>${CLR_RESET} ${CLR_BOLD}Starting web service…${CLR_RESET}"
+$DC_CMD up -d web
+
+# Updater is small (Docker Hub); pull with progress then start
+PULL_UPDATER_OK=0
+if declare -F mstream_pull_image >/dev/null 2>&1; then
+    if mstream_pull_image "${UPDATER_TARGET_IMAGE}" "updater (Watchtower)"; then
+        PULL_UPDATER_OK=1
+    fi
+else
+    echo -e "\n${CLR_BLUE}==>${CLR_RESET} ${CLR_BOLD}Pulling updater…${CLR_RESET}"
+    if docker pull "${UPDATER_TARGET_IMAGE}"; then
+        PULL_UPDATER_OK=1
+    fi
+fi
+
+if [ "$PULL_UPDATER_OK" -eq 1 ]; then
+    echo -e "\n${CLR_BLUE}==>${CLR_RESET} ${CLR_BOLD}Starting updater…${CLR_RESET}"
+    $DC_CMD up -d updater || true
+else
+    echo -e "      ${CLR_YELLOW}[WARN]${CLR_RESET} Updater image not pulled; web will still run. Re-run update later for Watchtower."
+fi
 
 # Wait for Web Service Initialization and Nginx listening on port 80/443
-echo -e "\n${CLR_BLUE}==>${CLR_RESET} ${CLR_BOLD}Waiting for MStream core services to start up...${CLR_RESET}"
-for i in $(seq 1 30); do
+echo -e "\n${CLR_BLUE}==>${CLR_RESET} ${CLR_BOLD}Waiting for services…${CLR_RESET}"
+WEB_READY=0
+for i in $(seq 1 45); do
     if $DC_CMD exec -T web true >/dev/null 2>&1; then
+        WEB_READY=1
         break
     fi
-    echo -n "."
+    if [ $((i % 5)) -eq 0 ]; then
+        echo -e "      ${CLR_CYAN}[INFO]${CLR_RESET} Still waiting for web container… (${i}/45)"
+    else
+        echo -n "."
+    fi
     sleep 2
 done
 echo ""
+if [ "$WEB_READY" -eq 1 ]; then
+    echo -e "      ${CLR_GREEN}[PASS]${CLR_RESET} Web container is responding."
+else
+    echo -e "      ${CLR_YELLOW}[WARN]${CLR_RESET} Web container not ready yet; migrations may retry on first boot."
+fi
 
 # Ensure database migrations and initial setup run safely
-echo -e "${CLR_BLUE}==>${CLR_RESET} ${CLR_BOLD}Verifying automated database migrations and setup...${CLR_RESET}"
+echo -e "\n${CLR_BLUE}==>${CLR_RESET} ${CLR_BOLD}Running migrations / setup…${CLR_RESET}"
 $DC_CMD exec -T web composer dump-autoload --optimize 2>/dev/null || true
 # app_startup inside the container handles mstream:setup --init automatically; run only as fallback if needed
 $DC_CMD exec -T web /usr/local/bin/mstream_cli mstream:setup --init 2>/dev/null || true
+echo -e "      ${CLR_GREEN}[PASS]${CLR_RESET} Setup commands issued."
 
 # Collect background tasks
 wait "$SYSTEMD_PID" 2>/dev/null || true
@@ -427,6 +494,9 @@ wait "$IP_PID" 2>/dev/null || true
 SERVER_IP=$(cat "${IP_TMP_FILE}" 2>/dev/null | tr -d '[:space:]')
 rm -f "${IP_TMP_FILE}" 2>/dev/null || true
 SERVER_IP="${SERVER_IP:-your-server-ip}"
+
+INSTALL_ELAPSED=$(( $(date +%s) - INSTALL_STARTED_AT ))
+INSTALL_ELAPSED_FMT=$(printf "%dm%02ds" $((INSTALL_ELAPSED / 60)) $((INSTALL_ELAPSED % 60)))
 
 # Print Completion Card
 echo -e "\n${CLR_GREEN}${CLR_BOLD}"
@@ -436,6 +506,7 @@ cat << "EOF"
 ========================================================================
 EOF
 echo -e "${CLR_RESET}"
+echo -e "  ${CLR_BOLD}Elapsed:${CLR_RESET} ${INSTALL_ELAPSED_FMT}"
 
 echo -e "  ${CLR_BOLD}Access your MStream Web Dashboard:${CLR_RESET}"
 if [ "$HTTP_PORT" = "80" ]; then

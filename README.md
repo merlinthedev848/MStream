@@ -86,6 +86,12 @@ curl -fsSL https://raw.githubusercontent.com/merlinthedev848/MStream/main/instal
 > curl -fsSL https://raw.githubusercontent.com/merlinthedev848/MStream/main/install.sh | sudo bash -s -- --unattended
 > ```
 
+> [!NOTE]
+> **Expected duration:** about **5–15 minutes** on a normal VPS when the network is fine. The installer prints MediaCP-style step banners (`Installing Docker…`, `Pulling web (GHCR)…`, `Starting services…`, `Running migrations / setup…`) with **per-image progress heartbeats**.
+>
+> The longest step is almost always **pulling the web image from GHCR**. Quiet heartbeats for a minute or two usually mean a slow registry, not a frozen installer. Treat the pull as **stuck** only if there is **no layer/download activity for 10–15+ minutes**, then re-run install/update when connectivity to `ghcr.io` is healthy.
+>
+> Updates via `./mstream.sh update` use the same per-image progress and timeout/retry messaging.
 ---
 
 ### 📦 Manual / Local Repository Setup
