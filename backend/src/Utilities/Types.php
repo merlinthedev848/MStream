@@ -86,10 +86,11 @@ final class Types
         }
 
         if ($broadenValidBools) {
-            $value = trim((string)$input);
-            return str_starts_with(strtolower($value), 'y')
-                || 'true' === strtolower($value)
-                || '1' === $value;
+            $value = strtolower(trim((string)$input));
+            return str_starts_with($value, 'y')
+                || 'true' === $value
+                || '1' === $value
+                || 'on' === $value;
         }
 
         return (bool)$input;
