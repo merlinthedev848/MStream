@@ -9,7 +9,7 @@
                     <p class="card-text mb-0">
                         {{
                             $gettext(
-                                'Fleet view of all stations. Ports, suspend, and delete are superadmin controls. New stations ship AutoDJ-ready.',
+                                'All media services. Create with the wizard — ports and AutoDJ are assigned automatically. Suspend and delete stay hoster-only.',
                             )
                         }}
                     </p>

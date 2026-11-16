@@ -53,7 +53,7 @@
         <div class="card-header text-bg-primary">
             <div class="d-flex align-items-center">
                 <h2 class="card-title flex-fill my-0">
-                    {{ $gettext('Station Statistics') }}
+                    {{ $gettext('Summary') }}
                 </h2>
                 <div class="flex-shrink">
                     <date-range-dropdown

@@ -10,10 +10,17 @@
                     id="hdr_custom_assets"
                     class="card-title"
                 >
-                    {{ $gettext('Upload Custom Assets') }}
+                    {{ $gettext('Public Page') }}
                 </h2>
             </div>
             <div class="card-body">
+                <p class="text-muted mb-3">
+                    {{
+                        $gettext(
+                            'Branding, colors, and assets for the listener-facing public page.',
+                        )
+                    }}
+                </p>
                 <ul class="list-unstyled">
                     <custom-asset-form
                         id="asset_background"

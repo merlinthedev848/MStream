@@ -5,13 +5,19 @@
         id="profile"
         class="row row-of-cards"
     >
-        <div class="col-12 col-lg-8">
+        <div class="col-12 col-lg-5">
             <service-status-panel />
+        </div>
 
-            <listener-url-panel />
-
+        <div class="col-12 col-lg-7">
             <service-quota-panel />
+        </div>
 
+        <div class="col-12">
+            <listener-url-panel />
+        </div>
+
+        <div class="col-12">
             <getting-started-panel />
         </div>
 
@@ -46,27 +52,25 @@
                 </div>
 
                 <div class="col-lg-4">
-                    <template v-if="showDetails">
-                        <external-feed-panel />
+                    <external-feed-panel />
 
-                        <profile-streams/>
+                    <profile-streams/>
 
-                        <profile-public-pages/>
+                    <profile-public-pages/>
 
-                        <profile-requests v-if="hasActiveBackend"/>
+                    <profile-requests v-if="hasActiveBackend"/>
 
-                        <profile-streamers v-if="hasActiveBackend"/>
+                    <profile-streamers v-if="hasActiveBackend"/>
 
-                        <template v-if="hasActiveFrontend">
-                            <profile-frontend/>
-                        </template>
+                    <template v-if="hasActiveFrontend">
+                        <profile-frontend/>
+                    </template>
 
-                        <template v-if="hasActiveBackend">
-                            <profile-backend/>
-                        </template>
-                        <template v-else>
-                            <profile-backend-none />
-                        </template>
+                    <template v-if="hasActiveBackend">
+                        <profile-backend/>
+                    </template>
+                    <template v-else>
+                        <profile-backend-none />
                     </template>
                 </div>
             </div>

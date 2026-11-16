@@ -9,10 +9,17 @@
                 id="hdr_edit_profile"
                 class="card-title"
             >
-                {{ $gettext('Streaming Service Settings') }}
+                {{ $gettext('Configure') }}
             </h3>
         </div>
         <div class="card-body">
+            <p class="text-muted mb-3">
+                {{
+                    $gettext(
+                        'Publish name, passwords, limits, and AutoDJ options for this service.',
+                    )
+                }}
+            </p>
             <loading :loading="propsLoading" lazy>
                 <admin-stations-form
                     v-if="props"

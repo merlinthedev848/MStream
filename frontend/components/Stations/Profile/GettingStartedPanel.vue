@@ -21,11 +21,11 @@
 
         <div class="card-body">
             <p class="getting-started-lead mb-3">
-                {{
-                    $gettext(
-                        'Your station is ready. Upload music — new tracks join the default playlist automatically — then use Start AutoDJ in Service Status.',
-                    )
-                }}
+                    {{
+                        $gettext(
+                            'Upload → default playlist → Start AutoDJ. Then copy the Listener URL.',
+                        )
+                    }}
             </p>
 
             <ol class="getting-started-steps list-unstyled mb-0">
@@ -47,7 +47,7 @@
                             class="btn btn-primary btn-sm"
                             :to="{ name: 'stations:files:index' }"
                         >
-                            {{ $gettext('Open Music Library') }}
+                            {{ $gettext('Open Media') }}
                         </router-link>
                     </div>
                 </li>

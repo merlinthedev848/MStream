@@ -4,14 +4,14 @@ export default function useAdminRoutes(): RouteRecordRaw[] {
     return [
         {
             path: "/admin",
-            component: () => import("~/components/Admin/Index.vue"),
-            name: "admin:index",
-        },
-        {
-            path: "/admin",
             component: () =>
                 import("~/components/Admin/AdminSidebarWrapper.vue"),
             children: [
+                {
+                    path: "",
+                    component: () => import("~/components/Admin/Index.vue"),
+                    name: "admin:index",
+                },
                 {
                     path: "api-keys",
                     component: () => import("~/components/Admin/ApiKeys.vue"),

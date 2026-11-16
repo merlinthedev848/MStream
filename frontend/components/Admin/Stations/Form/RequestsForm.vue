@@ -1,6 +1,6 @@
 <template>
     <tab
-        :label="$gettext('Song Requests')"
+        :label="$gettext('Features')"
         :item-header-class="tabClassWithBackend"
     >
         <form-fieldset v-if="isBackendEnabled">

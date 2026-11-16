@@ -39,25 +39,25 @@
                 </template>
                 <template #cell(actions)="{ item }">
                     <div class="btn-group btn-group-sm">
+                        <button
+                            type="button"
+                            class="btn btn-outline-primary"
+                            @click="doEdit(item.links.self)"
+                        >
+                            {{ $gettext('Manage') }}
+                        </button>
                         <a
                             v-if="item.links?.masquerade"
-                            class="btn btn-secondary"
+                            class="btn btn-primary"
                             :href="item.links.masquerade"
                             target="_blank"
                             rel="noopener"
                         >
-                            {{ $gettext('Login-as') }}
+                            {{ $gettext('Login') }}
                         </a>
                         <button
                             type="button"
-                            class="btn btn-primary"
-                            @click="doEdit(item.links.self)"
-                        >
-                            {{ $gettext('Edit') }}
-                        </button>
-                        <button
-                            type="button"
-                            class="btn btn-danger"
+                            class="btn btn-outline-danger"
                             @click="doDelete(item.links.self)"
                         >
                             {{ $gettext('Delete') }}

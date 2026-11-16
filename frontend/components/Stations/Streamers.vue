@@ -9,7 +9,7 @@
                                 :id="id"
                                 class="card-title"
                             >
-                                {{ $gettext('Streamer/DJ Accounts') }}
+                                {{ $gettext('DJ Manager') }}
                             </h2>
                         </div>
                         <div class="col-md-6 text-end">

@@ -309,12 +309,8 @@
 #profile-service-quotas {
   .service-quota-grid {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.65rem;
-
-    @media (max-width: 991.98px) {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
 
     @media (max-width: 575.98px) {
       grid-template-columns: 1fr;
@@ -323,11 +319,12 @@
 
   .service-quota-cell {
     min-width: 0;
-    padding: 0.5rem 0.65rem;
-    background: var(--bs-tertiary-bg, #0f1420);
+    padding: 0.85rem 0.9rem;
+    background: var(--bs-body-bg, #0b1220);
     border: 1px solid var(--border-color-dark, #242f44);
     border-radius: 3px;
-    min-height: 5.25rem;
+    min-height: 6rem;
+    box-shadow: none;
   }
 
   .service-quota-label {

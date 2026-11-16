@@ -2,24 +2,70 @@ import { GlobalPermissions } from "~/entities/ApiInterfaces.ts";
 import { filterMenu, RawMenuCategory } from "~/functions/filterMenu.ts";
 import { useUserAllowed } from "~/functions/useUserAllowed.ts";
 import { useTranslate } from "~/vendor/gettext.ts";
+import IconIcDashboard from "~icons/ic/baseline-dashboard";
 import IconIcGroup from "~icons/ic/baseline-group";
 import IconIcRadio from "~icons/ic/baseline-radio";
-import IconIcRouter from "~icons/ic/baseline-router";
-import IconIcWidgets from "~icons/ic/baseline-widgets";
+import IconIcSettings from "~icons/ic/baseline-settings";
+import IconIcKey from "~icons/ic/baseline-vpn-key";
 
+/**
+ * MediaCP-like admin IA (independent implementation):
+ * Dashboard → Customers → Media Services → API Keys → Administration ▾
+ * Host tools and broadcast installs stay under Administration.
+ */
 export function useAdminMenu() {
     const { $gettext } = useTranslate();
     const { userAllowed } = useUserAllowed();
 
     const fullMenu: RawMenuCategory[] = [
         {
-            key: "maintenance",
-            label: $gettext("System"),
-            icon: () => IconIcRouter,
+            key: "dashboard",
+            label: $gettext("Dashboard"),
+            icon: () => IconIcDashboard,
+            url: {
+                name: "admin:index",
+            },
+            visible: () => userAllowed(GlobalPermissions.View),
+        },
+        {
+            key: "customers",
+            label: $gettext("Customers"),
+            icon: () => IconIcGroup,
+            url: {
+                name: "admin:customers:index",
+            },
+            visible: () =>
+                userAllowed(GlobalPermissions.Stations) ||
+                userAllowed(GlobalPermissions.ResellerStations),
+        },
+        {
+            key: "manage_stations",
+            label: $gettext("Media Services"),
+            icon: () => IconIcRadio,
+            url: {
+                name: "admin:stations:index",
+            },
+            visible: () =>
+                userAllowed(GlobalPermissions.Stations) ||
+                userAllowed(GlobalPermissions.ResellerStations),
+        },
+        {
+            key: "api_keys",
+            label: $gettext("API Keys"),
+            icon: () => IconIcKey,
+            url: {
+                name: "admin:api:index",
+            },
+            visible: () => userAllowed(GlobalPermissions.ApiKeys),
+        },
+        {
+            key: "administration",
+            label: $gettext("Administration"),
+            icon: () => IconIcSettings,
             items: [
                 {
                     key: "settings",
-                    label: $gettext("Settings"),
+                    label: $gettext("System Config"),
                     url: {
                         name: "admin:settings:index",
                     },
@@ -34,53 +80,21 @@ export function useAdminMenu() {
                     visible: () => userAllowed(GlobalPermissions.Settings),
                 },
                 {
-                    key: "logs",
-                    label: $gettext("Logs"),
+                    key: "resellers",
+                    label: $gettext("Resellers"),
                     url: {
-                        name: "admin:logs:index",
+                        name: "admin:resellers:index",
                     },
-                    visible: () => userAllowed(GlobalPermissions.Logs),
+                    visible: () => userAllowed(GlobalPermissions.Stations),
                 },
                 {
-                    key: "storage_locations",
-                    label: $gettext("Storage"),
+                    key: "billing",
+                    label: $gettext("Hosting Packages"),
                     url: {
-                        name: "admin:storage_locations:index",
-                    },
-                    visible: () =>
-                        userAllowed(GlobalPermissions.StorageLocations),
-                },
-                {
-                    key: "backups",
-                    label: $gettext("Backups"),
-                    url: {
-                        name: "admin:backups:index",
-                    },
-                    visible: () => userAllowed(GlobalPermissions.Backups),
-                },
-                {
-                    key: "debug",
-                    label: $gettext("Debugger"),
-                    url: {
-                        name: "admin:debug:index",
+                        name: "admin:billing:index",
                     },
                     visible: () => userAllowed(GlobalPermissions.All),
                 },
-                {
-                    key: "updates",
-                    label: $gettext("Updates"),
-                    url: {
-                        name: "admin:updates:index",
-                    },
-                    visible: () => userAllowed(GlobalPermissions.All),
-                },
-            ],
-        },
-        {
-            key: "users",
-            label: $gettext("People & Access"),
-            icon: () => IconIcGroup,
-            items: [
                 {
                     key: "manage_users",
                     label: $gettext("Accounts"),
@@ -106,55 +120,29 @@ export function useAdminMenu() {
                     visible: () => userAllowed(GlobalPermissions.Logs),
                 },
                 {
-                    key: "api_keys",
-                    label: $gettext("API Keys"),
+                    key: "logs",
+                    label: $gettext("System Logs"),
                     url: {
-                        name: "admin:api:index",
+                        name: "admin:logs:index",
                     },
-                    visible: () => userAllowed(GlobalPermissions.ApiKeys),
+                    visible: () => userAllowed(GlobalPermissions.Logs),
                 },
-            ],
-        },
-        {
-            key: "stations",
-            label: $gettext("Stations"),
-            icon: () => IconIcRadio,
-            items: [
                 {
-                    key: "manage_stations",
-                    label: $gettext("Media Services"),
+                    key: "storage_locations",
+                    label: $gettext("Storage"),
                     url: {
-                        name: "admin:stations:index",
+                        name: "admin:storage_locations:index",
                     },
                     visible: () =>
-                        userAllowed(GlobalPermissions.Stations) ||
-                        userAllowed(GlobalPermissions.ResellerStations),
+                        userAllowed(GlobalPermissions.StorageLocations),
                 },
                 {
-                    key: "resellers",
-                    label: $gettext("Resellers"),
+                    key: "backups",
+                    label: $gettext("Backups"),
                     url: {
-                        name: "admin:resellers:index",
+                        name: "admin:backups:index",
                     },
-                    visible: () => userAllowed(GlobalPermissions.Stations),
-                },
-                {
-                    key: "customers",
-                    label: $gettext("Customers"),
-                    url: {
-                        name: "admin:customers:index",
-                    },
-                    visible: () =>
-                        userAllowed(GlobalPermissions.Stations) ||
-                        userAllowed(GlobalPermissions.ResellerStations),
-                },
-                {
-                    key: "billing",
-                    label: $gettext("Hosting Packages"),
-                    url: {
-                        name: "admin:billing:index",
-                    },
-                    visible: () => userAllowed(GlobalPermissions.All),
+                    visible: () => userAllowed(GlobalPermissions.Backups),
                 },
                 {
                     key: "custom_fields",
@@ -172,13 +160,6 @@ export function useAdminMenu() {
                     },
                     visible: () => userAllowed(GlobalPermissions.Stations),
                 },
-            ],
-        },
-        {
-            key: "software",
-            label: $gettext("Broadcast Software"),
-            icon: () => IconIcWidgets,
-            items: [
                 {
                     key: "shoutcast",
                     label: $gettext("Shoutcast 2 DNAS"),
@@ -210,6 +191,22 @@ export function useAdminMenu() {
                         name: "admin:install_geolite:index",
                     },
                     visible: () => userAllowed(GlobalPermissions.Settings),
+                },
+                {
+                    key: "debug",
+                    label: $gettext("Software Health"),
+                    url: {
+                        name: "admin:debug:index",
+                    },
+                    visible: () => userAllowed(GlobalPermissions.All),
+                },
+                {
+                    key: "updates",
+                    label: $gettext("Software Updates"),
+                    url: {
+                        name: "admin:updates:index",
+                    },
+                    visible: () => userAllowed(GlobalPermissions.All),
                 },
             ],
         },
