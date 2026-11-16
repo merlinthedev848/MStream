@@ -37,6 +37,10 @@
                     v-if="showBroadcastingTabs"
                     :is-rsas-installed="isRsasInstalled"
                     :is-shoutcast-installed="isShoutcastInstalled"
+                    :is-shoutcast1-installed="isShoutcast1Installed"
+                    :is-nginx-rtmp-installed="isNginxRtmpInstalled"
+                    :is-flussonic-installed="isFlussonicInstalled"
+                    :is-wowza-installed="isWowzaInstalled"
                     :countries="countries"
                 />
 
@@ -101,6 +105,10 @@ interface StationFormProps extends ApiAdminVueStationsFormProps {
 const props = withDefaults(defineProps<StationFormProps>(), {
     isRsasInstalled: false,
     isShoutcastInstalled: false,
+    isShoutcast1Installed: false,
+    isNginxRtmpInstalled: false,
+    isFlussonicInstalled: false,
+    isWowzaInstalled: false,
     isStereoToolInstalled: false,
     resellers: () => ({}),
     customers: () => ({}),

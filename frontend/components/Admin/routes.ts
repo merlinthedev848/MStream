@@ -113,9 +113,30 @@ export default function useAdminRoutes(): RouteRecordRaw[] {
                     name: "admin:install_shoutcast:index",
                 },
                 {
+                    path: "install_shoutcast1",
+                    component: () =>
+                        import("~/components/Admin/Shoutcast1.vue"),
+                    name: "admin:install_shoutcast1:index",
+                },
+                {
                     path: "install_rsas",
                     component: () => import("~/components/Admin/Rsas.vue"),
                     name: "admin:install_rsas:index",
+                },
+                {
+                    path: "install_nginx_rtmp",
+                    component: () => import("~/components/Admin/NginxRtmp.vue"),
+                    name: "admin:install_nginx_rtmp:index",
+                },
+                {
+                    path: "install_flussonic",
+                    component: () => import("~/components/Admin/Flussonic.vue"),
+                    name: "admin:install_flussonic:index",
+                },
+                {
+                    path: "install_wowza",
+                    component: () => import("~/components/Admin/Wowza.vue"),
+                    name: "admin:install_wowza:index",
                 },
                 {
                     path: "install_stereo_tool",

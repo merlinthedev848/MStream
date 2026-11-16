@@ -201,6 +201,10 @@ import { useTranslate } from "~/vendor/gettext";
 const props = defineProps<{
     isRsasInstalled: boolean;
     isShoutcastInstalled: boolean;
+    isShoutcast1Installed: boolean;
+    isNginxRtmpInstalled: boolean;
+    isFlussonicInstalled: boolean;
+    isWowzaInstalled: boolean;
     countries: Record<string, string>;
 }>();
 
@@ -214,29 +218,77 @@ const canManageServer = userAllowed(GlobalPermissions.Stations);
 const { $gettext } = useTranslate();
 
 const frontendTypeOptions = computed<SimpleFormOptionInput>(() => {
-    const shoutcastLabel = props.isShoutcastInstalled
-        ? $gettext("Use Shoutcast DNAS 2 on this server.")
-        : $gettext(
-              "Use Shoutcast DNAS 2 on this server (install DNAS under Broadcast Software before starting).",
-          );
-    const rsasLabel = props.isRsasInstalled
-        ? $gettext("Use Rocket Streaming Audio Server (RSAS) on this server.")
-        : $gettext(
-              "Use Rocket Streaming Audio Server (RSAS) on this server (install RSAS under Broadcast Software before starting).",
-          );
+    const withHint = (installed: boolean, ready: string, missing: string) =>
+        installed ? ready : missing;
 
     return [
         {
-            text: $gettext("Use Icecast 2.4 on this server."),
+            text: $gettext("Use Icecast 2 on this server."),
             value: FrontendAdapters.Icecast,
         },
         {
-            text: shoutcastLabel,
+            text: withHint(
+                props.isShoutcastInstalled,
+                $gettext("Use SHOUTcast DNAS 2 on this server."),
+                $gettext(
+                    "Use SHOUTcast DNAS 2 on this server (install DNAS under Broadcast Software before starting).",
+                ),
+            ),
             value: FrontendAdapters.Shoutcast,
         },
         {
-            text: rsasLabel,
+            text: withHint(
+                props.isShoutcast1Installed,
+                $gettext("Use SHOUTcast DNAS 1 on this server."),
+                $gettext(
+                    "Use SHOUTcast DNAS 1 on this server (install DNAS under Broadcast Software before starting).",
+                ),
+            ),
+            value: FrontendAdapters.Shoutcast1,
+        },
+        {
+            text: withHint(
+                props.isRsasInstalled,
+                $gettext(
+                    "Use Rocket Streaming Audio Server (RSAS) on this server.",
+                ),
+                $gettext(
+                    "Use Rocket Streaming Audio Server (RSAS) on this server (install RSAS under Broadcast Software before starting).",
+                ),
+            ),
             value: FrontendAdapters.Rsas,
+        },
+        {
+            text: withHint(
+                props.isNginxRtmpInstalled,
+                $gettext("Use Nginx RTMP (live video) on this server."),
+                $gettext(
+                    "Use Nginx RTMP on this server (install under Broadcast Software before starting).",
+                ),
+            ),
+            value: FrontendAdapters.NginxRtmp,
+        },
+        {
+            text: withHint(
+                props.isFlussonicInstalled,
+                $gettext("Use Flussonic (BYO license) on this server."),
+                $gettext(
+                    "Use Flussonic on this server (bring your own license/binary under Broadcast Software before starting).",
+                ),
+            ),
+            value: FrontendAdapters.Flussonic,
+        },
+        {
+            text: withHint(
+                props.isWowzaInstalled,
+                $gettext(
+                    "Use Wowza Streaming Engine (BYO license) on this server.",
+                ),
+                $gettext(
+                    "Use Wowza on this server (bring your own license/install under Broadcast Software before starting).",
+                ),
+            ),
+            value: FrontendAdapters.Wowza,
         },
         {
             text: $gettext("Do not use a local broadcasting service."),

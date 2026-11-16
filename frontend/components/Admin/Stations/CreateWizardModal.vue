@@ -40,7 +40,7 @@
                 <p class="admin-section-lead">
                     {{
                         $gettext(
-                            'Assign this service to a customer (create one under Customers first). Leave unassigned only for admin-owned services.',
+                            'Assign this service to a customer account, or leave unassigned for now.',
                         )
                     }}
                 </p>
@@ -74,13 +74,58 @@
                 <p class="admin-section-lead">
                     {{
                         $gettext(
-                            'Please select a media server from the selection below.',
+                            'Choose a streaming engine for this service. Multiple audio and video services can run concurrently on this host.',
                         )
                     }}
                 </p>
+
+                <h3 class="h6 text-uppercase text-muted mb-2">
+                    {{ $gettext('Audio') }}
+                </h3>
+                <div class="row g-3 mb-4">
+                    <div
+                        v-for="type in audioTypeOptions"
+                        :key="type.value"
+                        class="col-md-4"
+                    >
+                        <button
+                            type="button"
+                            class="btn w-100 h-100 py-4 create-wizard-type text-start"
+                            :class="
+                                frontendType === type.value
+                                    ? 'btn-primary'
+                                    : 'btn-outline-secondary'
+                            "
+                            :aria-pressed="frontendType === type.value"
+                            @click="frontendType = type.value"
+                        >
+                            <div class="fw-bold text-uppercase">
+                                {{ type.label }}
+                            </div>
+                            <small class="d-block mt-1 opacity-75">
+                                {{ type.help }}
+                            </small>
+                            <small
+                                v-if="type.installHint"
+                                class="d-block mt-2"
+                                :class="
+                                    frontendType === type.value
+                                        ? 'opacity-100'
+                                        : 'text-warning'
+                                "
+                            >
+                                {{ type.installHint }}
+                            </small>
+                        </button>
+                    </div>
+                </div>
+
+                <h3 class="h6 text-uppercase text-muted mb-2">
+                    {{ $gettext('Video / Live') }}
+                </h3>
                 <div class="row g-3">
                     <div
-                        v-for="type in typeOptions"
+                        v-for="type in videoTypeOptions"
                         :key="type.value"
                         class="col-md-4"
                     >
@@ -119,11 +164,7 @@
 
             <template v-else>
                 <p class="admin-section-lead">
-                    {{
-                        $gettext(
-                            'Name the service. Port Base and stream passwords are assigned automatically. AutoDJ ships ready with a default playlist.',
-                        )
-                    }}
+                    {{ configLead }}
                 </p>
                 <div class="row g-3">
                     <div class="col-12">
@@ -263,6 +304,7 @@ import Modal from "~/components/Common/Modal.vue";
 import { useNotify } from "~/components/Common/Toasts/useNotify.ts";
 import {
     ApiAdminVueStationsFormProps,
+    BackendAdapters,
     FrontendAdapters,
     HasLinks,
     Station,
@@ -277,6 +319,14 @@ defineOptions({
 
 interface CreateWizardProps extends ApiAdminVueStationsFormProps {
     createUrl: string;
+}
+
+interface TypeOption {
+    value: FrontendAdapters;
+    label: string;
+    help: string;
+    installHint: string | null;
+    video: boolean;
 }
 
 const props = defineProps<CreateWizardProps>();
@@ -314,18 +364,17 @@ const customerOptions = computed(() =>
 );
 
 /**
- * MediaCP-comparable radio types only (no TV / Wowza / Flussonic / Nginx RTMP).
- * Icecast ships with the product; SHOUTcast DNAS and RSAS are proprietary but
- * fully wired once installed under Broadcast Software — always offer the cards
- * so create is not Icecast-only. MStream Icecast is already the KH lineage;
- * there is no separate "Icecast KH" adapter to invent.
+ * Multi-engine fleet: every card maps to a real FrontendAdapters value we can
+ * provision (bundled) or BYO-install. Never invent Icecast-KH-as-separate or
+ * fake types that create broken stations.
  */
-const typeOptions = computed(() => [
+const typeOptions = computed<TypeOption[]>(() => [
     {
         value: FrontendAdapters.Icecast,
         label: $gettext("Icecast 2"),
         help: $gettext("Audio streaming engine supporting MP3, AAC, and OGG."),
-        installHint: null as string | null,
+        installHint: null,
+        video: false,
     },
     {
         value: FrontendAdapters.Shoutcast,
@@ -336,8 +385,22 @@ const typeOptions = computed(() => [
         installHint: props.isShoutcastInstalled
             ? null
             : $gettext(
-                  "Shoutcast 2 DNAS is not installed yet. Create the service now, then install DNAS under Broadcast Software before going on air.",
+                  "SHOUTcast 2 DNAS is not installed yet. Create the service now, then install DNAS under Broadcast Software before going on air.",
               ),
+        video: false,
+    },
+    {
+        value: FrontendAdapters.Shoutcast1,
+        label: $gettext("SHOUTcast 1"),
+        help: $gettext(
+            "Classic SHOUTcast DNAS 1.x audio engine for legacy encoder compatibility.",
+        ),
+        installHint: props.isShoutcast1Installed
+            ? null
+            : $gettext(
+                  "SHOUTcast 1 DNAS is not installed yet. Create the service now, then install it under Broadcast Software before going on air.",
+              ),
+        video: false,
     },
     {
         value: FrontendAdapters.Rsas,
@@ -350,8 +413,73 @@ const typeOptions = computed(() => [
             : $gettext(
                   "RSAS is not installed yet. Create the service now, then install RSAS under Broadcast Software before going on air.",
               ),
+        video: false,
+    },
+    {
+        value: FrontendAdapters.NginxRtmp,
+        label: $gettext("Nginx RTMP"),
+        help: $gettext(
+            "Open video streaming engine with live RTMP ingest and HLS playback.",
+        ),
+        installHint: props.isNginxRtmpInstalled
+            ? null
+            : $gettext(
+                  "Nginx with the RTMP module was not detected. Create the service now, then install or upload a binary under Broadcast Software before going on air.",
+              ),
+        video: true,
+    },
+    {
+        value: FrontendAdapters.Flussonic,
+        label: $gettext("Flussonic"),
+        help: $gettext(
+            "Video streaming engine with live streaming, VoD, relay, and TV station capabilities.",
+        ),
+        installHint: props.isFlussonicInstalled
+            ? null
+            : $gettext(
+                  "Bring your own Flussonic license and binary. Create the service now, then install under Broadcast Software before going on air.",
+              ),
+        video: true,
+    },
+    {
+        value: FrontendAdapters.Wowza,
+        label: $gettext("Wowza Streaming Engine"),
+        help: $gettext(
+            "Video streaming engine with live streaming, VoD, relay, and TV station capabilities.",
+        ),
+        installHint: props.isWowzaInstalled
+            ? null
+            : $gettext(
+                  "Bring your own Wowza license and install. Create the service now, then place WSE under Broadcast Software before going on air.",
+              ),
+        video: true,
     },
 ]);
+
+const audioTypeOptions = computed(() =>
+    typeOptions.value.filter((t) => !t.video),
+);
+const videoTypeOptions = computed(() =>
+    typeOptions.value.filter((t) => t.video),
+);
+
+const isVideoType = computed(() =>
+    [
+        FrontendAdapters.NginxRtmp,
+        FrontendAdapters.Flussonic,
+        FrontendAdapters.Wowza,
+    ].includes(frontendType.value),
+);
+
+const configLead = computed(() =>
+    isVideoType.value
+        ? $gettext(
+              "Name the service. Port Base and stream passwords are assigned automatically. Live video uses OBS/FFmpeg ingest (not radio AutoDJ).",
+          )
+        : $gettext(
+              "Name the service. Port Base and stream passwords are assigned automatically. AutoDJ ships ready with a default playlist.",
+          ),
+);
 
 const canContinue = computed(() => {
     if (step.value === 2) {
@@ -397,6 +525,10 @@ const doCreate = async () => {
         ...base,
         name: name.value.trim(),
         frontend_type: frontendType.value,
+        // Video services are OBS/FFmpeg ingest; skip starting Liquidsoap AutoDJ.
+        backend_type: isVideoType.value
+            ? BackendAdapters.None
+            : BackendAdapters.Liquidsoap,
         customer: customer.value || "",
         customer_name: customerName.value.trim(),
         max_bitrate: maxBitrate.value,

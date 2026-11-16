@@ -177,13 +177,16 @@ final class StationRepository extends Repository
         // Create default mountpoints if station supports them.
         if ($station->frontend_type->supportsMounts()) {
             $record = new StationMount($station);
-            $record->name = '/radio.mp3';
+            $record->name = $station->frontend_type->defaultMountName();
             $record->is_default = true;
-            $record->enable_autodj = true;
-            $record->autodj_format = StreamFormats::Mp3;
-            $record->autodj_bitrate = $station->max_bitrate !== 0 ? $station->max_bitrate : 192;
-            // Guaranteed Icecast fallback asset (see util/docker/stations/icecast/web).
-            $record->fallback_mount = '/error.mp3';
+            // Live video mounts are OBS/FFmpeg ingest apps — not Liquidsoap AutoDJ encodes.
+            $record->enable_autodj = $station->frontend_type->isAudio();
+            if ($record->enable_autodj) {
+                $record->autodj_format = StreamFormats::Mp3;
+                $record->autodj_bitrate = $station->max_bitrate !== 0 ? $station->max_bitrate : 192;
+                // Guaranteed Icecast fallback asset (see util/docker/stations/icecast/web).
+                $record->fallback_mount = '/error.mp3';
+            }
             $this->em->persist($record);
         }
 

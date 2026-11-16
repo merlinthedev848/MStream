@@ -264,6 +264,66 @@ return static function (RouteCollectorProxy $group) {
                     );
 
                     $group->get(
+                        '/shoutcast1',
+                        Controller\Api\Admin\Shoutcast1\GetAction::class
+                    )->setName('api:admin:shoutcast1');
+
+                    $group->post(
+                        '/shoutcast1',
+                        Controller\Api\Admin\Shoutcast1\PostAction::class
+                    );
+
+                    $group->delete(
+                        '/shoutcast1',
+                        Controller\Api\Admin\Shoutcast1\DeleteAction::class
+                    );
+
+                    $group->get(
+                        '/nginx_rtmp',
+                        Controller\Api\Admin\NginxRtmp\GetAction::class
+                    )->setName('api:admin:nginx_rtmp');
+
+                    $group->post(
+                        '/nginx_rtmp',
+                        Controller\Api\Admin\NginxRtmp\PostAction::class
+                    );
+
+                    $group->delete(
+                        '/nginx_rtmp',
+                        Controller\Api\Admin\NginxRtmp\DeleteAction::class
+                    );
+
+                    $group->get(
+                        '/flussonic',
+                        Controller\Api\Admin\Flussonic\GetAction::class
+                    )->setName('api:admin:flussonic');
+
+                    $group->post(
+                        '/flussonic',
+                        Controller\Api\Admin\Flussonic\PostAction::class
+                    );
+
+                    $group->delete(
+                        '/flussonic',
+                        Controller\Api\Admin\Flussonic\DeleteAction::class
+                    );
+
+                    $group->get(
+                        '/wowza',
+                        Controller\Api\Admin\Wowza\GetAction::class
+                    )->setName('api:admin:wowza');
+
+                    $group->post(
+                        '/wowza',
+                        Controller\Api\Admin\Wowza\PostAction::class
+                    );
+
+                    $group->delete(
+                        '/wowza',
+                        Controller\Api\Admin\Wowza\DeleteAction::class
+                    );
+
+                    $group->get(
                         '/stereo_tool',
                         Controller\Api\Admin\StereoTool\GetAction::class
                     )->setName('api:admin:stereo_tool');

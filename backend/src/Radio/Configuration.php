@@ -583,6 +583,12 @@ final class Configuration
             if (!empty($frontendConfig['port'])) {
                 $port = (int)$frontendConfig['port'];
                 $usedPorts[$port] = $stationReference;
+
+                // Video engines also bind HTTP/HLS (or API) on port+1 within the block.
+                $frontendEnum = FrontendAdapters::tryFrom($frontendType);
+                if (null !== $frontendEnum && $frontendEnum->isVideo()) {
+                    $usedPorts[$port + 1] = $stationReference;
+                }
             }
         }
 

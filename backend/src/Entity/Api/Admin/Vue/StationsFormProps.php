@@ -29,6 +29,14 @@ final readonly class StationsFormProps
         #[OA\Property]
         public bool $isShoutcastInstalled,
         #[OA\Property]
+        public bool $isShoutcast1Installed,
+        #[OA\Property]
+        public bool $isNginxRtmpInstalled,
+        #[OA\Property]
+        public bool $isFlussonicInstalled,
+        #[OA\Property]
+        public bool $isWowzaInstalled,
+        #[OA\Property]
         public bool $isStereoToolInstalled,
         #[OA\Property(
             type: 'object',
