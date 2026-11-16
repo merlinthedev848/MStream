@@ -61,6 +61,12 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
                 in: 'query',
                 schema: new OA\Schema(type: 'string', enum: ['0', '1'])
             ),
+            new OA\Parameter(
+                name: 'filter[backend_options]',
+                description: 'Filter playlists whose backend_options contain this token (e.g. interrupt).',
+                in: 'query',
+                schema: new OA\Schema(type: 'string')
+            ),
         ],
         responses: [
             new OpenApi\Response\Success(
@@ -231,6 +237,7 @@ final class PlaylistsController extends AbstractScheduledEntityController
                 'type' => ListFilter::fromEnum('sp.type', PlaylistTypes::class),
                 'order' => ListFilter::fromEnum('sp.order', PlaylistOrders::class),
                 'is_jingle' => ListFilter::equals('sp.is_jingle', ['0', '1']),
+                'backend_options' => ListFilter::contains('sp.backend_options_raw'),
             ]
         );
 

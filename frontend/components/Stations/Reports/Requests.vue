@@ -80,7 +80,7 @@
             </template>
             <template #cell(actions)="row">
                 <button
-                    v-if="row.item.played_at === 0"
+                    v-if="row.item.links?.delete"
                     type="button"
                     class="btn btn-sm btn-danger"
                     @click="doDelete(row.item.links.delete)"

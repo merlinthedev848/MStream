@@ -123,7 +123,7 @@
                                     </a>
                                 </td>
                             </tr>
-                            <tr v-if="stationData.enableStreamers && stationData.enablePublicPages">
+                            <tr v-if="stationData.enableStreamers && stationData.webDjUrl">
                                 <th scope="row">
                                     {{ $gettext('Browser DJ') }}
                                 </th>

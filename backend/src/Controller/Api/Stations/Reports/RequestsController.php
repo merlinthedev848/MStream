@@ -142,7 +142,8 @@ final class RequestsController
 
             $row['links'] = [];
 
-            if (0 === $row['played_at']) {
+            // Pending requests use null played_at (legacy rows may still be 0).
+            if (null === $row['played_at'] || 0 === $row['played_at']) {
                 $row['links']['delete'] = $router->fromHere(
                     'api:stations:reports:requests:delete',
                     ['request_id' => $row['id']]

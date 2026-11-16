@@ -82,6 +82,7 @@
                         id="form_edit_fetch_isrc"
                         name="fetch_isrc"
                         :field="r$.fetch_isrc"
+                        :input-attrs="{ value: '1' }"
                         class="col-md-12"
                     >
                         <template #label>

@@ -578,11 +578,6 @@ watch(activeTab, (tab) => {
     void router.replace({ query: nextQuery });
 });
 
-const jingleFilterActive = computed(
-    () =>
-        route.query.filter === "jingle" || route.query.filter === "commercial",
-);
-
 const playlistsTabLabel = computed(() => {
     if (route.query.filter === "commercial") {
         return $gettext("Commercials & IDs");
@@ -642,7 +637,11 @@ const filters: DataTableFilter[] = [
 ];
 
 const initialFilters = computed((): Record<string, string> => {
-    if (jingleFilterActive.value) {
+    if (route.query.filter === "commercial") {
+        // Commercial Break presets are jingle-mode + interrupt.
+        return { is_jingle: "1", backend_options: "interrupt" };
+    }
+    if (route.query.filter === "jingle") {
         return { is_jingle: "1" };
     }
     return {} as Record<string, string>;
