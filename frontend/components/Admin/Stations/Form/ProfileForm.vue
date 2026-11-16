@@ -1,6 +1,6 @@
 <template>
     <tab
-        :label="$gettext('Station Profile')"
+        :label="$gettext('General')"
         :item-header-class="tabClass"
     >
         <div class="row g-3 mb-3">

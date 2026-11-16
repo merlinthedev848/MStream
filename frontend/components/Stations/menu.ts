@@ -20,6 +20,7 @@ import IconIcInsertChart from "~icons/ic/baseline-insert-chart";
 import IconIcLibraryMusic from "~icons/ic/baseline-library-music";
 import IconIcLink from "~icons/ic/baseline-link";
 import IconIcMic from "~icons/ic/baseline-mic";
+import IconIcMoreHoriz from "~icons/ic/baseline-more-horiz";
 import IconIcPodcasts from "~icons/ic/baseline-podcasts";
 import IconIcPublic from "~icons/ic/baseline-public";
 import IconIcQueueMusic from "~icons/ic/baseline-queue-music";
@@ -34,7 +35,8 @@ export type StationsMenuOptions = {
 /**
  * MediaCP-like service console IA:
  * Overview → Configure → Media → Playlists → … → Reporting
- * Server-managed tools (ports, Liquidsoap, Stereo Tool) stay superadmin-only.
+ * Extras (Commercials, Podcasts, Alerts, Logs, Server Tools) fold under More.
+ * Server tools stay superadmin-only.
  */
 export function useStationsMenu(options: StationsMenuOptions = {}) {
     const { $gettext } = useTranslate();
@@ -99,20 +101,6 @@ export function useStationsMenu(options: StationsMenuOptions = {}) {
                 station.value.features.media,
         },
         {
-            key: "commercials",
-            label: $gettext("Commercials"),
-            icon: () => IconIcQueueMusic,
-            url: {
-                name: "stations:playlists:index",
-                query: {
-                    filter: "commercial",
-                },
-            },
-            visible: () =>
-                userAllowedForStation(StationPermissions.Media) &&
-                station.value.features.media,
-        },
-        {
             key: "schedule",
             label: $gettext("Schedule"),
             icon: () => IconIcSchedule,
@@ -143,17 +131,6 @@ export function useStationsMenu(options: StationsMenuOptions = {}) {
                 name: "stations:branding",
             },
             visible: () => userAllowedForStation(StationPermissions.Profile),
-        },
-        {
-            key: "podcasts",
-            label: $gettext("Podcasts"),
-            icon: () => IconIcPodcasts,
-            url: {
-                name: "stations:podcasts:index",
-            },
-            visible: () =>
-                userAllowedForStation(StationPermissions.Podcasts) &&
-                station.value.features.podcasts,
         },
         {
             key: "mounts",
@@ -187,26 +164,6 @@ export function useStationsMenu(options: StationsMenuOptions = {}) {
                 userAllowedForStation(StationPermissions.Broadcasting),
         },
         {
-            key: "webhooks",
-            label: $gettext("Alerts & Integrations"),
-            icon: () => IconIcCode,
-            url: {
-                name: "stations:webhooks:index",
-            },
-            visible: () =>
-                userAllowedForStation(StationPermissions.WebHooks) &&
-                station.value.features.webhooks,
-        },
-        {
-            key: "logs",
-            label: $gettext("Logs"),
-            icon: () => IconIcAssignment,
-            url: {
-                name: "stations:logs",
-            },
-            visible: () => userAllowedForStation(StationPermissions.Logs),
-        },
-        {
             key: "reports",
             label: $gettext("Reporting"),
             icon: () => IconIcInsertChart,
@@ -216,11 +173,55 @@ export function useStationsMenu(options: StationsMenuOptions = {}) {
             visible: () => userAllowedForStation(StationPermissions.Reports),
         },
         {
-            key: "server_tools",
-            label: $gettext("Server Tools"),
-            icon: () => IconIcSettingsApplication,
-            visible: () => canManageServer(),
+            key: "more",
+            label: $gettext("More"),
+            icon: () => IconIcMoreHoriz,
             items: [
+                {
+                    key: "commercials",
+                    label: $gettext("Commercials"),
+                    url: {
+                        name: "stations:playlists:index",
+                        query: {
+                            filter: "commercial",
+                        },
+                    },
+                    visible: () =>
+                        userAllowedForStation(StationPermissions.Media) &&
+                        station.value.features.media,
+                },
+                {
+                    key: "podcasts",
+                    label: $gettext("Podcasts"),
+                    icon: () => IconIcPodcasts,
+                    url: {
+                        name: "stations:podcasts:index",
+                    },
+                    visible: () =>
+                        userAllowedForStation(StationPermissions.Podcasts) &&
+                        station.value.features.podcasts,
+                },
+                {
+                    key: "webhooks",
+                    label: $gettext("Alerts & Integrations"),
+                    icon: () => IconIcCode,
+                    url: {
+                        name: "stations:webhooks:index",
+                    },
+                    visible: () =>
+                        userAllowedForStation(StationPermissions.WebHooks) &&
+                        station.value.features.webhooks,
+                },
+                {
+                    key: "logs",
+                    label: $gettext("Logs"),
+                    icon: () => IconIcAssignment,
+                    url: {
+                        name: "stations:logs",
+                    },
+                    visible: () =>
+                        userAllowedForStation(StationPermissions.Logs),
+                },
                 {
                     key: "ls_config",
                     label: $gettext("Advanced AutoDJ Config"),
@@ -228,6 +229,7 @@ export function useStationsMenu(options: StationsMenuOptions = {}) {
                         name: "stations:util:ls_config",
                     },
                     visible: () =>
+                        canManageServer() &&
                         station.value.features.customLiquidsoapConfig,
                 },
                 {
@@ -236,7 +238,8 @@ export function useStationsMenu(options: StationsMenuOptions = {}) {
                     url: {
                         name: "stations:stereo_tool_config",
                     },
-                    visible: () => station.value.features.media,
+                    visible: () =>
+                        canManageServer() && station.value.features.media,
                 },
             ],
         },

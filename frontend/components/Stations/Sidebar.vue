@@ -31,36 +31,38 @@
         </div>
     </template>
 
-    <div
-        v-if="canManageFleet"
-        class="navdrawer-alert bg-body-secondary border-bottom"
-    >
-        <div class="fw-bold mb-2">
-            {{ $gettext('Fleet Admin') }}
-        </div>
-        <div class="d-flex flex-wrap gap-2">
-            <button
-                type="button"
-                class="btn btn-sm"
-                :class="isEnabled ? 'btn-outline-warning' : 'btn-success'"
-                :disabled="adminBusy"
-                @click="doToggleSuspend"
-            >
-                {{ isEnabled ? $gettext('Suspend') : $gettext('Unsuspend') }}
-            </button>
-            <button
-                type="button"
-                class="btn btn-sm btn-outline-danger"
-                :disabled="adminBusy"
-                @click="doDeleteService"
-            >
-                {{ $gettext('Delete') }}
-            </button>
-        </div>
-    </div>
-
-    <div class="offcanvas-body">
+    <div class="offcanvas-body d-flex flex-column h-100">
         <sidebar-menu :menu="menuItems" />
+
+        <ul
+            v-if="canManageFleet"
+            class="navdrawer-nav mt-auto pt-2 border-top"
+        >
+            <li class="nav-item">
+                <button
+                    type="button"
+                    class="nav-link text-warning"
+                    :disabled="adminBusy"
+                    @click="doToggleSuspend"
+                >
+                    {{
+                        isEnabled
+                            ? $gettext('Suspend Service')
+                            : $gettext('Unsuspend Service')
+                    }}
+                </button>
+            </li>
+            <li class="nav-item">
+                <button
+                    type="button"
+                    class="nav-link text-danger"
+                    :disabled="adminBusy"
+                    @click="doDeleteService"
+                >
+                    {{ $gettext('Delete Service') }}
+                </button>
+            </li>
+        </ul>
     </div>
 
     <update-metadata-modal ref="$updateMetadataModal"/>

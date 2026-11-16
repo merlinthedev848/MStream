@@ -288,12 +288,12 @@
       "_PanelFooter-DC9vH_R7.js"
     ]
   },
-  "_DashboardWithSidebar-BAQGTQII.css": {
-    "file": "assets/DashboardWithSidebar-BAQGTQII.css",
-    "src": "_DashboardWithSidebar-BAQGTQII.css"
+  "_DashboardWithSidebar-CGrdz1BR.css": {
+    "file": "assets/DashboardWithSidebar-CGrdz1BR.css",
+    "src": "_DashboardWithSidebar-CGrdz1BR.css"
   },
-  "_DashboardWithSidebar-Z1NbiucB.js": {
-    "file": "DashboardWithSidebar-Z1NbiucB.js",
+  "_DashboardWithSidebar-CNLxXeY0.js": {
+    "file": "DashboardWithSidebar-CNLxXeY0.js",
     "name": "DashboardWithSidebar",
     "imports": [
       "_ApiInterfaces-Dle9n6zt.js",
@@ -302,7 +302,7 @@
       "_PanelFooter-DC9vH_R7.js"
     ],
     "css": [
-      "assets/DashboardWithSidebar-BAQGTQII.css"
+      "assets/DashboardWithSidebar-CGrdz1BR.css"
     ]
   },
   "_DataTable-BOGXFVYC.js": {
@@ -683,8 +683,8 @@
     "file": "assets/SongHistory-ojYi6opy.css",
     "src": "_SongHistory-ojYi6opy.css"
   },
-  "_StationForm-Dd8EcTSj.js": {
-    "file": "StationForm-Dd8EcTSj.js",
+  "_StationForm-B_-EvN1m.js": {
+    "file": "StationForm-B_-EvN1m.js",
     "name": "StationForm",
     "imports": [
       "_ApiInterfaces-Dle9n6zt.js",
@@ -1515,14 +1515,14 @@
     ]
   },
   "components/Admin/AdminSidebarWrapper.vue": {
-    "file": "AdminSidebarWrapper-DDYyykOn.js",
+    "file": "AdminSidebarWrapper-BY4Y40GB.js",
     "name": "AdminSidebarWrapper",
     "src": "components/Admin/AdminSidebarWrapper.vue",
     "isDynamicEntry": true,
     "imports": [
       "_ApiInterfaces-Dle9n6zt.js",
       "_menu-CgR5BX1V.js",
-      "_DashboardWithSidebar-Z1NbiucB.js"
+      "_DashboardWithSidebar-CNLxXeY0.js"
     ]
   },
   "components/Admin/ApiKeys.vue": {
@@ -1559,7 +1559,7 @@
     ]
   },
   "components/Admin/BackupsWrapper.vue": {
-    "file": "BackupsWrapper-CrTMtdL9.js",
+    "file": "BackupsWrapper-CklMZVX7.js",
     "name": "BackupsWrapper",
     "src": "components/Admin/BackupsWrapper.vue",
     "isDynamicEntry": true,
@@ -1850,7 +1850,7 @@
     ]
   },
   "components/Admin/Stations.vue": {
-    "file": "Stations-CNc1Tk5Z.js",
+    "file": "Stations-DtEOQ2cm.js",
     "name": "Stations",
     "src": "components/Admin/Stations.vue",
     "isDynamicEntry": true,
@@ -1865,7 +1865,7 @@
       "_useHasModal-BzDEX7f1.js",
       "_functions-useResettableRef-MNYpZoe6.js",
       "_layout-BwrydiM0.js",
-      "_StationForm-Dd8EcTSj.js",
+      "_StationForm-B_-EvN1m.js",
       "_components-Common-InvisibleSubmitButton-C1qWDFN5.js",
       "_useHasEditModal-CiI71JiO.js",
       "_CardPage-D4akqu7r.js",
@@ -1963,13 +1963,14 @@
     ]
   },
   "components/Dashboard.vue": {
-    "file": "Dashboard-C0vayUW8.js",
+    "file": "Dashboard-mGyiA2m2.js",
     "name": "Dashboard",
     "src": "components/Dashboard.vue",
     "isDynamicEntry": true,
     "imports": [
       "_ApiInterfaces-Dle9n6zt.js",
       "_useApiRouter-C4rRfTVt.js",
+      "_useApi-il6ACzUc-DAnzqMgh.js",
       "_UserInfoPanel-DYrKcc0H.js",
       "_AlbumArt-IYqsdD9O.js",
       "_PlayButton-BvtoEXf4.js",
@@ -2142,7 +2143,7 @@
     ]
   },
   "components/Stations/Logs.vue": {
-    "file": "Logs-XaOxGHNr.js",
+    "file": "Logs-Bp1boBLq.js",
     "name": "Logs",
     "src": "components/Stations/Logs.vue",
     "isDynamicEntry": true,
@@ -2244,7 +2245,7 @@
     ]
   },
   "components/Stations/Playlists.vue": {
-    "file": "Playlists-DuR1qRRn.js",
+    "file": "Playlists-DtgKItxr.js",
     "name": "Playlists",
     "src": "components/Stations/Playlists.vue",
     "isDynamicEntry": true,
@@ -2374,15 +2375,15 @@
     ]
   },
   "components/Stations/Profile.vue": {
-    "file": "Profile-BjIJ1kiw.js",
+    "file": "Profile-ZhhFaJqI.js",
     "name": "Profile",
     "src": "components/Stations/Profile.vue",
     "isDynamicEntry": true,
     "imports": [
       "_ApiInterfaces-Dle9n6zt.js",
       "_Loading-FCcxhyK0.js",
-      "_CardPage-D4akqu7r.js",
       "_layout-BwrydiM0.js",
+      "_CardPage-D4akqu7r.js",
       "_query-BWn5xQHX.js",
       "_WidgetModal-DcUB_A5r.js",
       "_useApiRouter-C4rRfTVt.js",
@@ -2575,7 +2576,7 @@
     ]
   },
   "components/Stations/Settings.vue": {
-    "file": "Settings-aUylPNb7.js",
+    "file": "Settings-DCRGn_NO.js",
     "name": "Settings",
     "src": "components/Stations/Settings.vue",
     "isDynamicEntry": true,
@@ -2583,7 +2584,7 @@
       "_ApiInterfaces-Dle9n6zt.js",
       "_useApiRouter-C4rRfTVt.js",
       "_useApi-il6ACzUc-DAnzqMgh.js",
-      "_StationForm-Dd8EcTSj.js",
+      "_StationForm-B_-EvN1m.js",
       "_Loading-FCcxhyK0.js",
       "_query-BWn5xQHX.js"
     ]
@@ -2611,14 +2612,14 @@
     ]
   },
   "components/Stations/StationsLayout.vue": {
-    "file": "StationsLayout-CeZ1cN8k.js",
+    "file": "StationsLayout-uaHvC5oB.js",
     "name": "StationsLayout",
     "src": "components/Stations/StationsLayout.vue",
     "isDynamicEntry": true,
     "imports": [
       "_ApiInterfaces-Dle9n6zt.js",
       "_Loading-FCcxhyK0.js",
-      "_DashboardWithSidebar-Z1NbiucB.js",
+      "_DashboardWithSidebar-CNLxXeY0.js",
       "_useApi-il6ACzUc-DAnzqMgh.js",
       "_layout-BwrydiM0.js",
       "_query-BWn5xQHX.js",
@@ -2631,6 +2632,7 @@
       "_icon-ic-baseline-image-B2x690Ks.js",
       "_baseline-queue-music-fknWuOu2.js",
       "_icon-ic-baseline-mic-h3UK2qCm.js",
+      "_icon-ic-baseline-more-horiz-CMTeE1rh.js",
       "_icon-ic-baseline-update-DyeY6LFe.js",
       "_functions-useStationDateTimeFormatter-C6vF9kPK.js",
       "_vendor-luxon-HGTNPzV_.js"
@@ -2764,7 +2766,7 @@
     "src": "img/hexbg_dark.webp"
   },
   "js/layout.js": {
-    "file": "assets/Layout-D3KtkOTW.js",
+    "file": "assets/Layout-CAzFdR0A.js",
     "name": "Layout",
     "src": "js/layout.js",
     "isEntry": true,
@@ -2772,7 +2774,7 @@
       "_bootstrap.esm-DcX7NFU4.js"
     ],
     "css": [
-      "assets/Layout-BoZIjijh.css"
+      "assets/Layout-B-KNFB-W.css"
     ],
     "assets": [
       "assets/Roboto-Light-DHTugVNA.woff2",
@@ -2794,7 +2796,7 @@
     ]
   },
   "js/pages/Dashboard.js": {
-    "file": "assets/Dashboard-CQRW4Cmt.js",
+    "file": "assets/Dashboard-CKnaGBef.js",
     "name": "Dashboard",
     "src": "js/pages/Dashboard.js",
     "isEntry": true,
@@ -3046,13 +3048,13 @@
     ]
   },
   "js/pages/Setup/Station.js": {
-    "file": "assets/SetupStation-D28lBFwW.js",
+    "file": "assets/SetupStation-BaGAY6s2.js",
     "name": "SetupStation",
     "src": "js/pages/Setup/Station.js",
     "isEntry": true,
     "imports": [
       "_ApiInterfaces-Dle9n6zt.js",
-      "_StationForm-Dd8EcTSj.js",
+      "_StationForm-B_-EvN1m.js",
       "_InfoCard-D4AuOLol.js",
       "_SetupStep-DwkS7SQO.js",
       "_layout-BwrydiM0.js"
