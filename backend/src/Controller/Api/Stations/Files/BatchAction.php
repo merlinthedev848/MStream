@@ -8,6 +8,7 @@ use App\Cache\MediaListCache;
 use App\Container\EntityManagerAwareTrait;
 use App\Controller\SingleActionInterface;
 use App\Entity\Api\MediaBatchResult;
+use App\Entity\Api\Status;
 use App\Entity\Interfaces\PathAwareInterface;
 use App\Entity\Repository\StationMediaRepository;
 use App\Entity\Repository\StationPlaylistFolderRepository;
