@@ -12,7 +12,7 @@ use App\Radio\Frontend\Rsas;
 use App\Radio\Frontend\Shoutcast;
 use App\Radio\Frontend\Shoutcast1;
 use App\Radio\Frontend\Wowza;
-use PHPUnit\Framework\Attributes\DataProvider;
+use Codeception\Attribute\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
