@@ -138,7 +138,7 @@
                     <template #cell(actions)="row">
                         <div class="btn-group btn-group-sm media-services-actions">
                             <a
-                                class="btn btn-secondary"
+                                class="btn btn-primary"
                                 :href="row.item.links.manage"
                                 target="_blank"
                                 :title="$gettext('Overview')"
@@ -147,45 +147,66 @@
                             </a>
                             <button
                                 type="button"
-                                class="btn btn-primary"
-                                :title="$gettext('Configure')"
-                                @click="doEdit(row.item.links.self)"
+                                class="btn btn-secondary dropdown-toggle"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
+                                :title="$gettext('More actions')"
                             >
-                                {{ $gettext('Edit') }}
+                                {{ $gettext('Actions') }}
                             </button>
-                            <button
-                                type="button"
-                                class="btn btn-warning"
-                                :title="$gettext('Restart')"
-                                :disabled="restartingId === row.item.id"
-                                @click="doRestart(row.item)"
-                            >
-                                {{ $gettext('Restart') }}
-                            </button>
-                            <button
-                                type="button"
-                                class="btn btn-sm"
-                                :class="(row.item.is_enabled) ? 'btn-outline-warning' : 'btn-success'"
-                                :title="(row.item.is_enabled) ? $gettext('Suspend') : $gettext('Unsuspend')"
-                                @click="doToggle(row.item)"
-                            >
-                                {{ (row.item.is_enabled) ? $gettext('Suspend') : $gettext('Unsuspend') }}
-                            </button>
-                            <button
-                                type="button"
-                                class="btn btn-secondary"
-                                @click="doClone(row.item.name, row.item.links.clone)"
-                            >
-                                {{ $gettext('Clone') }}
-                            </button>
-                            <button
-                                type="button"
-                                class="btn btn-danger"
-                                :title="$gettext('Delete')"
-                                @click="doDelete(row.item.links.self)"
-                            >
-                                {{ $gettext('Delete') }}
-                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <button
+                                        type="button"
+                                        class="dropdown-item"
+                                        @click="doEdit(row.item.links.self)"
+                                    >
+                                        {{ $gettext('Edit') }}
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        type="button"
+                                        class="dropdown-item"
+                                        :disabled="restartingId === row.item.id"
+                                        @click="doRestart(row.item)"
+                                    >
+                                        {{ $gettext('Restart') }}
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        type="button"
+                                        class="dropdown-item"
+                                        @click="doToggle(row.item)"
+                                    >
+                                        {{
+                                            row.item.is_enabled
+                                                ? $gettext('Suspend')
+                                                : $gettext('Unsuspend')
+                                        }}
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        type="button"
+                                        class="dropdown-item"
+                                        @click="doClone(row.item.name, row.item.links.clone)"
+                                    >
+                                        {{ $gettext('Clone') }}
+                                    </button>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <button
+                                        type="button"
+                                        class="dropdown-item text-danger"
+                                        @click="doDelete(row.item.links.self)"
+                                    >
+                                        {{ $gettext('Delete') }}
+                                    </button>
+                                </li>
+                            </ul>
                         </div>
                     </template>
                 </data-table>

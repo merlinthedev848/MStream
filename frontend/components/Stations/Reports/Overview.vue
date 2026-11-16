@@ -1,5 +1,52 @@
 <template>
     <section
+        class="card mb-3"
+        role="region"
+        aria-labelledby="hdr_reporting_nav"
+    >
+        <div class="card-header text-bg-secondary">
+            <h2
+                id="hdr_reporting_nav"
+                class="card-title my-0"
+            >
+                {{ $gettext('Reporting') }}
+            </h2>
+        </div>
+        <div class="card-body py-2">
+            <div class="d-flex flex-wrap gap-2">
+                <span class="btn btn-sm btn-primary disabled">
+                    {{ $gettext('Summary') }}
+                </span>
+                <router-link
+                    class="btn btn-sm btn-outline-primary"
+                    :to="{ name: 'stations:reports:listeners' }"
+                >
+                    {{ $gettext('Listeners') }}
+                </router-link>
+                <router-link
+                    v-if="stationData.enableRequests"
+                    class="btn btn-sm btn-outline-primary"
+                    :to="{ name: 'stations:reports:requests' }"
+                >
+                    {{ $gettext('Song Requests') }}
+                </router-link>
+                <router-link
+                    class="btn btn-sm btn-outline-primary"
+                    :to="{ name: 'stations:reports:timeline' }"
+                >
+                    {{ $gettext('Playback Timeline') }}
+                </router-link>
+                <router-link
+                    class="btn btn-sm btn-outline-primary"
+                    :to="{ name: 'stations:reports:soundexchange' }"
+                >
+                    {{ $gettext('SoundExchange') }}
+                </router-link>
+            </div>
+        </div>
+    </section>
+
+    <section
         class="card mb-4"
         role="region"
     >

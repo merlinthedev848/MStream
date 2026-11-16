@@ -6,13 +6,13 @@
         class="row row-of-cards"
     >
         <div class="col-lg-8">
-            <getting-started-panel />
-
             <service-status-panel />
 
             <service-quota-panel />
 
             <listener-url-panel />
+
+            <getting-started-panel />
 
             <template v-if="stationData.hasStarted">
                 <profile-now-playing/>
@@ -42,9 +42,15 @@
                     </router-link>
                     <router-link
                         class="list-group-item list-group-item-action"
+                        :to="{ name: 'stations:widgets-links' }"
+                    >
+                        {{ $gettext('Widgets & Links') }}
+                    </router-link>
+                    <router-link
+                        class="list-group-item list-group-item-action"
                         :to="{ name: 'stations:branding' }"
                     >
-                        {{ $gettext('Widgets & Branding') }}
+                        {{ $gettext('Public Page') }}
                     </router-link>
                     <router-link
                         v-if="hasActiveBackend"

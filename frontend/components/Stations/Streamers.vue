@@ -13,13 +13,24 @@
                             </h2>
                         </div>
                         <div class="col-md-6 text-end">
-                            <loading :loading="propsLoading" lazy>
-                                <stations-common-quota
-                                    v-if="props && props.recordStreams"
-                                    :quota-url="quotaUrl"
-                                />
-                                <time-zone v-else/>
-                            </loading>
+                            <div class="d-inline-flex flex-wrap gap-2 align-items-center justify-content-end">
+                                <a
+                                    v-if="stationData.enableStreamers && stationData.enablePublicPages"
+                                    class="btn btn-sm btn-outline-primary"
+                                    :href="stationData.webDjUrl"
+                                    target="_blank"
+                                    rel="noopener"
+                                >
+                                    {{ $gettext('Browser DJ') }}
+                                </a>
+                                <loading :loading="propsLoading" lazy>
+                                    <stations-common-quota
+                                        v-if="props && props.recordStreams"
+                                        :quota-url="quotaUrl"
+                                    />
+                                    <time-zone v-else/>
+                                </loading>
+                            </div>
                         </div>
                     </div>
                 </template>
@@ -138,10 +149,12 @@ import { useApiItemProvider } from "~/functions/dataTable/useApiItemProvider.ts"
 import { useApiRouter } from "~/functions/useApiRouter.ts";
 import useConfirmAndDelete from "~/functions/useConfirmAndDelete";
 import useHasEditModal from "~/functions/useHasEditModal";
+import { useStationData } from "~/functions/useStationQuery.ts";
 import { useAxios } from "~/vendor/axios.ts";
 import { useTranslate } from "~/vendor/gettext";
 
 const { getStationApiUrl } = useApiRouter();
+const stationData = useStationData();
 
 const propsUrl = getStationApiUrl("/vue/streamers");
 const listUrl = getStationApiUrl("/streamers");

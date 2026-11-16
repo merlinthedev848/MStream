@@ -19,6 +19,12 @@ export default function useStationsRoutes(): RouteRecordRaw[] {
                     name: "stations:branding",
                 },
                 {
+                    path: "widgets-links",
+                    component: () =>
+                        import("~/components/Stations/WidgetsLinks.vue"),
+                    name: "stations:widgets-links",
+                },
+                {
                     path: "bulk-media",
                     component: () =>
                         import("~/components/Stations/BulkMedia.vue"),

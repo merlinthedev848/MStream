@@ -16,6 +16,8 @@ type MenuBase = {
     external?: boolean;
     title?: string;
     class?: string;
+    /** When set, sidebar renders a button that runs this instead of navigating. */
+    click?: () => void;
 };
 
 type RawMenuSubCategory = MenuBase & {

@@ -5,8 +5,22 @@
             :key="category.key"
             class="nav-item"
         >
+            <button
+                v-if="category.click"
+                type="button"
+                class="nav-link"
+                :class="getLinkClass(category)"
+                @click="category.click"
+            >
+                <component
+                    v-if="category.icon"
+                    :is="category.icon()"
+                    class="navdrawer-nav-icon"
+                />
+                <span class="might-overflow">{{ category.label }}</span>
+            </button>
             <router-link
-                v-if="isRouteLink(category.url)"
+                v-else-if="isRouteLink(category.url)"
                 :class="getLinkClass(category)"
                 :to="category.url"
                 class="nav-link"
@@ -52,8 +66,18 @@
                         :key="item.key"
                         class="nav-item"
                     >
+                        <button
+                            v-if="item.click"
+                            type="button"
+                            class="nav-link ps-4 py-2"
+                            :class="getLinkClass(item)"
+                            :title="item.title"
+                            @click="item.click"
+                        >
+                            <span class="might-overflow">{{ item.label }}</span>
+                        </button>
                         <router-link
-                            v-if="isRouteLink(item.url)"
+                            v-else-if="isRouteLink(item.url)"
                             :to="item.url"
                             class="nav-link ps-4 py-2"
                             :class="getLinkClass(item)"
@@ -174,5 +198,13 @@ const getCategoryLink = (item: MenuSubCategory) => {
 
 .might-overflow {
     @include might-overflow();
+}
+
+.navdrawer-nav .nav-link {
+    // Match anchor styling for click-action buttons in the sidebar.
+    width: 100%;
+    text-align: start;
+    background: transparent;
+    border: 0;
 }
 </style>
