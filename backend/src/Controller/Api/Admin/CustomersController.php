@@ -184,8 +184,7 @@ final class CustomersController extends AbstractApiCrudController
 
     protected function viewRecord(object $record, ServerRequest $request): mixed
     {
-        assert($record instanceof Customer);
-
+        /** @var Customer $record */
         $return = parent::viewRecord($record, $request);
 
         if ($record->owner_user !== null) {
