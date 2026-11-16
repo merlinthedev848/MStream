@@ -1,6 +1,6 @@
 <template>
     <tab
-        :label="$gettext('Admin Limits')"
+        :label="$gettext('Limits')"
         :item-header-class="tabClass"
     >
         <div class="row g-3 mb-3">

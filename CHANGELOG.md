@@ -5,6 +5,14 @@ release channel, you can take advantage of these new features and fixes.
 
 ## New Features/Changes
 
+- **MediaCP Overview / sidebar density pass**:
+    - Station Overview defaults to Start AutoDJ + Listener URL + light quotas; On the Air / graphs / advanced panels
+      hide behind Show details.
+    - Sidebar keeps the MediaCP spine; Commercials, Podcasts, Alerts, Logs, and Server Tools fold under More
+      (server tools still fleet-admin only). Suspend/Delete move to the sidebar footer for fleet admins.
+    - Fleet admins landing on `/dashboard` redirect to Admin KPI home; Configure tabs rename to General / Limits;
+      Port Base label for admin-only port field.
+
 - **MediaCP-class commercial hosting parity (audio)**:
     - In-console Schedule nav (public schedule moved under Public Page); fixed Streams / Getting Started / Suspend copy.
     - Jingles + Commercials filters, Create From Preset (Station ID, Commercial Break, External Feed), External Feeds

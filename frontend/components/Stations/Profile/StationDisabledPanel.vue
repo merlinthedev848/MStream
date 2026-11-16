@@ -32,7 +32,7 @@
                 <template v-if="canManageFleet">
                     {{
                         $gettext(
-                            'This service is suspended. You can still manage media and configuration. Use Fleet Admin → Unsuspend in the sidebar to restore broadcasting.',
+                            'This service is suspended. You can still manage media and configuration. Use Unsuspend Service at the bottom of the sidebar to restore broadcasting.',
                         )
                     }}
                 </template>

@@ -206,5 +206,11 @@ const getCategoryLink = (item: MenuSubCategory) => {
     text-align: start;
     background: transparent;
     border: 0;
+    cursor: pointer;
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
 }
 </style>

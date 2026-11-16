@@ -75,8 +75,8 @@
                         :field="r$.frontend_config.port"
                         input-type="number"
                         :input-attrs="{min: '0'}"
-                        :label="$gettext('Customize Broadcasting Port')"
-                        :description="$gettext('No other program can be using this port. Leave blank to automatically assign a port.')"
+                        :label="$gettext('Port Base')"
+                        :description="$gettext('No other program can be using this port. Leave blank to automatically assign a port. Fleet admins only.')"
                     />
 
                     <form-group-field

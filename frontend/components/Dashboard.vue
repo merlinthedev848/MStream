@@ -257,7 +257,8 @@
 
 <script setup lang="ts">
 import { useQuery } from "@tanstack/vue-query";
-import { computed } from "vue";
+import { computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
 import UserInfoPanel from "~/components/Account/UserInfoPanel.vue";
 import AlbumArt from "~/components/Common/AlbumArt.vue";
 import PlayButton from "~/components/Common/Audio/PlayButton.vue";
@@ -289,6 +290,14 @@ const { showCharts, showAlbumArt } = useMStreamDashboardGlobals();
 
 const { userAllowed } = useUserAllowed();
 const showAdmin = userAllowed(GlobalPermissions.View);
+const router = useRouter();
+
+// MediaCP-like: fleet admins land on KPI home, not the chart dashboard.
+onMounted(() => {
+    if (userAllowed(GlobalPermissions.Stations)) {
+        void router.replace({ name: "admin:index" });
+    }
+});
 
 const { getApiUrl } = useApiRouter();
 

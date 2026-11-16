@@ -123,38 +123,12 @@
                         {{ $gettext('Estimated outbound audio this month') }}
                     </div>
                 </div>
-
-                <div class="service-quota-cell">
-                    <div class="service-quota-label">
-                        {{ $gettext('Status') }}
-                    </div>
-                    <div class="mt-1">
-                        <span
-                            v-if="!stationData.isEnabled"
-                            class="badge broadcast-tally-standby"
-                        >
-                            {{ $gettext('SUSPENDED') }}
-                        </span>
-                        <span
-                            v-else-if="np.is_online"
-                            class="badge broadcast-tally-onair"
-                        >
-                            {{ $gettext('ON AIR') }}
-                        </span>
-                        <span
-                            v-else
-                            class="badge broadcast-tally-standby"
-                        >
-                            {{ $gettext('OFFLINE') }}
-                        </span>
-                    </div>
-                    <div
-                        v-if="canManageServer && profileData.frontendPort"
-                        class="service-quota-meta broadcast-mono mt-2"
-                    >
-                        {{ $gettext('Port') }}: {{ profileData.frontendPort }}
-                    </div>
-                </div>
+            </div>
+            <div
+                v-if="canManageServer && profileData.frontendPort"
+                class="service-quota-meta broadcast-mono mt-3"
+            >
+                {{ $gettext('Port Base') }}: {{ profileData.frontendPort }}
             </div>
         </div>
     </section>
