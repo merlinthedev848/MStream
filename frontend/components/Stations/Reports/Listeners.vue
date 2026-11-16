@@ -422,16 +422,17 @@ const filteredListeners = computed<Row[]>(() => {
             return false;
         }
         if (ListenerTypeFilters.All !== filters.value.type) {
-            if (
-                ListenerTypeFilters.Mobile === filters.value.type &&
-                !row.device.is_mobile
-            ) {
-                return false;
-            } else if (
-                ListenerTypeFilters.Desktop === filters.value.type &&
-                row.device.is_mobile
-            ) {
-                return false;
+            const isBot = !!row.device.is_bot;
+            const isMobile = !!row.device.is_mobile;
+
+            if (ListenerTypeFilters.Bot === filters.value.type) {
+                return isBot;
+            }
+            if (ListenerTypeFilters.Mobile === filters.value.type) {
+                return isMobile && !isBot;
+            }
+            if (ListenerTypeFilters.Desktop === filters.value.type) {
+                return !isMobile && !isBot;
             }
         }
 
@@ -458,9 +459,7 @@ const listenersItemProvider = useClientItemProvider<Row>(
 const totalListenerHours = computed(() => {
     let tlh_seconds = 0;
 
-    const listeners = allListeners.value ?? [];
-
-    for (const listener of listeners) {
+    for (const listener of filteredListeners.value) {
         tlh_seconds += listener.connected_time;
     }
 

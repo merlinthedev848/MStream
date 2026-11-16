@@ -61,7 +61,7 @@
         >
             <template v-if="stationData.enableStreamers">
                 <a
-                    v-if="stationData.enablePublicPages"
+                    v-if="stationData.webDjUrl"
                     :href="stationData.webDjUrl"
                     target="_blank"
                     class="btn btn-link text-secondary"

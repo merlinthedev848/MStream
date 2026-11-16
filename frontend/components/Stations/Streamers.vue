@@ -15,7 +15,7 @@
                         <div class="col-md-6 text-end">
                             <div class="d-inline-flex flex-wrap gap-2 align-items-center justify-content-end">
                                 <a
-                                    v-if="stationData.enableStreamers && stationData.enablePublicPages"
+                                    v-if="stationData.enableStreamers && stationData.webDjUrl"
                                     class="btn btn-sm btn-outline-primary"
                                     :href="stationData.webDjUrl"
                                     target="_blank"
