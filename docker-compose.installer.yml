@@ -5,6 +5,8 @@ services:
     volumes:
       - './:/installer'
     restart: 'no'
-    entrypoint: mstream_install
+    # Lightweight PHP installer (env + compose rewrite). Do not use mstream_install here:
+    # that boots the full CLI/DI stack and tries Redis before the stack exists.
+    entrypoint: docker_installer
     command: install
     privileged: true

@@ -13,6 +13,7 @@ use App\Radio\Configuration;
 use App\Radio\Enums\BackendAdapters;
 use App\Radio\Enums\FrontendAdapters;
 use Codeception\Test\Unit;
+use Doctrine\ORM\Query;
 use Mockery;
 use ReflectionProperty;
 use Supervisor\SupervisorInterface;
@@ -99,6 +100,53 @@ final class ConfigurationPortAllocationTest extends Unit
             ],
             $ports
         );
+    }
+
+    /**
+     * Doctrine getArrayResult() hydrates FrontendAdapters/BackendAdapters enums for typed fields;
+     * mergeStationPortsIntoMap must accept those without a TypeError.
+     */
+    public function testGetUsedPortsAcceptsEnumAdapterTypesFromDatabase(): void
+    {
+        $query = Mockery::mock(Query::class);
+        $query->shouldReceive('getArrayResult')->once()->andReturn([
+            [
+                'id' => 1,
+                'name' => 'Existing',
+                'frontend_type' => FrontendAdapters::Icecast,
+                'frontend_config' => ['port' => Configuration::DEFAULT_PORT_MIN],
+                'backend_type' => BackendAdapters::Liquidsoap,
+                'backend_config' => [
+                    'telnet_port' => Configuration::DEFAULT_PORT_MIN + Configuration::PORT_OFFSET_TELNET,
+                    'dj_port' => Configuration::DEFAULT_PORT_MIN + Configuration::PORT_OFFSET_DJ,
+                ],
+            ],
+        ]);
+
+        $em = Mockery::mock(ReloadableEntityManagerInterface::class);
+        $em->shouldReceive('persist');
+        $em->shouldReceive('createQuery')->once()->andReturn($query);
+
+        $configuration = new Configuration(
+            Mockery::mock(Adapters::class),
+            Mockery::mock(SupervisorInterface::class),
+            Mockery::mock(PlaylistQueueResetter::class),
+        );
+        $configuration->setEntityManager($em);
+        $configuration->setEnvironment(new Environment([]));
+
+        $usedPorts = $configuration->getUsedPorts();
+
+        self::assertArrayHasKey(Configuration::DEFAULT_PORT_MIN, $usedPorts);
+        self::assertArrayHasKey(
+            Configuration::DEFAULT_PORT_MIN + Configuration::PORT_OFFSET_DJ,
+            $usedPorts
+        );
+        self::assertArrayHasKey(
+            Configuration::DEFAULT_PORT_MIN + Configuration::PORT_OFFSET_TELNET,
+            $usedPorts
+        );
+        self::assertSame(1, $usedPorts[Configuration::DEFAULT_PORT_MIN]['id']);
     }
 
     private function createConfigurationWithEmptyPortCache(): Configuration

@@ -490,9 +490,9 @@ final class Configuration
         /** @var list<array{
          *   id: int,
          *   name: string,
-         *   frontend_type: string,
+         *   frontend_type: string|FrontendAdapters,
          *   frontend_config: array<string, mixed>|null,
-         *   backend_type: string,
+         *   backend_type: string|BackendAdapters,
          *   backend_config: array<string, mixed>|null
          * }> $stationConfigs */
         $stationConfigs = $this->em->createQuery(
@@ -550,9 +550,9 @@ final class Configuration
         $this->mergeStationPortsIntoMap(
             $this->usedPorts,
             $stationReference,
-            $station->frontend_type->value,
+            $station->frontend_type,
             $station->frontend_config->toArray(true) ?? [],
-            $station->backend_type->value,
+            $station->backend_type,
             $station->backend_config->toArray(true) ?? [],
         );
     }
@@ -566,11 +566,19 @@ final class Configuration
     private function mergeStationPortsIntoMap(
         array &$usedPorts,
         array $stationReference,
-        string $frontendType,
+        string|FrontendAdapters $frontendType,
         array $frontendConfig,
-        string $backendType,
+        string|BackendAdapters $backendType,
         array $backendConfig,
     ): void {
+        // Doctrine getArrayResult() may hydrate backed enums for typed entity fields.
+        $frontendType = $frontendType instanceof FrontendAdapters
+            ? $frontendType->value
+            : $frontendType;
+        $backendType = $backendType instanceof BackendAdapters
+            ? $backendType->value
+            : $backendType;
+
         if ($frontendType !== FrontendAdapters::Remote->value) {
             if (!empty($frontendConfig['port'])) {
                 $port = (int)$frontendConfig['port'];
