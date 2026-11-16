@@ -324,9 +324,7 @@ const typeOptions = computed(() => [
     {
         value: FrontendAdapters.Icecast,
         label: $gettext("Icecast 2"),
-        help: $gettext(
-            "Audio streaming engine supporting MP3, AAC, and OGG.",
-        ),
+        help: $gettext("Audio streaming engine supporting MP3, AAC, and OGG."),
         installHint: null as string | null,
     },
     {

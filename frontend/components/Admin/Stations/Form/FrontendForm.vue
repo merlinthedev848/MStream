@@ -220,9 +220,7 @@ const frontendTypeOptions = computed<SimpleFormOptionInput>(() => {
               "Use Shoutcast DNAS 2 on this server (install DNAS under Broadcast Software before starting).",
           );
     const rsasLabel = props.isRsasInstalled
-        ? $gettext(
-              "Use Rocket Streaming Audio Server (RSAS) on this server.",
-          )
+        ? $gettext("Use Rocket Streaming Audio Server (RSAS) on this server.")
         : $gettext(
               "Use Rocket Streaming Audio Server (RSAS) on this server (install RSAS under Broadcast Software before starting).",
           );
