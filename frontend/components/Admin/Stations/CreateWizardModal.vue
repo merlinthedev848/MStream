@@ -72,7 +72,11 @@
 
             <template v-else-if="step === 2">
                 <p class="admin-section-lead">
-                    {{ $gettext('Choose the broadcasting server type.') }}
+                    {{
+                        $gettext(
+                            'Please select a media server from the selection below.',
+                        )
+                    }}
                 </p>
                 <div class="row g-3">
                     <div
@@ -82,19 +86,31 @@
                     >
                         <button
                             type="button"
-                            class="btn w-100 h-100 py-4 create-wizard-type"
+                            class="btn w-100 h-100 py-4 create-wizard-type text-start"
                             :class="
                                 frontendType === type.value
                                     ? 'btn-primary'
                                     : 'btn-outline-secondary'
                             "
+                            :aria-pressed="frontendType === type.value"
                             @click="frontendType = type.value"
                         >
-                            <div class="fw-bold">
+                            <div class="fw-bold text-uppercase">
                                 {{ type.label }}
                             </div>
                             <small class="d-block mt-1 opacity-75">
                                 {{ type.help }}
+                            </small>
+                            <small
+                                v-if="type.installHint"
+                                class="d-block mt-2"
+                                :class="
+                                    frontendType === type.value
+                                        ? 'opacity-100'
+                                        : 'text-warning'
+                                "
+                            >
+                                {{ type.installHint }}
                             </small>
                         </button>
                     </div>
@@ -297,30 +313,45 @@ const customerOptions = computed(() =>
     })),
 );
 
-const typeOptions = computed(() => {
-    const options = [
-        {
-            value: FrontendAdapters.Icecast,
-            label: $gettext("Icecast 2"),
-            help: $gettext("Default for most radio packages."),
-        },
-    ];
-    if (props.isShoutcastInstalled) {
-        options.push({
-            value: FrontendAdapters.Shoutcast,
-            label: $gettext("SHOUTcast 2"),
-            help: $gettext("Requires DNAS installed on this host."),
-        });
-    }
-    if (props.isRsasInstalled) {
-        options.push({
-            value: FrontendAdapters.Rsas,
-            label: $gettext("RSAS"),
-            help: $gettext("Rocket Streaming Audio Server."),
-        });
-    }
-    return options;
-});
+/**
+ * MediaCP-comparable radio types only (no TV / Wowza / Flussonic / Nginx RTMP).
+ * Icecast ships with the product; SHOUTcast DNAS and RSAS are proprietary but
+ * fully wired once installed under Broadcast Software — always offer the cards
+ * so create is not Icecast-only. MStream Icecast is already the KH lineage;
+ * there is no separate "Icecast KH" adapter to invent.
+ */
+const typeOptions = computed(() => [
+    {
+        value: FrontendAdapters.Icecast,
+        label: $gettext("Icecast 2"),
+        help: $gettext("Audio streaming engine supporting MP3, AAC, and OGG."),
+        installHint: null as string | null,
+    },
+    {
+        value: FrontendAdapters.Shoutcast,
+        label: $gettext("SHOUTcast 2"),
+        help: $gettext(
+            "Audio streaming service supporting MP3 and AAC with native SSL support.",
+        ),
+        installHint: props.isShoutcastInstalled
+            ? null
+            : $gettext(
+                  "Shoutcast 2 DNAS is not installed yet. Create the service now, then install DNAS under Broadcast Software before going on air.",
+              ),
+    },
+    {
+        value: FrontendAdapters.Rsas,
+        label: $gettext("RSAS"),
+        help: $gettext(
+            "Rocket Streaming Audio Server — Icecast-compatible alternative frontend.",
+        ),
+        installHint: props.isRsasInstalled
+            ? null
+            : $gettext(
+                  "RSAS is not installed yet. Create the service now, then install RSAS under Broadcast Software before going on air.",
+              ),
+    },
+]);
 
 const canContinue = computed(() => {
     if (step.value === 2) {

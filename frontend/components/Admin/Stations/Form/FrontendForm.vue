@@ -214,35 +214,35 @@ const canManageServer = userAllowed(GlobalPermissions.Stations);
 const { $gettext } = useTranslate();
 
 const frontendTypeOptions = computed<SimpleFormOptionInput>(() => {
-    const frontendOptions: SimpleFormOptionInput = [
+    const shoutcastLabel = props.isShoutcastInstalled
+        ? $gettext("Use Shoutcast DNAS 2 on this server.")
+        : $gettext(
+              "Use Shoutcast DNAS 2 on this server (install DNAS under Broadcast Software before starting).",
+          );
+    const rsasLabel = props.isRsasInstalled
+        ? $gettext("Use Rocket Streaming Audio Server (RSAS) on this server.")
+        : $gettext(
+              "Use Rocket Streaming Audio Server (RSAS) on this server (install RSAS under Broadcast Software before starting).",
+          );
+
+    return [
         {
             text: $gettext("Use Icecast 2.4 on this server."),
             value: FrontendAdapters.Icecast,
         },
-    ];
-
-    if (props.isRsasInstalled) {
-        frontendOptions.push({
-            text: $gettext(
-                "Use Rocket Streaming Audio Server (RSAS) on this server.",
-            ),
-            value: FrontendAdapters.Rsas,
-        });
-    }
-
-    if (props.isShoutcastInstalled) {
-        frontendOptions.push({
-            text: $gettext("Use Shoutcast DNAS 2 on this server."),
+        {
+            text: shoutcastLabel,
             value: FrontendAdapters.Shoutcast,
-        });
-    }
-
-    frontendOptions.push({
-        text: $gettext("Do not use a local broadcasting service."),
-        value: FrontendAdapters.Remote,
-    });
-
-    return frontendOptions;
+        },
+        {
+            text: rsasLabel,
+            value: FrontendAdapters.Rsas,
+        },
+        {
+            text: $gettext("Do not use a local broadcasting service."),
+            value: FrontendAdapters.Remote,
+        },
+    ];
 });
 
 const isLocalFrontend = computed(() => {
