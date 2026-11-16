@@ -159,7 +159,7 @@ NGINX;
             @mkdir($clientBody, 0o755, true);
         }
 
-        $stationName = addcslashes($station->name ?? 'MStream', '"\\');
+        $stationName = addcslashes($station->name, '"\\');
 
         return <<<NGINX
 # MStream Nginx-RTMP station config — {$stationName}

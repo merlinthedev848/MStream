@@ -65,7 +65,7 @@ final class Wowza extends AbstractFrontend
     public function getCurrentConfiguration(Station $station): string
     {
         $fe = $station->frontend_config;
-        $stationName = htmlspecialchars($station->name ?? 'MStream', ENT_XML1 | ENT_QUOTES);
+        $stationName = htmlspecialchars($station->name, ENT_XML1 | ENT_QUOTES);
         $sourcePw = htmlspecialchars($fe->source_pw, ENT_XML1 | ENT_QUOTES);
         $adminPw = htmlspecialchars($fe->admin_pw, ENT_XML1 | ENT_QUOTES);
         $port = (int)$fe->port;

@@ -99,7 +99,7 @@ final class Shoutcast1 extends AbstractFrontend
             'RipFile' => $configPath . '/sc_serv.rip',
             'AutoDumpUsers' => 0,
             'AutoDumpSourceTime' => 30,
-            'TitleFormat' => $station->name ?? 'MStream',
+            'TitleFormat' => $station->name,
             'PublicServer' => 'default',
             'AllowRelay' => 1,
             'AllowPublicRelay' => 1,

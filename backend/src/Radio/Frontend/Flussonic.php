@@ -70,7 +70,7 @@ final class Flussonic extends AbstractFrontend
         $adminPw = $fe->admin_pw;
         $sourcePw = $fe->source_pw;
         $configDir = $station->getRadioConfigDir();
-        $stationName = $station->name ?? 'mstream';
+        $stationName = $station->name;
 
         $streams = '';
         /** @var StationMount $mount */
