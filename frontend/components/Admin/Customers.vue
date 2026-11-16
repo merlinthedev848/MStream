@@ -1,80 +1,130 @@
 <template>
     <loading :loading="propsLoading" lazy>
-        <card-page :title="$gettext('Customers')">
-            <template #info>
-                <p class="card-text">
-                    {{
-                        $gettext(
-                            'Customers sit under a reseller and can own one or more media services. Assign an owner user to enable Login-as.',
-                        )
-                    }}
-                </p>
-            </template>
-            <template #actions>
-                <add-button
-                    :text="$gettext('Add Customer')"
-                    @click="doCreate"
-                />
-            </template>
+        <div
+            id="admin-customers"
+            class="admin-console"
+        >
+            <card-page :title="$gettext('Customers')">
+                <template #info>
+                    <p class="card-text mb-0">
+                        {{
+                            $gettext(
+                                'Customer accounts own media services. Create a login, assign a service, then open the console — or Login as the customer.',
+                            )
+                        }}
+                    </p>
+                </template>
+                <template #actions>
+                    <add-button
+                        :text="$gettext('New Customer')"
+                        @click="doCreate"
+                    />
+                </template>
 
-            <data-table
-                id="customers"
-                :fields="fields"
-                :show-toolbar="false"
-                :provider="itemProvider"
-            >
-                <template #empty>
-                    <div class="admin-guided-empty admin-console">
-                        <div class="admin-guided-empty-title">
-                            {{ $gettext('No customers') }}
+                <data-table
+                    id="customers"
+                    :fields="fields"
+                    :show-toolbar="false"
+                    :provider="itemProvider"
+                >
+                    <template #empty>
+                        <div class="admin-guided-empty">
+                            <div class="admin-guided-empty-title">
+                                {{ $gettext('No customers') }}
+                            </div>
+                            <p class="admin-guided-empty-text">
+                                {{
+                                    $gettext(
+                                        'Create a customer with a login email, then create a service assigned to them.',
+                                    )
+                                }}
+                            </p>
+                            <button
+                                type="button"
+                                class="btn btn-primary"
+                                @click="doCreate"
+                            >
+                                {{ $gettext('New Customer') }}
+                            </button>
                         </div>
-                        <p class="admin-guided-empty-text mb-0">
-                            {{
-                                $gettext(
-                                    'Create a customer after adding at least one reseller.',
-                                )
-                            }}
-                        </p>
-                    </div>
-                </template>
-                <template #cell(actions)="{ item }">
-                    <div class="btn-group btn-group-sm">
+                    </template>
+                    <template #cell(name)="row">
+                        <div class="fw-semibold">
+                            {{ row.item.name }}
+                        </div>
+                        <div
+                            v-if="row.item.owner_email"
+                            class="broadcast-mono text-muted small"
+                        >
+                            {{ row.item.owner_email }}
+                        </div>
+                    </template>
+                    <template #cell(user_level)="row">
+                        <span
+                            class="badge"
+                            :class="levelBadgeClass(row.item.user_level)"
+                        >
+                            {{ row.item.user_level || $gettext('No Login') }}
+                        </span>
+                    </template>
+                    <template #cell(services_count)="row">
                         <button
                             type="button"
-                            class="btn btn-outline-primary"
-                            @click="doEdit(item.links.self)"
+                            class="btn btn-link btn-sm px-0"
+                            @click="doOverview(row.item)"
                         >
-                            {{ $gettext('Manage') }}
+                            {{ row.item.services_count ?? 0 }}
+                            {{ $gettext('Media Services') }}
                         </button>
-                        <a
-                            v-if="item.links?.masquerade"
-                            class="btn btn-primary"
-                            :href="item.links.masquerade"
-                            target="_blank"
-                            rel="noopener"
-                        >
-                            {{ $gettext('Login') }}
-                        </a>
-                        <button
-                            type="button"
-                            class="btn btn-outline-danger"
-                            @click="doDelete(item.links.self)"
-                        >
-                            {{ $gettext('Delete') }}
-                        </button>
-                    </div>
-                </template>
-            </data-table>
+                    </template>
+                    <template #cell(actions)="row">
+                        <div class="btn-group btn-group-sm">
+                            <button
+                                type="button"
+                                class="btn btn-outline-primary"
+                                @click="doOverview(row.item)"
+                            >
+                                {{ $gettext('Overview') }}
+                            </button>
+                            <button
+                                type="button"
+                                class="btn btn-outline-secondary"
+                                @click="doEdit(row.item.links.self)"
+                            >
+                                {{ $gettext('Manage') }}
+                            </button>
+                            <a
+                                v-if="row.item.links?.masquerade"
+                                class="btn btn-warning"
+                                :href="row.item.links.masquerade"
+                                target="_blank"
+                                rel="noopener"
+                            >
+                                {{ $gettext('Login') }}
+                            </a>
+                            <button
+                                type="button"
+                                class="btn btn-outline-danger"
+                                @click="doDelete(row.item.links.self)"
+                            >
+                                {{ $gettext('Delete') }}
+                            </button>
+                        </div>
+                    </template>
+                </data-table>
 
-            <edit-modal
-                v-if="!propsLoading"
-                ref="$editModal"
-                :create-url="listUrl"
-                :resellers="resellerOptions"
-                :users="userOptions"
-                @relist="() => relist()"
-            />
-        </card-page>
+                <edit-modal
+                    v-if="!propsLoading"
+                    ref="$editModal"
+                    :create-url="listUrl"
+                    :resellers="resellerOptions"
+                    :users="userOptions"
+                    @relist="() => relist()"
+                />
+
+                <overview-modal ref="$overviewModal" />
+            </card-page>
+        </div>
     </loading>
 </template>
 
@@ -82,6 +132,7 @@
 import { useQuery } from "@tanstack/vue-query";
 import { computed, useTemplateRef } from "vue";
 import EditModal from "~/components/Admin/Customers/EditModal.vue";
+import OverviewModal from "~/components/Admin/Customers/OverviewModal.vue";
 import AddButton from "~/components/Common/AddButton.vue";
 import CardPage from "~/components/Common/CardPage.vue";
 import DataTable, { DataTableField } from "~/components/Common/DataTable.vue";
@@ -158,7 +209,19 @@ const userOptions = computed(() => {
     return options;
 });
 
-type Row = Required<Customer & HasLinks>;
+type Row = Customer &
+    Required<HasLinks> & {
+        owner_email?: string | null;
+        user_level?: string;
+        services_count?: number;
+        stations?: Array<{
+            id: number;
+            name: string;
+            short_name: string;
+            is_enabled: boolean;
+            links: { manage: string };
+        }>;
+    };
 
 const fields: DataTableField<Row>[] = [
     {
@@ -168,15 +231,16 @@ const fields: DataTableField<Row>[] = [
         sortable: false,
     },
     {
-        key: "reseller",
-        label: $gettext("Reseller"),
+        key: "user_level",
+        label: $gettext("User Level"),
         sortable: false,
-        formatter: (value) => {
-            if (value == null || value === "") {
-                return "—";
-            }
-            return resellerOptions.value[String(value)] ?? String(value);
-        },
+        class: "shrink",
+    },
+    {
+        key: "services_count",
+        label: $gettext("Media Services"),
+        sortable: false,
+        class: "shrink",
     },
     {
         key: "actions",
@@ -186,7 +250,7 @@ const fields: DataTableField<Row>[] = [
     },
 ];
 
-const itemProvider = useApiItemProvider(listUrl, [
+const itemProvider = useApiItemProvider<Row>(listUrl, [
     QueryKeys.AdminStations,
     "customers",
 ]);
@@ -197,6 +261,21 @@ const relist = () => {
 
 const $editModal = useTemplateRef("$editModal");
 const { doCreate, doEdit } = useHasEditModal($editModal);
+
+const $overviewModal = useTemplateRef("$overviewModal");
+const doOverview = (item: Row) => {
+    $overviewModal.value?.open(item);
+};
+
+const levelBadgeClass = (level?: string) => {
+    if (level === "Administrator") {
+        return "text-bg-success";
+    }
+    if (level === "Customer") {
+        return "text-bg-primary";
+    }
+    return "text-bg-secondary";
+};
 
 const { doDelete } = useConfirmAndDelete($gettext("Delete Customer?"), () =>
     relist(),

@@ -1,11 +1,11 @@
 <template>
     <loading :loading="propsLoading" lazy>
-        <card-page :title="$gettext('Accounts')">
+        <card-page :title="$gettext('Panel Accounts')">
             <template #info>
                 <p class="card-text mb-0">
                     {{
                         $gettext(
-                            'People who can sign in to MStream. Assign roles to control what each account can manage.',
+                            'Advanced panel logins and role assignment. Day-to-day customer accounts belong under Customers (create, Login, assign service).',
                         )
                     }}
                 </p>

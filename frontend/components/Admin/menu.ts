@@ -6,12 +6,11 @@ import IconIcDashboard from "~icons/ic/baseline-dashboard";
 import IconIcGroup from "~icons/ic/baseline-group";
 import IconIcRadio from "~icons/ic/baseline-radio";
 import IconIcSettings from "~icons/ic/baseline-settings";
-import IconIcKey from "~icons/ic/baseline-vpn-key";
 
 /**
  * MediaCP-like admin IA (independent implementation):
- * Dashboard → Customers → Media Services → API Keys → Administration ▾
- * Host tools and broadcast installs stay under Administration.
+ * Dashboard → Customers → Services → System ▾
+ * Path: Admin → Customers → Service → Console
  */
 export function useAdminMenu() {
     const { $gettext } = useTranslate();
@@ -40,7 +39,7 @@ export function useAdminMenu() {
         },
         {
             key: "manage_stations",
-            label: $gettext("Media Services"),
+            label: $gettext("Services"),
             icon: () => IconIcRadio,
             url: {
                 name: "admin:stations:index",
@@ -50,17 +49,8 @@ export function useAdminMenu() {
                 userAllowed(GlobalPermissions.ResellerStations),
         },
         {
-            key: "api_keys",
-            label: $gettext("API Keys"),
-            icon: () => IconIcKey,
-            url: {
-                name: "admin:api:index",
-            },
-            visible: () => userAllowed(GlobalPermissions.ApiKeys),
-        },
-        {
-            key: "administration",
-            label: $gettext("Administration"),
+            key: "system",
+            label: $gettext("System"),
             icon: () => IconIcSettings,
             items: [
                 {
@@ -81,7 +71,7 @@ export function useAdminMenu() {
                 },
                 {
                     key: "resellers",
-                    label: $gettext("Resellers"),
+                    label: $gettext("Reseller Plans"),
                     url: {
                         name: "admin:resellers:index",
                     },
@@ -96,8 +86,16 @@ export function useAdminMenu() {
                     visible: () => userAllowed(GlobalPermissions.All),
                 },
                 {
+                    key: "api_keys",
+                    label: $gettext("API Keys"),
+                    url: {
+                        name: "admin:api:index",
+                    },
+                    visible: () => userAllowed(GlobalPermissions.ApiKeys),
+                },
+                {
                     key: "manage_users",
-                    label: $gettext("Accounts"),
+                    label: $gettext("Panel Accounts"),
                     url: {
                         name: "admin:users:index",
                     },

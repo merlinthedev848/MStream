@@ -10,9 +10,12 @@ use App\Controller\Api\Traits\CanSortResults;
 use App\Controller\Frontend\Account\MasqueradeAction;
 use App\Entity\Customer;
 use App\Entity\Reseller;
+use App\Entity\Station;
+use App\Entity\User;
 use App\Http\Response;
 use App\Http\ServerRequest;
 use App\OpenApi;
+use App\Service\CustomerAccountService;
 use App\Service\TenancyScope;
 use OpenApi\Attributes as OA;
 use Psr\Http\Message\ResponseInterface;
@@ -115,6 +118,7 @@ final class CustomersController extends AbstractApiCrudController
 
     public function __construct(
         private readonly TenancyScope $tenancyScope,
+        private readonly CustomerAccountService $customerAccounts,
         Serializer $serializer,
         ValidatorInterface $validator
     ) {
@@ -149,21 +153,82 @@ final class CustomersController extends AbstractApiCrudController
 
     protected function createRecord(ServerRequest $request, array $data): object
     {
+        $loginEmail = isset($data['email']) ? trim((string)$data['email']) : '';
+        $loginPassword = isset($data['password']) ? (string)$data['password'] : '';
+        $loginName = isset($data['login_name']) ? trim((string)$data['login_name']) : '';
+        unset($data['email'], $data['password'], $data['login_name'], $data['new_password']);
+
         if (
             !$this->tenancyScope->isHostAdmin($request)
             && $this->tenancyScope->isResellerAdmin($request)
             && null !== $request->getUser()->reseller
         ) {
             $data['reseller'] = $request->getUser()->reseller->id;
+        } elseif (empty($data['reseller']) && empty($data['reseller_id'])) {
+            $data['reseller'] = $this->customerAccounts->ensureHostReseller()->id;
         }
 
-        return $this->editRecord($data);
+        /** @var Customer $customer */
+        $customer = $this->editRecord($data);
+
+        if ($loginEmail !== '') {
+            $this->customerAccounts->provisionLogin(
+                $customer,
+                $loginEmail,
+                $loginPassword !== '' ? $loginPassword : null,
+                $loginName !== '' ? $loginName : $customer->name,
+            );
+        } elseif ($customer->owner_user instanceof User) {
+            $this->customerAccounts->syncOwnerStationAccess($customer);
+        }
+
+        return $customer;
+    }
+
+    protected function editRecord(?array $data, ?object $record = null, array $context = []): object
+    {
+        $loginEmail = null;
+        $loginPassword = null;
+        $loginName = null;
+
+        if (is_array($data)) {
+            if (array_key_exists('email', $data)) {
+                $loginEmail = trim((string)$data['email']);
+                unset($data['email']);
+            }
+            if (array_key_exists('password', $data) || array_key_exists('new_password', $data)) {
+                $loginPassword = (string)($data['password'] ?? $data['new_password'] ?? '');
+                unset($data['password'], $data['new_password']);
+            }
+            if (array_key_exists('login_name', $data)) {
+                $loginName = trim((string)$data['login_name']);
+                unset($data['login_name']);
+            }
+        }
+
+        /** @var Customer $customer */
+        $customer = parent::editRecord($data, $record, $context);
+
+        if ($loginEmail !== null && $loginEmail !== '') {
+            $this->customerAccounts->provisionLogin(
+                $customer,
+                $loginEmail,
+                ($loginPassword !== null && $loginPassword !== '') ? $loginPassword : null,
+                ($loginName !== null && $loginName !== '') ? $loginName : null,
+            );
+        } elseif ($customer->owner_user instanceof User) {
+            $this->customerAccounts->syncOwnerStationAccess($customer);
+        }
+
+        return $customer;
     }
 
     protected function toArray(object $record, array $context = []): array
     {
         $context[AbstractNormalizer::CALLBACKS]['reseller'] = static fn(Reseller $value) => $value->id;
         $context[AbstractNormalizer::CALLBACKS]['owner_user'] = static fn($value) => $value?->id;
+        // Avoid serializing the stations collection as nested entities.
+        $context[AbstractNormalizer::IGNORED_ATTRIBUTES] = ['stations'];
 
         return parent::toArray($record, $context);
     }
@@ -187,15 +252,57 @@ final class CustomersController extends AbstractApiCrudController
         /** @var Customer $record */
         $return = parent::viewRecord($record, $request);
 
-        if ($record->owner_user !== null) {
-            $router = $request->getRouter();
-            $csrf = $request->getCsrf();
-            $isInternal = $request->isInternal();
+        $router = $request->getRouter();
+        $csrf = $request->getCsrf();
+        $isInternal = $request->isInternal();
 
+        $owner = $record->owner_user;
+        $return['owner_email'] = $owner?->email;
+        $return['owner_name'] = $owner?->getDisplayName();
+        $return['user_level'] = $this->customerAccounts->resolveUserLevel($owner);
+
+        /** @var list<Station> $stationRows */
+        $stationRows = $this->em->getRepository(Station::class)->findBy([
+            'customer' => $record,
+        ]);
+
+        $stations = [];
+        foreach ($stationRows as $station) {
+            $stations[] = [
+                'id' => $station->id,
+                'name' => $station->name,
+                'short_name' => $station->short_name,
+                'is_enabled' => $station->is_enabled,
+                'links' => [
+                    'manage' => $router->named(
+                        routeName: 'stations:index:index',
+                        routeParams: ['station_id' => $station->id],
+                        absolute: !$isInternal
+                    ),
+                ],
+            ];
+        }
+        $return['stations'] = $stations;
+        $return['services_count'] = count($stations);
+
+        $return['links'] ??= [];
+        $return['links']['self'] = $router->fromHere(
+            routeName: $this->resourceRouteName,
+            routeParams: ['id' => $record->id],
+            absolute: !$isInternal
+        );
+        $return['links']['services'] = $router->named(
+            routeName: 'admin:stations:index',
+            routeParams: [],
+            queryParams: ['customer' => (string)$record->id],
+            absolute: !$isInternal
+        );
+
+        if ($owner !== null) {
             $return['links']['masquerade'] = $router->fromHere(
                 routeName: 'account:masquerade',
                 routeParams: [
-                    'id' => $record->owner_user->id,
+                    'id' => $owner->id,
                     'csrf' => $csrf->generate(MasqueradeAction::CSRF_NAMESPACE),
                 ],
                 absolute: !$isInternal

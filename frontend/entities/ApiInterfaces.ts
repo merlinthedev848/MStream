@@ -2514,6 +2514,17 @@ export type Customer = HasAutoIncrementId & {
     name?: string;
     reseller?: number;
     owner_user?: number | null;
+    owner_email?: string | null;
+    owner_name?: string | null;
+    user_level?: string;
+    services_count?: number;
+    stations?: Array<{
+        id: number;
+        name: string;
+        short_name: string;
+        is_enabled: boolean;
+        links: { manage: string };
+    }>;
 };
 
 export interface StationBackendConfiguration {
