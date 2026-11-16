@@ -23,7 +23,7 @@
             <p class="getting-started-lead mb-3">
                 {{
                     $gettext(
-                        'Your station is ready. Upload music — new tracks join the default playlist automatically — then use Start AutoDJ above.',
+                        'Your station is ready. Upload music — new tracks join the default playlist automatically — then use Start AutoDJ in Service Status.',
                     )
                 }}
             </p>

@@ -62,16 +62,19 @@
     <div class="offcanvas-body">
         <sidebar-menu :menu="menuItems" />
     </div>
+
+    <update-metadata-modal ref="$updateMetadataModal"/>
 </template>
 
 <script setup lang="ts">
 import { toRefs, useIntervalFn } from "@vueuse/core";
-import { computed, ref } from "vue";
+import { computed, ref, useTemplateRef } from "vue";
 import { useRouter } from "vue-router";
 import { useDialog } from "~/components/Common/Dialogs/useDialog.ts";
 import SidebarMenu from "~/components/Common/SidebarMenu.vue";
 import { useNotify } from "~/components/Common/Toasts/useNotify.ts";
 import { useStationsMenu } from "~/components/Stations/menu";
+import UpdateMetadataModal from "~/components/Stations/Profile/UpdateMetadataModal.vue";
 import {
     GlobalPermissions,
     StationPermissions,
@@ -88,7 +91,13 @@ import { useAxios } from "~/vendor/axios.ts";
 import { useTranslate } from "~/vendor/gettext.ts";
 import { useLuxon } from "~/vendor/luxon.ts";
 
-const menuItems = useStationsMenu();
+const $updateMetadataModal = useTemplateRef("$updateMetadataModal");
+
+const menuItems = useStationsMenu({
+    onUpdateSongTitle: () => {
+        $updateMetadataModal.value?.open();
+    },
+});
 const { userAllowedForStation } = useUserAllowedForStation();
 const { userAllowed } = useUserAllowed();
 const canManageFleet = computed(() => userAllowed(GlobalPermissions.Stations));
