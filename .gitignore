@@ -57,3 +57,6 @@ tmp/cache/*---*
 /plugins/*
 /plugins/**/*
 !/plugins/.gitkeep
+
+# Local install/update progress logs
+logs/

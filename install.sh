@@ -89,6 +89,41 @@ print_banner
 
 INSTALL_STARTED_AT=$(date +%s)
 
+# MediaCP-style numbered sections (visible even before helpers are sourced)
+SECTION_N=0
+SECTION_TOTAL=12
+section() {
+    SECTION_N=$((SECTION_N + 1))
+    if declare -F mstream_section >/dev/null 2>&1; then
+        MSTREAM_SECTION_N=$((SECTION_N - 1))
+        MSTREAM_SECTION_TOTAL=$SECTION_TOTAL
+        mstream_section "$1"
+    else
+        echo -e "\n${CLR_BLUE}==>${CLR_RESET} ${CLR_BOLD}[${SECTION_N}/${SECTION_TOTAL}] $1${CLR_RESET}"
+    fi
+}
+section_ok() {
+    if declare -F mstream_step_ok >/dev/null 2>&1; then
+        mstream_step_ok "$1"
+    else
+        echo -e "      ${CLR_GREEN}[PASS]${CLR_RESET} $1"
+    fi
+}
+section_info() {
+    if declare -F mstream_step_info >/dev/null 2>&1; then
+        mstream_step_info "$1"
+    else
+        echo -e "      ${CLR_CYAN}[INFO]${CLR_RESET} $1"
+    fi
+}
+section_warn() {
+    if declare -F mstream_step_warn >/dev/null 2>&1; then
+        mstream_step_warn "$1"
+    else
+        echo -e "      ${CLR_YELLOW}[WARN]${CLR_RESET} $1"
+    fi
+}
+
 # Check Root / Sudo Privileges
 if [ "${EUID:-$(id -u)}" -ne 0 ]; then
     echo -e "${CLR_RED}[ERROR]${CLR_RESET} This script must be run as root or with sudo:"
@@ -97,9 +132,18 @@ if [ "${EUID:-$(id -u)}" -ne 0 ]; then
     exit 1
 fi
 
-echo -e "${CLR_BLUE}==>${CLR_RESET} ${CLR_BOLD}Preparing installation…${CLR_RESET}"
-echo -e "      ${CLR_CYAN}[INFO]${CLR_RESET} Typical duration: 5–15 minutes on a normal VPS when the network is fine."
-echo -e "      ${CLR_CYAN}[INFO]${CLR_RESET} Quiet GHCR pulls are normal; \"stuck\" means no download activity for 10–15+ minutes."
+# Early install log (MediaCP analog: /root/mediacp_install/) — before helper source
+INSTALL_LOG_DIR="${INSTALL_DIR}/logs/install"
+mkdir -p "${INSTALL_LOG_DIR}" 2>/dev/null || INSTALL_LOG_DIR="/tmp/mstream-install-logs"
+mkdir -p "${INSTALL_LOG_DIR}"
+INSTALL_LOG="${INSTALL_LOG_DIR}/install-$(date -u +%Y%m%d-%H%M%S).log"
+: >"${INSTALL_LOG}"
+ln -sfn "$(basename "${INSTALL_LOG}")" "${INSTALL_LOG_DIR}/latest.log" 2>/dev/null || true
+
+section "Preparing installation…"
+section_info "Typical duration: ~15 minutes on a normal VPS when the network is fine (often 5–15)."
+section_info "Stuck ≈ no new progress/log lines for ~7.5 minutes. If the log keeps growing, it is slow — not frozen."
+section_info "Live log: tail -f ${INSTALL_LOG}"
 
 # Detect Architecture
 ARCH=$(uname -m)
@@ -112,10 +156,10 @@ case "$ARCH" in
         ;;
 esac
 
-echo -e "${CLR_GREEN}[PASS]${CLR_RESET} Detected architecture: ${CLR_BOLD}${ARCH_NAME}${CLR_RESET}"
+section_ok "Detected architecture: ${ARCH_NAME}"
 
 # Install System Package Dependencies (Cached check: skip network index fetch if already present)
-echo -e "\n${CLR_BLUE}==>${CLR_RESET} ${CLR_BOLD}Installing system prerequisites…${CLR_RESET}"
+section "Installing system prerequisites…"
 
 install_packages() {
     local missing=0
@@ -146,28 +190,28 @@ install_packages() {
 install_packages >/dev/null 2>&1 || true
 
 # Check & Install Docker
-echo -e "\n${CLR_BLUE}==>${CLR_RESET} ${CLR_BOLD}Installing Docker…${CLR_RESET}"
+section "Installing Docker…"
 
 if ! command -v docker >/dev/null 2>&1; then
-    echo -e "      ${CLR_YELLOW}[INFO]${CLR_RESET} Docker not detected. Automatically installing official Docker Engine..."
+    section_info "Docker not detected. Automatically installing official Docker Engine..."
     curl -fsSL https://get.docker.com | sh
     systemctl enable --now docker >/dev/null 2>&1 || service docker start >/dev/null 2>&1 || true
-    echo -e "      ${CLR_GREEN}[PASS]${CLR_RESET} Docker installed successfully."
+    section_ok "Docker installed successfully."
 else
-    echo -e "      ${CLR_GREEN}[PASS]${CLR_RESET} Docker is already installed ($(docker --version))."
+    section_ok "Docker is already installed ($(docker --version))."
 fi
 
 # Ensure docker service is running
 systemctl start docker >/dev/null 2>&1 || service docker start >/dev/null 2>&1 || true
 
 # Check Docker Compose v2
-echo -e "\n${CLR_BLUE}==>${CLR_RESET} ${CLR_BOLD}Verifying Docker Compose…${CLR_RESET}"
+section "Verifying Docker Compose…"
 if docker compose version >/dev/null 2>&1; then
-    echo -e "      ${CLR_GREEN}[PASS]${CLR_RESET} Docker Compose v2 is available ($(docker compose version --short))."
+    section_ok "Docker Compose v2 is available ($(docker compose version --short))."
 elif command -v docker-compose >/dev/null 2>&1; then
-    echo -e "      ${CLR_GREEN}[PASS]${CLR_RESET} docker-compose standalone is available."
+    section_ok "docker-compose standalone is available."
 else
-    echo -e "      ${CLR_YELLOW}[INFO]${CLR_RESET} Installing Docker Compose plugin..."
+    section_info "Installing Docker Compose plugin..."
     if command -v apt-get >/dev/null 2>&1; then
         apt-get update -y && apt-get install -y docker-compose-plugin || true
     fi
@@ -183,25 +227,36 @@ fi
 CURRENT_DIR="$(pwd)"
 if [ -f "${CURRENT_DIR}/docker-compose.sample.yml" ] && [ -f "${CURRENT_DIR}/mstream.sample.env" ]; then
     WORK_DIR="${CURRENT_DIR}"
-    echo -e "\n${CLR_BLUE}==>${CLR_RESET} ${CLR_BOLD}Using repository directory…${CLR_RESET}"
-    echo -e "      ${CLR_GREEN}[PASS]${CLR_RESET} ${WORK_DIR}"
+    section "Using repository directory…"
+    section_ok "${WORK_DIR}"
 else
     WORK_DIR="${INSTALL_DIR}"
-    echo -e "\n${CLR_BLUE}==>${CLR_RESET} ${CLR_BOLD}Fetching MStream source…${CLR_RESET}"
-    echo -e "      Target: ${CLR_BOLD}${WORK_DIR}${CLR_RESET}"
+    section "Fetching MStream source…"
+    section_info "Target: ${WORK_DIR}"
     mkdir -p "${WORK_DIR}"
     cd "${WORK_DIR}"
 
     if [ ! -d .git ]; then
-        echo -e "      Cloning MStream repository..."
+        section_info "Cloning MStream repository..."
         git clone --depth 1 https://github.com/merlinthedev848/MStream.git .
     else
-        echo -e "      Updating existing MStream repository..."
+        section_info "Updating existing MStream repository..."
         git fetch --depth 1 origin main >/dev/null 2>&1 || true
         git reset --hard origin/main 2>/dev/null || git pull origin main || true
     fi
 fi
 cd "${WORK_DIR}"
+
+# Prefer install logs under the final work dir (keep early log if move fails)
+if [ "${INSTALL_LOG_DIR}" != "${WORK_DIR}/logs/install" ]; then
+    mkdir -p "${WORK_DIR}/logs/install" 2>/dev/null || true
+    if [ -d "${WORK_DIR}/logs/install" ] && [ -f "${INSTALL_LOG}" ]; then
+        cp -f "${INSTALL_LOG}" "${WORK_DIR}/logs/install/" 2>/dev/null || true
+        INSTALL_LOG_DIR="${WORK_DIR}/logs/install"
+        INSTALL_LOG="${INSTALL_LOG_DIR}/$(basename "${INSTALL_LOG}")"
+        ln -sfn "$(basename "${INSTALL_LOG}")" "${INSTALL_LOG_DIR}/latest.log" 2>/dev/null || true
+    fi
+fi
 
 # Load shared progress helpers (available after source checkout)
 if [ -f "${WORK_DIR}/util/docker/install_progress.sh" ]; then
@@ -214,6 +269,10 @@ if [ -f "${WORK_DIR}/util/docker/install_progress.sh" ]; then
     MSTREAM_CLR_GREEN="${CLR_GREEN}"
     MSTREAM_CLR_YELLOW="${CLR_YELLOW}"
     MSTREAM_CLR_RED="${CLR_RED}"
+    MSTREAM_INSTALL_LOG_DIR="${INSTALL_LOG_DIR}"
+    MSTREAM_INSTALL_LOG="${INSTALL_LOG}"
+    MSTREAM_SECTION_N=$SECTION_N
+    MSTREAM_SECTION_TOTAL=$SECTION_TOTAL
 fi
 
 # Safe interactive input function (supports curl | bash and direct run)
@@ -278,31 +337,31 @@ if [ "$UNATTENDED" = false ] && ([ -e /dev/tty ] || [ -t 0 ]); then
 fi
 
 # Automatic Provisioning of Configurations (Minimized Disk I/O)
-echo -e "\n${CLR_BLUE}==>${CLR_RESET} ${CLR_BOLD}Provisioning configuration…${CLR_RESET}"
+section "Provisioning configuration…"
 
 # 1. Provision docker-compose.yml (only write if missing or changed)
 if [ ! -f docker-compose.yml ] || ! cmp -s docker-compose.sample.yml docker-compose.yml; then
     cp docker-compose.sample.yml docker-compose.yml
 fi
-echo -e "      ${CLR_GREEN}[PASS]${CLR_RESET} Synchronized docker-compose.yml"
+section_ok "Synchronized docker-compose.yml"
 
 # 2. Provision .env
 if [ ! -f .env ]; then
     cp sample.env .env
-    echo -e "      ${CLR_GREEN}[PASS]${CLR_RESET} Created .env"
+    section_ok "Created .env"
 fi
 
 # 3. Provision mstream.env
 if [ ! -f mstream.env ]; then
     cp mstream.sample.env mstream.env
-    echo -e "      ${CLR_GREEN}[PASS]${CLR_RESET} Created mstream.env"
+    section_ok "Created mstream.env"
 fi
 
 # Generate cryptographically secure database password in a single pass if using default
 if grep -q "MYSQL_PASSWORD=mstream_secret" mstream.env 2>/dev/null; then
     RANDOM_PASS=$(openssl rand -hex 16 2>/dev/null || date +%s%N | sha256sum | head -c 32)
     sed -i "s/MYSQL_PASSWORD=mstream_secret/MYSQL_PASSWORD=${RANDOM_PASS}/g" mstream.env
-    echo -e "      ${CLR_GREEN}[PASS]${CLR_RESET} Generated unique secure database password."
+    section_ok "Generated unique secure database password."
 fi
 
 # Batch-apply all wizard port & release selections to .env in a single atomic disk write
@@ -414,53 +473,64 @@ fi
 
 wait "$CHMOD_PID" 2>/dev/null || true
 
+# Keep helper log path in sync for pull heartbeats
+if declare -F mstream_log_append >/dev/null 2>&1; then
+    MSTREAM_INSTALL_LOG_DIR="${INSTALL_LOG_DIR}"
+    MSTREAM_INSTALL_LOG="${INSTALL_LOG}"
+fi
+
+section "Pulling web (GHCR)…"
 PULL_MSTREAM_OK=0
 if declare -F mstream_pull_image >/dev/null 2>&1; then
     # Web (GHCR) first — largest / slowest; full heartbeat progress
+    # mstream_pull_image prints its own sub-banner; avoid double-counting sections
+    MSTREAM_SECTION_N=$SECTION_N
     if mstream_pull_image "${MSTREAM_TARGET_IMAGE}" "web (GHCR)"; then
         PULL_MSTREAM_OK=1
     fi
 else
-    echo -e "\n${CLR_BLUE}==>${CLR_RESET} ${CLR_BOLD}Pulling web (GHCR)…${CLR_RESET}"
-    echo -e "      Image: ${CLR_BOLD}${MSTREAM_TARGET_IMAGE}${CLR_RESET}"
-    echo -e "      ${CLR_CYAN}[INFO]${CLR_RESET} GHCR can take several minutes; progress lines should appear below."
+    section_info "Image: ${MSTREAM_TARGET_IMAGE}"
+    section_info "GHCR can take several minutes; progress lines should appear below."
     if docker pull "${MSTREAM_TARGET_IMAGE}"; then
         PULL_MSTREAM_OK=1
     fi
 fi
 
 if [ "$PULL_MSTREAM_OK" -ne 1 ]; then
-    echo -e "\n${CLR_BLUE}==>${CLR_RESET} ${CLR_BOLD}Building web image locally (GHCR pull unavailable)…${CLR_RESET}"
+    section "Building web image locally (GHCR pull unavailable)…"
     DOCKER_BUILDKIT=1 docker build --target final -t "${MSTREAM_TARGET_IMAGE}" .
-    echo -e "      ${CLR_GREEN}[PASS]${CLR_RESET} Built ${MSTREAM_TARGET_IMAGE}"
+    section_ok "Built ${MSTREAM_TARGET_IMAGE}"
 fi
 
 # Start web immediately so the panel can come up while updater pulls
-echo -e "\n${CLR_BLUE}==>${CLR_RESET} ${CLR_BOLD}Starting web service…${CLR_RESET}"
+section "Starting web service…"
 $DC_CMD up -d web
+section_ok "web service start issued."
 
 # Updater is small (Docker Hub); pull with progress then start
+section "Pulling updater (Watchtower)…"
 PULL_UPDATER_OK=0
 if declare -F mstream_pull_image >/dev/null 2>&1; then
+    MSTREAM_SECTION_N=$SECTION_N
     if mstream_pull_image "${UPDATER_TARGET_IMAGE}" "updater (Watchtower)"; then
         PULL_UPDATER_OK=1
     fi
 else
-    echo -e "\n${CLR_BLUE}==>${CLR_RESET} ${CLR_BOLD}Pulling updater…${CLR_RESET}"
     if docker pull "${UPDATER_TARGET_IMAGE}"; then
         PULL_UPDATER_OK=1
     fi
 fi
 
 if [ "$PULL_UPDATER_OK" -eq 1 ]; then
-    echo -e "\n${CLR_BLUE}==>${CLR_RESET} ${CLR_BOLD}Starting updater…${CLR_RESET}"
+    section_info "Starting updater…"
     $DC_CMD up -d updater || true
+    section_ok "updater start issued."
 else
-    echo -e "      ${CLR_YELLOW}[WARN]${CLR_RESET} Updater image not pulled; web will still run. Re-run update later for Watchtower."
+    section_warn "Updater image not pulled; web will still run. Re-run update later for Watchtower."
 fi
 
 # Wait for Web Service Initialization and Nginx listening on port 80/443
-echo -e "\n${CLR_BLUE}==>${CLR_RESET} ${CLR_BOLD}Waiting for services…${CLR_RESET}"
+section "Waiting for services…"
 WEB_READY=0
 for i in $(seq 1 45); do
     if $DC_CMD exec -T web true >/dev/null 2>&1; then
@@ -468,7 +538,7 @@ for i in $(seq 1 45); do
         break
     fi
     if [ $((i % 5)) -eq 0 ]; then
-        echo -e "      ${CLR_CYAN}[INFO]${CLR_RESET} Still waiting for web container… (${i}/45)"
+        section_info "Still waiting for web container… (${i}/45)"
     else
         echo -n "."
     fi
@@ -476,17 +546,17 @@ for i in $(seq 1 45); do
 done
 echo ""
 if [ "$WEB_READY" -eq 1 ]; then
-    echo -e "      ${CLR_GREEN}[PASS]${CLR_RESET} Web container is responding."
+    section_ok "Web container is responding."
 else
-    echo -e "      ${CLR_YELLOW}[WARN]${CLR_RESET} Web container not ready yet; migrations may retry on first boot."
+    section_warn "Web container not ready yet; migrations may retry on first boot."
 fi
 
 # Ensure database migrations and initial setup run safely
-echo -e "\n${CLR_BLUE}==>${CLR_RESET} ${CLR_BOLD}Running migrations / setup…${CLR_RESET}"
+section "Running migrations / setup…"
 $DC_CMD exec -T web composer dump-autoload --optimize 2>/dev/null || true
 # app_startup inside the container handles mstream:setup --init automatically; run only as fallback if needed
 $DC_CMD exec -T web /usr/local/bin/mstream_cli mstream:setup --init 2>/dev/null || true
-echo -e "      ${CLR_GREEN}[PASS]${CLR_RESET} Setup commands issued."
+section_ok "Setup commands issued."
 
 # Collect background tasks
 wait "$SYSTEMD_PID" 2>/dev/null || true
@@ -522,6 +592,7 @@ else
 fi
 
 echo -e "\n  ${CLR_BOLD}Installation Directory:${CLR_RESET} ${WORK_DIR}"
+echo -e "  ${CLR_BOLD}Install log:${CLR_RESET}            ${INSTALL_LOG}"
 echo -e "  ${CLR_BOLD}Management Utility:${CLR_RESET}     ./mstream.sh"
 
 echo -e "\n  ${CLR_BOLD}Quick CLI Examples:${CLR_RESET}"
@@ -530,6 +601,12 @@ echo -e "    ${CLR_CYAN}./mstream.sh down${CLR_RESET}         # Stop services"
 echo -e "    ${CLR_CYAN}./mstream.sh update${CLR_RESET}       # Update MStream to latest version"
 echo -e "    ${CLR_CYAN}./mstream.sh backup${CLR_RESET}       # Create full system backup"
 echo -e "    ${CLR_CYAN}./mstream.sh restore <file>${CLR_RESET} # Restore from backup"
+echo -e "    ${CLR_CYAN}tail -f ${INSTALL_LOG_DIR}/latest.log${CLR_RESET}  # Follow install log"
 
 echo -e "\n${CLR_YELLOW}${CLR_BOLD}Next Step:${CLR_RESET} Open the URL in your browser to create your Super Administrator account."
 echo -e "${CLR_GREEN}========================================================================${CLR_RESET}\n"
+
+# Final log line
+if [ -n "${INSTALL_LOG:-}" ]; then
+    echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) [PASS] Installation completed in ${INSTALL_ELAPSED_FMT}" >>"${INSTALL_LOG}" 2>/dev/null || true
+fi

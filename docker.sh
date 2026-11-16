@@ -19,6 +19,22 @@ d() {
   fi
 }
 
+# MediaCP-style install/update log under ./logs/install (tail -f latest.log).
+ensure-install-log() {
+  local base="${1:-$(pwd)/logs/install}"
+  if declare -F mstream_install_log_init >/dev/null 2>&1; then
+    mstream_install_log_init "$base"
+  else
+    mkdir -p "$base" 2>/dev/null || true
+    MSTREAM_INSTALL_LOG_DIR="$base"
+    MSTREAM_INSTALL_LOG="${base}/install-$(date -u +%Y%m%d-%H%M%S).log"
+    : >"$MSTREAM_INSTALL_LOG"
+    ln -sfn "$(basename "$MSTREAM_INSTALL_LOG")" "${base}/latest.log" 2>/dev/null || true
+  fi
+  echo "[INFO] Install/update log: ${MSTREAM_INSTALL_LOG:-$base/latest.log}"
+  echo "[INFO] Follow with: tail -f ${MSTREAM_INSTALL_LOG_DIR:-$base}/latest.log"
+}
+
 # Progress-aware pull of compose services (web + updater by default).
 pull-images() {
   local services=("$@")
@@ -35,7 +51,7 @@ pull-images() {
   fi
 
   echo "==> Pulling container images (${services[*]})…"
-  echo "    Quiet for ~60s usually means a slow registry (often GHCR), not a frozen update."
+  echo "    Quiet heartbeats are normal. Stuck ≈ no new log lines for ~7.5 minutes."
   local svc
   for svc in "${services[@]}"; do
     echo "==> Pulling ${svc}…"
@@ -568,11 +584,21 @@ run-installer() {
 # Usage: ./mstream.sh install
 #
 install() {
-  local install_started_at
+  local install_started_at section_n section_total
   install_started_at=$(date +%s)
-  check-install-requirements
+  section_n=0
+  section_total=8
+  step() {
+    section_n=$((section_n + 1))
+    echo ""
+    echo "==> [${section_n}/${section_total}] $1"
+  }
 
-  echo "==> Installing Docker…"
+  ensure-install-log "$(pwd)/logs/install"
+  check-install-requirements
+  echo "[INFO] Typical duration: ~15 minutes on a healthy VPS. Stuck ≈ no new log lines for ~7.5 minutes."
+
+  step "Installing Docker…"
   if [[ $PODMAN_MODE -ne 0 ]]; then
     echo "Podman was detected and will be used instead of Docker..."
 
@@ -593,7 +619,7 @@ install() {
       fi
     fi
 
-    echo "==> Verifying Docker Compose…"
+    step "Verifying Docker Compose…"
     if [[ $(docker compose version) ]]; then
       echo "[PASS] Docker Compose v2 is already installed. Continuing..."
     else
@@ -607,10 +633,10 @@ install() {
     fi
   fi
 
-  echo "==> Selecting release channel…"
+  step "Selecting release channel…"
   setup-release
 
-  echo "==> Running configuration installer…"
+  step "Running configuration installer…"
   run-installer "$@"
 
   # Installer creates a file at docker-compose.new.yml; copy it to the main spot.
@@ -633,13 +659,17 @@ install() {
   fi
 
   # Per-service pull with heartbeats (avoids silent "dc pull" hang on GHCR)
+  step "Pulling container images…"
   pull-images web updater
 
-  echo "==> Starting services / migrations…"
+  step "Running migrations / setup…"
   dc run --rm web -- mstream_install "$@"
-  echo "==> Starting services…"
+  step "Starting services…"
   dc up -d
-  echo "[PASS] Install complete in $(( $(date +%s) - install_started_at ))s (typical healthy-network target: ≤15 minutes)."
+  echo "[PASS] Install complete in $(( $(date +%s) - install_started_at ))s (typical healthy-network target: ~15 minutes)."
+  if [[ -n "${MSTREAM_INSTALL_LOG:-}" ]]; then
+    echo "[INFO] Log saved: ${MSTREAM_INSTALL_LOG}"
+  fi
   exit
 }
 
@@ -701,18 +731,27 @@ install-dev() {
 # Usage: ./mstream.sh update
 #
 update() {
-  local update_started_at
+  local update_started_at section_n section_total
   update_started_at=$(date +%s)
+  section_n=0
+  section_total=7
+  step() {
+    section_n=$((section_n + 1))
+    echo ""
+    echo "==> [${section_n}/${section_total}] $1"
+  }
+
   echo "[NOTICE] Before you continue, please make sure you have a recent snapshot of your system and or backed it up."
   echo "[INFO] Typical update: a few minutes to ~15 minutes. GHCR image pulls are usually the longest step."
-  echo "[INFO] \"Stuck\" means no layer/download activity for 10–15+ minutes — not a quiet progress heartbeat."
+  echo "[INFO] Stuck ≈ no new log/progress lines for ~7.5 minutes. If the log keeps growing, it is slow — not frozen."
   if ask "Are you ready to continue with the update?" Y; then
+    ensure-install-log "$(pwd)/logs/install"
 
     # Check for a new Docker Utility Script.
     local MSTREAM_RELEASE_BRANCH
     MSTREAM_RELEASE_BRANCH=$(get-release-branch-name)
 
-    echo "==> Checking for an updated management script…"
+    step "Checking for an updated management script…"
     curl -fsSL https://raw.githubusercontent.com/merlinthedev848/MStream/$MSTREAM_RELEASE_BRANCH/mstream.sh -o docker.new.sh
 
     local UTILITY_FILES_MATCH
@@ -754,7 +793,7 @@ update() {
       fi
     fi
 
-    echo "==> Running configuration updater…"
+    step "Running configuration updater…"
     run-installer --update "$@"
 
     # Check for updated Docker Compose config.
@@ -770,7 +809,7 @@ update() {
     )"
 
     if [[ ${COMPOSE_FILES_MATCH} -ne 0 ]]; then
-      echo "==> Compose file changed; pulling images for the new compose file…"
+      step "Pulling images (compose file changed)…"
       MSTREAM_IN_PULL=1
       local images_list img pulled_any=0
       images_list="$(dc -f docker-compose.new.yml config --images 2>/dev/null || true)"
@@ -786,7 +825,7 @@ update() {
         dc -f docker-compose.new.yml pull
       fi
       MSTREAM_IN_PULL=0
-      echo "==> Stopping services…"
+      step "Stopping services…"
       dc down --timeout 60
 
       cp docker-compose.yml docker-compose.backup.yml
@@ -794,14 +833,15 @@ update() {
     else
       rm docker-compose.new.yml
 
+      step "Pulling container images…"
       pull-images web updater
-      echo "==> Stopping services…"
+      step "Stopping services…"
       dc down --timeout 60
     fi
 
-    echo "==> Running migrations / update…"
+    step "Running migrations / update…"
     dc run --rm web -- mstream_update "$@"
-    echo "==> Starting services…"
+    step "Starting services…"
     dc up -d
 
     if ask "Clean up all stopped Docker containers and images to save space?" Y; then
@@ -809,6 +849,9 @@ update() {
     fi
 
     echo "Update complete in $(( $(date +%s) - update_started_at ))s!"
+    if [[ -n "${MSTREAM_INSTALL_LOG:-}" ]]; then
+      echo "[INFO] Log saved: ${MSTREAM_INSTALL_LOG}"
+    fi
   fi
   exit
 }
