@@ -23,6 +23,12 @@
             <div class="card-body">
                 <loading :loading="isLoading">
                     <div class="row g-3">
+                        <p class="text-muted small mb-0 col-12">
+                            {{
+                                $gettext('Panel brand name (login subtitle / Admin Console badge) is configured under System Settings → Panel / Instance Brand Name — not here, and not from a station.')
+                            }}
+                        </p>
+
                         <form-group-multi-check
                             id="edit_form_public_theme"
                             class="col-md-6"
