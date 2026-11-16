@@ -22,6 +22,7 @@ use App\Http\ServerRequest;
 use App\Nginx\Nginx;
 use App\OpenApi;
 use App\Radio\Configuration;
+use App\Service\CustomerAccountService;
 use App\Service\TenancyScope;
 use App\Utilities\File;
 use InvalidArgumentException;
@@ -154,6 +155,7 @@ class StationsController extends AbstractApiCrudController
         protected Configuration $configuration,
         protected Nginx $nginx,
         protected TenancyScope $tenancyScope,
+        protected CustomerAccountService $customerAccounts,
         Serializer $serializer,
         ValidatorInterface $validator
     ) {
@@ -241,6 +243,12 @@ class StationsController extends AbstractApiCrudController
                 absolute: !$isInternal
             ),
         ];
+
+        // Prefer assigned Customer entity name over free-text customer_name label.
+        if ($record->customer instanceof Customer) {
+            $return['customer_name'] = $record->customer->name;
+            $return['customer_id'] = $record->customer->id;
+        }
 
         return $return;
     }
@@ -459,6 +467,14 @@ class StationsController extends AbstractApiCrudController
             }
         }
 
+        $previousCustomer = $originalRecord['customer'] ?? null;
+        if ($previousCustomer instanceof Customer) {
+            $this->customerAccounts->syncOwnerStationAccess($previousCustomer);
+        }
+        if ($station->customer instanceof Customer) {
+            $this->customerAccounts->syncOwnerStationAccess($station->customer);
+        }
+
         return $station;
     }
 
@@ -539,6 +555,10 @@ class StationsController extends AbstractApiCrudController
             $this->em->flush();
 
             throw $e;
+        }
+
+        if ($station->customer instanceof Customer) {
+            $this->customerAccounts->syncOwnerStationAccess($station->customer);
         }
 
         return $station;

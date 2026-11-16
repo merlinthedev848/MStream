@@ -2,114 +2,52 @@
     <dashboard-no-sidebar>
         <div
             id="dashboard"
-            class="row-of-cards"
+            class="row-of-cards admin-console"
         >
-            <section
-                class="card"
-                role="region"
-                :aria-label="$gettext('Account Details')"
-            >
-                <user-info-panel>
-                    <router-link
-                        class="btn btn-dark"
-                        role="button"
-                        :to="{ name: 'profile:index'}"
-                    >
-                        <icon-ic-account-circle/>
-                        <span>{{ $gettext('My Account') }}</span>
-                    </router-link>
-                    <router-link
-                        v-if="showAdmin"
-                        class="btn btn-dark"
-                        role="button"
-                        :to="{ name: 'admin:index' }"
-                    >
-                        <icon-ic-settings/>
-                        <span>{{ $gettext('Admin Console') }}</span>
-                    </router-link>
-                </user-info-panel>
+            <div class="mb-3">
+                <h2 class="outside-card-header mb-1">
+                    {{ $gettext('My Services') }}
+                </h2>
+                <p class="admin-section-lead mb-0">
+                    {{
+                        $gettext(
+                            'Open a streaming service console to manage Overview, Configure, Media, and more.',
+                        )
+                    }}
+                </p>
+            </div>
 
-                <template v-if="!notificationsLoading && notifications && notifications.length > 0">
-                    <div
-                        v-for="notification in notifications"
-                        :key="notification.id"
-                        :id="notification.id"
-                        class="card-body d-flex align-items-center alert flex-md-row flex-column"
-                        :class="'alert-'+notification.type"
-                        role="alert"
-                        aria-live="polite"
-                    >
-                        <div
-                            v-if="'info' === notification.type"
-                            class="flex-shrink-0 me-3"
-                        >
-                            <icon-ic-info class="lg"/>
-                        </div>
-                        <div
-                            v-else
-                            class="flex-shrink-0 me-3"
-                        >
-                            <icon-ic-warning class="lg"/>
-                        </div>
-                        <div class="flex-fill">
-                            <h4>{{ notification.title }}</h4>
-                            <p class="card-text">
-                                {{ notification.body }}
-                            </p>
-                        </div>
-                        <div
-                            v-if="notification.actionLabel && notification.actionUrl"
-                            class="flex-shrink-0 ms-md-3 mt-3 mt-md-0"
-                        >
-                            <a
-                                class="btn btn-sm"
-                                :class="'btn-'+notification.type"
-                                :href="notification.actionUrl"
-                                target="_blank"
-                            >
-                                {{ notification.actionLabel }}
-                            </a>
-                        </div>
-                    </div>
-                </template>
-            </section>
-
-            <card-page
-                v-if="showCharts"
-                header-id="hdr_listeners_per_station"
-            >
-                <template #header="{id}">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-fill">
-                            <h3
-                                :id="id"
-                                class="card-title"
-                            >
-                                {{ $gettext('Listeners Per Station') }}
-                            </h3>
-                        </div>
-                        <div class="flex-shrink-0">
-                            <button
-                                type="button"
-                                class="btn btn-sm btn-dark py-2"
-                                @click="chartsVisible = !chartsVisible"
-                            >
-                                {{
-                                    langShowHideCharts
-                                }}
-                            </button>
-                        </div>
-                    </div>
-                </template>
-
+            <template v-if="!notificationsLoading && notifications && notifications.length > 0">
                 <div
-                    v-if="chartsVisible"
-                    id="charts"
-                    class="card-body"
+                    v-for="notification in notifications"
+                    :key="notification.id"
+                    :id="notification.id"
+                    class="card-body d-flex align-items-center alert flex-md-row flex-column mb-3"
+                    :class="'alert-'+notification.type"
+                    role="alert"
+                    aria-live="polite"
                 >
-                    <dashboard-charts :charts-url="chartsUrl"/>
+                    <div class="flex-fill">
+                        <h4 class="mb-1">{{ notification.title }}</h4>
+                        <p class="card-text mb-0">
+                            {{ notification.body }}
+                        </p>
+                    </div>
+                    <div
+                        v-if="notification.actionLabel && notification.actionUrl"
+                        class="flex-shrink-0 ms-md-3 mt-3 mt-md-0"
+                    >
+                        <a
+                            class="btn btn-sm"
+                            :class="'btn-'+notification.type"
+                            :href="notification.actionUrl"
+                            target="_blank"
+                        >
+                            {{ notification.actionLabel }}
+                        </a>
+                    </div>
                 </div>
-            </card-page>
+            </template>
 
             <card-page header-id="hdr_stations">
                 <template #header="{id}">
@@ -119,23 +57,8 @@
                                 :id="id"
                                 class="card-title"
                             >
-                                {{ $gettext('Station Overview') }}
+                                {{ $gettext('Services') }}
                             </h2>
-                        </div>
-                        <div
-                            v-if="showAdmin"
-                            class="flex-shrink-0"
-                        >
-                            <router-link
-                                class="btn btn-dark py-2"
-                                :to="{ name: 'admin:stations:index' }"
-                            >
-                                <icon-ic-settings/>
-
-                                <span>
-                                    {{ $gettext('Manage Stations') }}
-                                </span>
-                            </router-link>
                         </div>
                     </div>
                 </template>
@@ -146,24 +69,31 @@
                     :provider="stationsItemProvider"
                     paginated
                     responsive
-                    show-toolbar
+                    :show-toolbar="false"
                     :hide-on-loading="false"
                 >
-                    <template #cell(play_button)="{ item }">
-                        <play-button
-                            class="file-icon btn-lg"
-                            :stream="{
-                                url: item.station.listen_url,
-                                title: item.station.name,
-                                isStream: true
-                            }"
-                        />
+                    <template #empty>
+                        <div class="admin-guided-empty">
+                            <div class="admin-guided-empty-title">
+                                {{ $gettext('No services assigned') }}
+                            </div>
+                            <p class="admin-guided-empty-text mb-0">
+                                {{
+                                    $gettext(
+                                        'Ask your administrator to assign a media service to your account.',
+                                    )
+                                }}
+                            </p>
+                        </div>
                     </template>
                     <template #cell(name)="{ item }">
                         <div class="h5 m-0">
                             {{ item.station.name }}
                         </div>
-                        <div v-if="item.station.is_public">
+                        <div
+                            v-if="item.station.is_public"
+                            class="small"
+                        >
                             <a
                                 :href="item.links.public"
                                 target="_blank"
@@ -173,66 +103,27 @@
                         </div>
                     </template>
                     <template #cell(listeners)="{ item }">
-                        <span class="pe-1">
-                            <icon-ic-headphones class="sm align-middle"/>
-                        </span>
-                        <template v-if="item.links.listeners">
-                            <a
-                                class="broadcast-mono"
-                                :href="item.links.listeners"
-                                :aria-label="$gettext('View Listener Report')"
-                            >
-                                {{ item.listeners.total }}
-                            </a>
-                        </template>
-                        <template v-else>
-                            <span class="broadcast-mono">{{ item.listeners.total }}</span>
-                        </template>
+                        <span class="broadcast-mono">{{ item.listeners.total }}</span>
                     </template>
                     <template #cell(now_playing)="{ item }">
-                        <div class="d-flex align-items-center">
-                            <album-art
-                                v-if="showAlbumArt && item.now_playing &&
-                                    item.now_playing.song && item.now_playing.song.art"
-                                :src="item.now_playing.song.art"
-                                class="flex-shrink-0 pe-3"
-                            />
-
-                            <div
-                                v-if="!item.is_online"
-                                class="flex-fill"
-                            >
-                                <span class="badge broadcast-tally-standby">
-                                    {{ $gettext('OFFLINE') }}
+                        <div v-if="!item.is_online">
+                            <span class="badge broadcast-tally-standby">
+                                {{ $gettext('OFFLINE') }}
+                            </span>
+                        </div>
+                        <div v-else>
+                            <div class="mb-1">
+                                <span class="badge broadcast-tally-onair">
+                                    {{ $gettext('ON AIR') }}
                                 </span>
                             </div>
-                            <div
-                                v-else-if="item.now_playing?.song?.title !== ''"
-                                class="flex-fill"
-                            >
-                                <div class="mb-1">
-                                    <span class="badge broadcast-tally-onair">
-                                        {{ $gettext('ON AIR') }}
-                                    </span>
-                                </div>
-                                <strong><span class="nowplaying-title">
-                                    {{ item.now_playing?.song?.title }}
-                                </span></strong><br>
-                                <span class="nowplaying-artist">{{ item.now_playing?.song?.artist }}</span>
-                            </div>
-                            <div
-                                v-else
-                                class="flex-fill"
-                            >
-                                <div class="mb-1">
-                                    <span class="badge broadcast-tally-onair">
-                                        {{ $gettext('ON AIR') }}
-                                    </span>
-                                </div>
-                                <strong><span class="nowplaying-title">
-                                    {{ item.now_playing?.song?.text }}
-                                </span></strong>
-                            </div>
+                            <span class="nowplaying-title">
+                                {{
+                                    item.now_playing?.song?.title
+                                        || item.now_playing?.song?.text
+                                        || '—'
+                                }}
+                            </span>
                         </div>
                     </template>
                     <template #cell(actions)="{ item }">
@@ -246,7 +137,7 @@
                             }"
                             role="button"
                         >
-                            {{ $gettext('Open Station') }}
+                            {{ $gettext('Open Console') }}
                         </router-link>
                     </template>
                 </data-table>
@@ -257,14 +148,10 @@
 
 <script setup lang="ts">
 import { useQuery } from "@tanstack/vue-query";
-import { computed, onMounted } from "vue";
+import { onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
-import UserInfoPanel from "~/components/Account/UserInfoPanel.vue";
-import AlbumArt from "~/components/Common/AlbumArt.vue";
-import PlayButton from "~/components/Common/Audio/PlayButton.vue";
 import CardPage from "~/components/Common/CardPage.vue";
 import DataTable, { DataTableField } from "~/components/Common/DataTable.vue";
-import DashboardCharts from "~/components/DashboardCharts.vue";
 import DashboardNoSidebar from "~/components/Layout/DashboardNoSidebar.vue";
 import {
     ApiNotification,
@@ -275,21 +162,11 @@ import {
 import { QueryKeys } from "~/entities/Queries.ts";
 import { useApiItemProvider } from "~/functions/dataTable/useApiItemProvider.ts";
 import { useApiRouter } from "~/functions/useApiRouter.ts";
-import useOptionalStorage from "~/functions/useOptionalStorage";
 import { useUserAllowed } from "~/functions/useUserAllowed.ts";
 import { useAxios } from "~/vendor/axios";
 import { useTranslate } from "~/vendor/gettext";
-import { useMStreamDashboardGlobals } from "~/vendor/mstream.ts";
-import IconIcAccountCircle from "~icons/ic/baseline-account-circle";
-import IconIcHeadphones from "~icons/ic/baseline-headphones";
-import IconIcInfo from "~icons/ic/baseline-info";
-import IconIcSettings from "~icons/ic/baseline-settings";
-import IconIcWarning from "~icons/ic/baseline-warning";
-
-const { showCharts, showAlbumArt } = useMStreamDashboardGlobals();
 
 const { userAllowed } = useUserAllowed();
-const showAdmin = userAllowed(GlobalPermissions.View);
 const router = useRouter();
 
 // MediaCP-like: fleet admins land on KPI home, not the chart dashboard.
@@ -302,19 +179,9 @@ onMounted(() => {
 const { getApiUrl } = useApiRouter();
 
 const notificationsUrl = getApiUrl("/frontend/dashboard/notifications");
-const chartsUrl = getApiUrl("/frontend/dashboard/charts");
 const stationsUrl = getApiUrl("/frontend/dashboard/stations");
 
-const chartsVisible = useOptionalStorage<boolean>("dashboard_show_chart", true);
-
 const { $gettext } = useTranslate();
-
-const langShowHideCharts = computed(() => {
-    return chartsVisible.value
-        ? $gettext("Hide Charts")
-        : $gettext("Show Charts");
-});
-
 const { axios } = useAxios();
 
 const { data: notifications, isLoading: notificationsLoading } = useQuery<
@@ -334,24 +201,19 @@ type ApiDashboard = ApiNowPlaying & Required<HasLinks>;
 
 const stationFields: DataTableField<ApiDashboard>[] = [
     {
-        key: "play_button",
-        label: "",
-        sortable: false,
-        class: "shrink",
-    },
-    {
         key: "name",
-        label: $gettext("Station Name"),
+        label: $gettext("Service"),
         sortable: true,
     },
     {
         key: "listeners",
         label: $gettext("Listeners"),
         sortable: true,
+        class: "shrink",
     },
     {
         key: "now_playing",
-        label: $gettext("Now Playing"),
+        label: $gettext("Status"),
         sortable: true,
     },
     {
@@ -368,5 +230,26 @@ const stationsItemProvider = useApiItemProvider<ApiDashboard>(
     {
         refetchInterval: 15 * 1000,
     },
+);
+
+// Single-service customers go straight to the console (MediaCP mental model).
+watch(
+    () =>
+        [
+            stationsItemProvider.total.value,
+            stationsItemProvider.rows.value,
+        ] as const,
+    ([total, rows]) => {
+        if (userAllowed(GlobalPermissions.Stations)) {
+            return;
+        }
+        if (total === 1 && rows?.[0]?.station?.id) {
+            void router.replace({
+                name: "stations:index",
+                params: { station_id: rows[0].station.id },
+            });
+        }
+    },
+    { immediate: true },
 );
 </script>

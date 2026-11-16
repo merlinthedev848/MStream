@@ -66,19 +66,6 @@
                 <icon-ic-menu-open class="lg"/>
             </button>
             <ul class="dropdown-menu dropdown-menu-end">
-                <li>
-                    <router-link
-                        class="dropdown-item"
-                        :to="{ name: 'dashboard' }"
-                    >
-                        <icon-ic-home/>
-
-                        {{ $gettext('Dashboard') }}
-                    </router-link>
-                </li>
-                <li class="dropdown-divider">
-&nbsp;
-                </li>
                 <li v-if="showAdmin">
                     <router-link
                         class="dropdown-item"
@@ -86,7 +73,17 @@
                     >
                         <icon-ic-settings/>
 
-                        {{ $gettext('Admin Console') }}
+                        {{ $gettext('Administration') }}
+                    </router-link>
+                </li>
+                <li v-else>
+                    <router-link
+                        class="dropdown-item"
+                        :to="{ name: 'dashboard' }"
+                    >
+                        <icon-ic-home/>
+
+                        {{ $gettext('My Services') }}
                     </router-link>
                 </li>
                 <li>

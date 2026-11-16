@@ -9,7 +9,7 @@
             <p class="admin-section-lead">
                 {{
                     $gettext(
-                        'Fleet health first — then customers, services, and host tools.',
+                        'Fleet health first. Path: Customers → Services → Console.',
                     )
                 }}
             </p>
@@ -43,7 +43,10 @@
                     </div>
                 </div>
                 <div class="col-6 col-md-3">
-                    <div class="card admin-kpi-card">
+                    <router-link
+                        class="card admin-kpi-card text-decoration-none"
+                        :to="{ name: 'admin:customers:index' }"
+                    >
                         <div class="card-body">
                             <div class="admin-fleet-label">
                                 {{ $gettext('Customers') }}
@@ -52,7 +55,7 @@
                                 {{ customerCount }}
                             </div>
                         </div>
-                    </div>
+                    </router-link>
                 </div>
                 <div class="col-6 col-md-3">
                     <div class="card admin-kpi-card">
@@ -69,7 +72,10 @@
             </div>
 
             <template v-if="canManageFleet">
-                <div class="row row-of-cards mb-3">
+                <div
+                    v-if="showGettingStarted"
+                    class="row row-of-cards mb-3"
+                >
                     <div class="col-lg-4">
                         <div class="card h-100">
                             <div class="card-header text-bg-primary">
@@ -82,33 +88,12 @@
                                     <span class="admin-create-guide-index broadcast-mono">1</span>
                                     <div>
                                         <div class="admin-create-guide-title">
-                                            {{ $gettext('Configure Branding') }}
-                                        </div>
-                                        <p class="admin-create-guide-text">
-                                            {{
-                                                $gettext(
-                                                    'Set panel name and login artwork under Administration.',
-                                                )
-                                            }}
-                                        </p>
-                                        <router-link
-                                            class="btn btn-sm btn-outline-primary mt-1"
-                                            :to="{ name: 'admin:branding:index' }"
-                                        >
-                                            {{ $gettext('Branding') }}
-                                        </router-link>
-                                    </div>
-                                </div>
-                                <div class="admin-create-guide-step">
-                                    <span class="admin-create-guide-index broadcast-mono">2</span>
-                                    <div>
-                                        <div class="admin-create-guide-title">
                                             {{ $gettext('Create Customer') }}
                                         </div>
                                         <p class="admin-create-guide-text">
                                             {{
                                                 $gettext(
-                                                    'Customers own media services. Assign an owner for Login.',
+                                                    'Add a customer with a login email.',
                                                 )
                                             }}
                                         </p>
@@ -121,7 +106,7 @@
                                     </div>
                                 </div>
                                 <div class="admin-create-guide-step">
-                                    <span class="admin-create-guide-index broadcast-mono">3</span>
+                                    <span class="admin-create-guide-index broadcast-mono">2</span>
                                     <div>
                                         <div class="admin-create-guide-title">
                                             {{ $gettext('Create Service') }}
@@ -129,7 +114,7 @@
                                         <p class="admin-create-guide-text">
                                             {{
                                                 $gettext(
-                                                    'Wizard assigns ports and an AutoDJ-ready playlist.',
+                                                    'Wizard assigns the customer, ports, and AutoDJ.',
                                                 )
                                             }}
                                         </p>
@@ -137,14 +122,37 @@
                                             class="btn btn-sm btn-primary mt-1"
                                             :to="{ name: 'admin:stations:index' }"
                                         >
-                                            {{ $gettext('Media Services') }}
+                                            {{ $gettext('Services') }}
                                         </router-link>
+                                    </div>
+                                </div>
+                                <div class="admin-create-guide-step">
+                                    <span class="admin-create-guide-index broadcast-mono">3</span>
+                                    <div>
+                                        <div class="admin-create-guide-title">
+                                            {{ $gettext('Open Console') }}
+                                        </div>
+                                        <p class="admin-create-guide-text">
+                                            {{
+                                                $gettext(
+                                                    'From Customers Overview or Services → Open.',
+                                                )
+                                            }}
+                                        </p>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="col-lg-8">
+                        <station-fleet-panel />
+                    </div>
+                </div>
+                <div
+                    v-else
+                    class="row row-of-cards mb-3"
+                >
+                    <div class="col-12">
                         <station-fleet-panel />
                     </div>
                 </div>
@@ -285,6 +293,10 @@ const { data: customerRows } = useQuery<Customer[]>({
 });
 
 const customerCount = computed(() => customerRows.value?.length ?? 0);
+
+const showGettingStarted = computed(
+    () => customerCount.value === 0 || fleet.value.stations === 0,
+);
 
 const { data: stats, isLoading } = useQuery<ApiAdminServerStats>({
     queryKey: [QueryKeys.AdminIndex, "stats"],

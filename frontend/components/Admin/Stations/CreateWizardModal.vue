@@ -40,7 +40,7 @@
                 <p class="admin-section-lead">
                     {{
                         $gettext(
-                            'Assign this service to a customer account, or leave unassigned for now.',
+                            'Assign this service to a customer (create one under Customers first). Leave unassigned only for admin-owned services.',
                         )
                     }}
                 </p>

@@ -4,12 +4,12 @@
             id="admin-stations"
             class="admin-console"
         >
-            <card-page :title="$gettext('Media Services')">
+            <card-page :title="$gettext('Services')">
                 <template #info>
                     <p class="card-text mb-0">
                         {{
                             $gettext(
-                                'All media services. Create with the wizard — ports and AutoDJ are assigned automatically. Suspend and delete stay hoster-only.',
+                                'All media services. Assign a customer in the wizard, then Open the console. Suspend and delete stay hoster-only.',
                             )
                         }}
                     </p>
@@ -74,12 +74,12 @@
                     <template #empty>
                         <div class="admin-guided-empty">
                             <div class="admin-guided-empty-title">
-                                {{ $gettext('No media services yet') }}
+                                {{ $gettext('No services yet') }}
                             </div>
                             <p class="admin-guided-empty-text">
                                 {{
                                     $gettext(
-                                        'Create a station to assign ports and an AutoDJ-ready playlist. Operators then upload music and go on the air.',
+                                        'Create a customer first, then a service assigned to them. Ports and AutoDJ are automatic.',
                                     )
                                 }}
                             </p>
