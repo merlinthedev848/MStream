@@ -20,7 +20,7 @@ use Symfony\Component\Process\Process;
 #[OA\Post(
     path: '/admin/wowza',
     operationId: 'postWowza',
-    summary: 'Upload a bring-your-own Wowza Streaming Engine archive (MStream does not distribute proprietary binaries).',
+    summary: 'Upload a BYO Wowza Streaming Engine archive (MStream does not distribute proprietary binaries).',
     requestBody: new OA\RequestBody(ref: OpenApi::REF_REQUEST_BODY_FLOW_FILE_UPLOAD),
     tags: [OpenApi::TAG_ADMIN],
     responses: [
