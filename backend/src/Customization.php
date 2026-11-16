@@ -9,12 +9,14 @@ use App\Assets\BackgroundCustomAsset;
 use App\Assets\BrowserIconCustomAsset;
 use App\Container\EnvironmentAwareTrait;
 use App\Entity\Repository\SettingsRepository;
+use App\Entity\Repository\StationRepository;
 use App\Entity\Settings;
 use App\Entity\Station;
 use App\Enums\SupportedLocales;
 use App\Enums\SupportedThemes;
 use App\Http\ServerRequest;
 use App\Traits\RequestAwareTrait;
+use App\Utilities\InstanceBranding;
 use Psr\Http\Message\UriInterface;
 
 final class Customization
@@ -32,6 +34,7 @@ final class Customization
 
     public function __construct(
         SettingsRepository $settingsRepo,
+        private readonly StationRepository $stationRepo,
         private readonly AlbumArtCustomAsset $albumArtCustomAsset,
         private readonly BrowserIconCustomAsset $browserIconCustomAsset,
         private readonly BackgroundCustomAsset $backgroundCustomAsset,
@@ -67,10 +70,26 @@ final class Customization
     }
 
     /**
-     * Get the instance name for this MStream instance.
+     * Get the panel/instance brand for global chrome (login, Admin Console header).
+     *
+     * Never returns a station or customer label, even if settings.instance_name was
+     * incorrectly set to one — those belong only on station console / public pages.
      */
     public function getInstanceName(): string
     {
+        if ('' === $this->instanceName) {
+            return '';
+        }
+
+        if (
+            InstanceBranding::conflictsWithStationLabels(
+                $this->instanceName,
+                $this->stationRepo->getInstanceBrandingConflictLabels()
+            )
+        ) {
+            return '';
+        }
+
         return $this->instanceName;
     }
 

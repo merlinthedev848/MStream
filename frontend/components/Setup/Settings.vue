@@ -16,6 +16,10 @@
                     {{
                         $gettext('Complete the setup process by providing some information about your broadcast environment. These settings can be changed later from the administration panel.')
                     }}
+                    {{ ' ' }}
+                    {{
+                        $gettext('Panel / Instance Brand Name is the hoster or company name for this MStream panel — leave it blank or use your company name. Do not enter a station name (station names appear only inside that station).')
+                    }}
                 </info-card>
             </template>
             <template #submitButtonName>

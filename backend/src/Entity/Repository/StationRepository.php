@@ -52,6 +52,32 @@ final class StationRepository extends Repository
         )->getSingleScalarResult();
     }
 
+    /**
+     * Labels that must never be used as the global panel/instance brand.
+     *
+     * @return list<string>
+     */
+    public function getInstanceBrandingConflictLabels(): array
+    {
+        /** @var list<array{name: string, short_name: string, customer_name: string|null}> $rows */
+        $rows = $this->em->createQuery(
+            <<<'DQL'
+            SELECT s.name, s.short_name, s.customer_name FROM App\Entity\Station s
+            DQL
+        )->getArrayResult();
+
+        $labels = [];
+        foreach ($rows as $row) {
+            $labels[] = $row['name'];
+            $labels[] = $row['short_name'];
+            if (!empty($row['customer_name'])) {
+                $labels[] = $row['customer_name'];
+            }
+        }
+
+        return $labels;
+    }
+
     public function createDefaultStation(Configuration $configuration): ?Station
     {
         if ($this->countAll() > 0) {

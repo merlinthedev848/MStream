@@ -18,8 +18,8 @@
                     id="edit_form_instance_name"
                     class="col-md-6"
                     :field="r$.instance_name"
-                    :label="$gettext('MStream Instance Name')"
-                    :description="$gettext('This name will appear as a sub-header next to the MStream logo, to help identify this server.')"
+                    :label="$gettext('Panel / Instance Brand Name')"
+                    :description="$gettext('Optional hoster or company name for this MStream panel. Shown on the global login and Admin Console chrome only. Do not use a station or customer name — those belong on station pages.')"
                 />
 
                 <form-group-checkbox

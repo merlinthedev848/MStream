@@ -93,7 +93,10 @@ final class Settings implements Stringable
     }
 
     #[
-        OA\Property(description: "MStream Instance Name", example: "My MStream Instance"),
+        OA\Property(
+            description: "Panel/hoster brand name for global login and Admin Console chrome (not a station or customer name).",
+            example: "My Hosting Co"
+        ),
         ORM\Column(length: 255, nullable: true),
         Serializer\Groups(self::GROUP_GENERAL)
     ]

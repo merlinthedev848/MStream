@@ -276,6 +276,19 @@ class StationsController extends AbstractApiCrudController
 
     protected function fromArray(array $data, ?object $record = null, array $context = []): object
     {
+        // Station create/update must never touch panel/instance branding (login / Admin Console).
+        unset(
+            $data['instance_name'],
+            $data['hide_product_name'],
+            $data['public_custom_css'],
+            $data['public_custom_js'],
+            $data['internal_custom_css'],
+            $data['public_theme'],
+            $data['homepage_redirect_url'],
+            $data['default_album_art_url'],
+            $data['hide_album_art'],
+        );
+
         foreach (Station::getStorageLocationTypes() as $locationKey => $storageLocationType) {
             $idKey = $locationKey . '_id';
             if (!empty($data[$idKey])) {
