@@ -1,6 +1,6 @@
 <template>
     <tab
-        :label="$gettext('Broadcasting')"
+        :label="$gettext('Icecast / Source')"
         :item-header-class="tabClass"
     >
         <div

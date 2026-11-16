@@ -30,7 +30,7 @@
                             class="btn btn-outline-secondary btn-sm"
                             :to="{ name: 'stations:restart:index' }"
                         >
-                            {{ $gettext('Start Broadcasting') }}
+                            {{ $gettext('Start AutoDJ') }}
                         </router-link>
                     </div>
                 </div>

@@ -9,7 +9,7 @@
                 <p class="card-text text-muted mb-2">
                     {{
                         $gettext(
-                            'Share this link with listeners. Copy it once — this is your primary stream URL.',
+                            'Primary stream URL — copy once and share with listeners.',
                         )
                     }}
                 </p>

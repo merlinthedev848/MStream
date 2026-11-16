@@ -49,11 +49,11 @@
                             class="btn btn-primary"
                             @click="doEdit(row.item.links.self)"
                         >
-                            {{ $gettext('Edit') }}
+                            {{ $gettext('Manage') }}
                         </button>
                         <button
                             type="button"
-                            class="btn btn-danger"
+                            class="btn btn-outline-danger"
                             @click="doDelete(row.item.links.self)"
                         >
                             {{ $gettext('Delete') }}

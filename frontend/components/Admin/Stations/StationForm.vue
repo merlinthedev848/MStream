@@ -16,6 +16,23 @@
                     :timezones="timezones"
                 />
 
+                <admin-stations-admin-form
+                    v-if="showAdminTab"
+                    :is-edit-mode="isEditMode"
+                    :resellers="resellers"
+                    :customers="customers"
+                />
+
+                <admin-stations-requests-form/>
+
+                <admin-stations-streamers-form
+                    v-if="showBroadcastingTabs"
+                />
+
+                <admin-stations-hls-form
+                    v-if="showBroadcastingTabs"
+                />
+
                 <admin-stations-frontend-form
                     v-if="showBroadcastingTabs"
                     :is-rsas-installed="isRsasInstalled"
@@ -26,23 +43,6 @@
                 <admin-stations-backend-form
                     v-if="showBroadcastingTabs"
                     :is-stereo-tool-installed="isStereoToolInstalled"
-                />
-
-                <admin-stations-hls-form
-                    v-if="showBroadcastingTabs"
-                />
-
-                <admin-stations-requests-form/>
-
-                <admin-stations-streamers-form
-                    v-if="showBroadcastingTabs"
-                />
-
-                <admin-stations-admin-form
-                    v-if="showAdminTab"
-                    :is-edit-mode="isEditMode"
-                    :resellers="resellers"
-                    :customers="customers"
                 />
             </tabs>
 

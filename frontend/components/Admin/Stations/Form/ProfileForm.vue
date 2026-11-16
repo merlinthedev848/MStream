@@ -8,7 +8,7 @@
                 id="edit_form_name"
                 class="col-md-12"
                 :field="r$.name"
-                :label="$gettext('Station Name')"
+                :label="$gettext('Publish Name')"
             >
                 <template #description>
                     {{

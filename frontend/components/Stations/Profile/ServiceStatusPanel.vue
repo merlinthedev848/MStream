@@ -9,7 +9,7 @@
                     :id="id"
                     class="card-title my-0 flex-fill"
                 >
-                    {{ $gettext('Service Status') }}
+                    {{ $gettext('Service Online') }}
                 </h3>
                 <span
                     v-if="!stationData.isEnabled"
@@ -21,13 +21,13 @@
                     v-else-if="np.is_online"
                     class="badge broadcast-tally-onair"
                 >
-                    {{ $gettext('ON AIR') }}
+                    {{ $gettext('SOURCE: CONNECTED') }}
                 </span>
                 <span
                     v-else
                     class="badge broadcast-tally-standby"
                 >
-                    {{ $gettext('OFFLINE') }}
+                    {{ $gettext('SOURCE: NOT CONNECTED') }}
                 </span>
             </div>
         </template>

@@ -4,7 +4,7 @@
             :to="{ name: 'admin:index'}"
             class="navbar-brand px-0"
         >
-            {{ $gettext('Admin Console') }}
+            {{ $gettext('Dashboard') }}
         </router-link>
     </div>
 

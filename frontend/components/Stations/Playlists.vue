@@ -41,7 +41,7 @@
                         <div class="card-body buttons d-flex justify-content-between flex-wrap gap-2">
                             <div class="d-flex flex-wrap gap-2">
                                 <add-button
-                                    :text="$gettext('Add Playlist')"
+                                    :text="$gettext('Create Playlist')"
                                     @click="doCreate"
                                 />
                                 <div class="btn-group">

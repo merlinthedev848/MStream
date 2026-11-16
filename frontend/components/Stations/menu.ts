@@ -164,6 +164,15 @@ export function useStationsMenu(options: StationsMenuOptions = {}) {
                 userAllowedForStation(StationPermissions.Broadcasting),
         },
         {
+            key: "logs",
+            label: $gettext("Log Manager"),
+            icon: () => IconIcAssignment,
+            url: {
+                name: "stations:logs",
+            },
+            visible: () => userAllowedForStation(StationPermissions.Logs),
+        },
+        {
             key: "reports",
             label: $gettext("Reporting"),
             icon: () => IconIcInsertChart,
@@ -211,16 +220,6 @@ export function useStationsMenu(options: StationsMenuOptions = {}) {
                     visible: () =>
                         userAllowedForStation(StationPermissions.WebHooks) &&
                         station.value.features.webhooks,
-                },
-                {
-                    key: "logs",
-                    label: $gettext("Logs"),
-                    icon: () => IconIcAssignment,
-                    url: {
-                        name: "stations:logs",
-                    },
-                    visible: () =>
-                        userAllowedForStation(StationPermissions.Logs),
                 },
                 {
                     key: "ls_config",

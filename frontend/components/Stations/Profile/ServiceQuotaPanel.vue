@@ -1,20 +1,14 @@
 <template>
     <section
         id="profile-service-quotas"
-        class="card mb-3"
+        class="mb-3"
         role="region"
-        :aria-label="$gettext('Service Quotas')"
+        :aria-label="$gettext('Quotas')"
     >
-        <div class="card-header text-bg-primary">
-            <h3 class="card-title mb-0">
-                {{ $gettext('Service Quotas') }}
-            </h3>
-        </div>
-        <div class="card-body">
-            <div class="service-quota-grid">
+        <div class="service-quota-grid">
                 <div class="service-quota-cell">
                     <div class="service-quota-label">
-                        {{ $gettext('Connections') }}
+                        {{ $gettext('Listeners') }}
                     </div>
                     <div class="service-quota-value broadcast-mono">
                         {{ connectionsLabel }}
@@ -71,7 +65,7 @@
 
                 <div class="service-quota-cell">
                     <div class="service-quota-label">
-                        {{ $gettext('Disk') }}
+                        {{ $gettext('Storage') }}
                     </div>
                     <div class="service-quota-value broadcast-mono">
                         {{ storageLabel }}
@@ -100,7 +94,7 @@
 
                 <div class="service-quota-cell">
                     <div class="service-quota-label">
-                        {{ $gettext('Traffic') }}
+                        {{ $gettext('Bandwidth') }}
                     </div>
                     <div class="service-quota-value broadcast-mono">
                         {{ trafficLabel }}
@@ -123,13 +117,12 @@
                         {{ $gettext('Estimated outbound audio this month') }}
                     </div>
                 </div>
-            </div>
-            <div
-                v-if="canManageServer && profileData.frontendPort"
-                class="service-quota-meta broadcast-mono mt-3"
-            >
-                {{ $gettext('Port Base') }}: {{ profileData.frontendPort }}
-            </div>
+        </div>
+        <div
+            v-if="canManageServer && profileData.frontendPort"
+            class="service-quota-meta broadcast-mono mt-2"
+        >
+            {{ $gettext('Port Base') }}: {{ profileData.frontendPort }}
         </div>
     </section>
 </template>

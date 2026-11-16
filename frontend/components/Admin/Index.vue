@@ -1,16 +1,15 @@
 <template>
-    <dashboard-no-sidebar>
         <div
             id="admin-index"
             class="admin-console"
         >
             <h2 class="outside-card-header mb-1">
-                {{ $gettext('Admin Console') }}
+                {{ $gettext('Dashboard') }}
             </h2>
             <p class="admin-section-lead">
                 {{
                     $gettext(
-                        'Fleet health first — then people, packages, and host tools.',
+                        'Fleet health first — then customers, services, and host tools.',
                     )
                 }}
             </p>
@@ -70,46 +69,94 @@
             </div>
 
             <template v-if="canManageFleet">
-                <station-fleet-panel />
-
-                <div
-                    v-if="fleet.stations === 0"
-                    class="card mb-3"
-                >
-                    <div class="card-body admin-guided-empty">
-                        <div class="admin-guided-empty-title">
-                            {{ $gettext('Getting Started') }}
+                <div class="row row-of-cards mb-3">
+                    <div class="col-lg-4">
+                        <div class="card h-100">
+                            <div class="card-header text-bg-primary">
+                                <h3 class="card-title mb-0">
+                                    {{ $gettext('Getting Started') }}
+                                </h3>
+                            </div>
+                            <div class="card-body admin-create-guide">
+                                <div class="admin-create-guide-step">
+                                    <span class="admin-create-guide-index broadcast-mono">1</span>
+                                    <div>
+                                        <div class="admin-create-guide-title">
+                                            {{ $gettext('Configure Branding') }}
+                                        </div>
+                                        <p class="admin-create-guide-text">
+                                            {{
+                                                $gettext(
+                                                    'Set panel name and login artwork under Administration.',
+                                                )
+                                            }}
+                                        </p>
+                                        <router-link
+                                            class="btn btn-sm btn-outline-primary mt-1"
+                                            :to="{ name: 'admin:branding:index' }"
+                                        >
+                                            {{ $gettext('Branding') }}
+                                        </router-link>
+                                    </div>
+                                </div>
+                                <div class="admin-create-guide-step">
+                                    <span class="admin-create-guide-index broadcast-mono">2</span>
+                                    <div>
+                                        <div class="admin-create-guide-title">
+                                            {{ $gettext('Create Customer') }}
+                                        </div>
+                                        <p class="admin-create-guide-text">
+                                            {{
+                                                $gettext(
+                                                    'Customers own media services. Assign an owner for Login.',
+                                                )
+                                            }}
+                                        </p>
+                                        <router-link
+                                            class="btn btn-sm btn-outline-primary mt-1"
+                                            :to="{ name: 'admin:customers:index' }"
+                                        >
+                                            {{ $gettext('Customers') }}
+                                        </router-link>
+                                    </div>
+                                </div>
+                                <div class="admin-create-guide-step">
+                                    <span class="admin-create-guide-index broadcast-mono">3</span>
+                                    <div>
+                                        <div class="admin-create-guide-title">
+                                            {{ $gettext('Create Service') }}
+                                        </div>
+                                        <p class="admin-create-guide-text">
+                                            {{
+                                                $gettext(
+                                                    'Wizard assigns ports and an AutoDJ-ready playlist.',
+                                                )
+                                            }}
+                                        </p>
+                                        <router-link
+                                            class="btn btn-sm btn-primary mt-1"
+                                            :to="{ name: 'admin:stations:index' }"
+                                        >
+                                            {{ $gettext('Media Services') }}
+                                        </router-link>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <p class="admin-guided-empty-text">
-                            {{
-                                $gettext(
-                                    'Create a customer, then create a media service. Ports and AutoDJ are assigned automatically.',
-                                )
-                            }}
-                        </p>
-                        <div class="d-flex flex-wrap gap-2">
-                            <router-link
-                                class="btn btn-outline-primary"
-                                :to="{ name: 'admin:customers:index' }"
-                            >
-                                {{ $gettext('Create Customer') }}
-                            </router-link>
-                            <router-link
-                                class="btn btn-primary"
-                                :to="{ name: 'admin:stations:index' }"
-                            >
-                                {{ $gettext('Create Service') }}
-                            </router-link>
-                        </div>
+                    </div>
+                    <div class="col-lg-8">
+                        <station-fleet-panel />
                     </div>
                 </div>
             </template>
 
-            <template v-if="canViewHostMetrics">
-                <h2 class="outside-card-header mb-1">
+            <details
+                v-if="canViewHostMetrics"
+                class="admin-menu-details mb-3"
+            >
+                <summary class="outside-card-header mb-2">
                     {{ $gettext('Host Metrics') }}
-                </h2>
-
+                </summary>
                 <div class="row row-of-cards">
                     <div class="col-sm-12 col-lg-4">
                         <loading
@@ -147,26 +194,8 @@
                         </loading>
                     </div>
                 </div>
-            </template>
-
-            <details class="admin-menu-details mt-3 mb-3">
-                <summary class="outside-card-header mb-2">
-                    {{ $gettext('All Admin Tools') }}
-                </summary>
-                <div class="row row-of-cards">
-                    <div class="col-sm-12 col-lg-4">
-                        <menu-block :items="menuItems.slice(0, 1)"/>
-                    </div>
-                    <div class="col-sm-12 col-lg-4">
-                        <menu-block :items="menuItems.slice(1, 2)"/>
-                    </div>
-                    <div class="col-sm-12 col-lg-4">
-                        <menu-block :items="menuItems.slice(2)"/>
-                    </div>
-                </div>
             </details>
         </div>
-    </dashboard-no-sidebar>
 </template>
 
 <script setup lang="ts">
@@ -175,11 +204,8 @@ import { computed } from "vue";
 import CpuStatsPanel from "~/components/Admin/Index/CpuStatsPanel.vue";
 import DiskUsagePanel from "~/components/Admin/Index/DiskUsagePanel.vue";
 import MemoryStatsPanel from "~/components/Admin/Index/MemoryStatsPanel.vue";
-import MenuBlock from "~/components/Admin/Index/MenuBlock.vue";
 import StationFleetPanel from "~/components/Admin/Index/StationFleetPanel.vue";
-import { useAdminMenu } from "~/components/Admin/menu";
 import Loading from "~/components/Common/Loading.vue";
-import DashboardNoSidebar from "~/components/Layout/DashboardNoSidebar.vue";
 import {
     ApiAdminServerStats,
     ApiNowPlaying,
@@ -196,8 +222,6 @@ const { getApiUrl } = useApiRouter();
 const statsUrl = getApiUrl("/admin/server/stats");
 const stationsUrl = getApiUrl("/frontend/dashboard/stations");
 const customersUrl = getApiUrl("/admin/customers");
-
-const menuItems = useAdminMenu();
 
 const { userAllowed } = useUserAllowed();
 const canManageFleet =

@@ -11,7 +11,7 @@
                         id="hdr_music_files"
                         class="card-title"
                     >
-                        {{ $gettext('Music Library') }}
+                        {{ $gettext('Media Tracks') }}
                     </h2>
                 </div>
                 <div class="col-md-5 text-end">
