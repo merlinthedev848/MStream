@@ -87,11 +87,13 @@ curl -fsSL https://raw.githubusercontent.com/merlinthedev848/MStream/main/instal
 > ```
 
 > [!NOTE]
-> **Expected duration:** about **5–15 minutes** on a normal VPS when the network is fine. The installer prints MediaCP-style step banners (`Installing Docker…`, `Pulling web (GHCR)…`, `Starting services…`, `Running migrations / setup…`) with **per-image progress heartbeats**.
+> **Expected duration:** about **15 minutes** on a normal VPS when the network is fine (often 5–15). The installer prints numbered MediaCP-style sections (`[3/12] Installing Docker…`, `[7/12] Pulling web (GHCR)…`, …) with **per-image progress heartbeats**.
 >
-> The longest step is almost always **pulling the web image from GHCR**. Quiet heartbeats for a minute or two usually mean a slow registry, not a frozen installer. Treat the pull as **stuck** only if there is **no layer/download activity for 10–15+ minutes**, then re-run install/update when connectivity to `ghcr.io` is healthy.
+> A live log is written under `logs/install/` (symlink `latest.log`) so you can `tail -f` progress in another SSH session — same idea as MediaCP’s install log directory.
 >
-> Updates via `./mstream.sh update` use the same per-image progress and timeout/retry messaging.
+> The longest step is almost always **pulling the web image from GHCR**. Quiet heartbeats are normal. Treat the install as **stuck** only if there are **no new log/progress lines for ~7.5 minutes**; if lines keep appearing, it is slow — not frozen. Prefer IPv4 if IPv6 registry routes misbehave, then re-run when `ghcr.io` is healthy.
+>
+> Updates via `./mstream.sh update` use the same numbered sections, log file, and timeout/retry messaging.
 ---
 
 ### 📦 Manual / Local Repository Setup
