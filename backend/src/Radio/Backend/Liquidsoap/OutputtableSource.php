@@ -31,6 +31,7 @@ final class OutputtableSource
             $this->adapterType,
             [
                 FrontendAdapters::Shoutcast,
+                FrontendAdapters::Shoutcast1,
                 RemoteAdapters::Shoutcast1,
                 RemoteAdapters::Shoutcast2,
             ],

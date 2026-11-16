@@ -128,6 +128,8 @@ const supportsFallbackMount = computed(() => {
 });
 
 const isShoutcast = computed(() => {
-    return FrontendAdapters.Shoutcast === props.stationFrontendType;
+    return [FrontendAdapters.Shoutcast, FrontendAdapters.Shoutcast1].includes(
+        props.stationFrontendType,
+    );
 });
 </script>

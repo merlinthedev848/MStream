@@ -234,13 +234,25 @@ const langShowHideCredentials = computed(() => {
 const frontendName = computed(() => {
     switch (stationData.value.frontendType) {
         case FrontendAdapters.Icecast:
-            return "Icecast";
+            return "Icecast 2";
 
         case FrontendAdapters.Rsas:
             return "Rocket Streaming Audio Server (RSAS)";
 
         case FrontendAdapters.Shoutcast:
-            return "Shoutcast";
+            return "SHOUTcast 2";
+
+        case FrontendAdapters.Shoutcast1:
+            return "SHOUTcast 1";
+
+        case FrontendAdapters.NginxRtmp:
+            return "Nginx RTMP";
+
+        case FrontendAdapters.Flussonic:
+            return "Flussonic";
+
+        case FrontendAdapters.Wowza:
+            return "Wowza Streaming Engine";
 
         default:
             return "";
@@ -248,7 +260,9 @@ const frontendName = computed(() => {
 });
 
 const isShoutcast = computed(() => {
-    return stationData.value.frontendType === FrontendAdapters.Shoutcast;
+    return [FrontendAdapters.Shoutcast, FrontendAdapters.Shoutcast1].includes(
+        stationData.value.frontendType,
+    );
 });
 
 const doRestart = useMakeApiCall(frontendRestartUri, {

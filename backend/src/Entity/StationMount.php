@@ -249,7 +249,11 @@ final class StationMount implements
             host: '127.0.0.1',
             port: $frontendConfig->port,
             mount: $this->name,
-            protocol: $adapterType === FrontendAdapters::Shoutcast
+            protocol: in_array(
+                $adapterType,
+                [FrontendAdapters::Shoutcast, FrontendAdapters::Shoutcast1],
+                true
+            )
                 ? StreamProtocols::Icy
                 : null,
             username: '',

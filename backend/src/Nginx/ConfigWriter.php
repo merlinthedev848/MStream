@@ -36,8 +36,12 @@ final class ConfigWriter implements EventSubscriberInterface
     {
         $station = $event->getStation();
 
-        // Only forward local radio
-        if (FrontendAdapters::Remote === $station->frontend_type) {
+        // Only forward local audio frontends (Icecast / SHOUTcast / RSAS).
+        // Video engines expose their own HTTP/HLS listeners on the station port block.
+        if (
+            FrontendAdapters::Remote === $station->frontend_type
+            || $station->frontend_type->isVideo()
+        ) {
             return;
         }
 

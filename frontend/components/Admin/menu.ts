@@ -160,9 +160,17 @@ export function useAdminMenu() {
                 },
                 {
                     key: "shoutcast",
-                    label: $gettext("Shoutcast 2 DNAS"),
+                    label: $gettext("SHOUTcast 2 DNAS"),
                     url: {
                         name: "admin:install_shoutcast:index",
+                    },
+                    visible: () => userAllowed(GlobalPermissions.Settings),
+                },
+                {
+                    key: "shoutcast1",
+                    label: $gettext("SHOUTcast 1 DNAS"),
+                    url: {
+                        name: "admin:install_shoutcast1:index",
                     },
                     visible: () => userAllowed(GlobalPermissions.Settings),
                 },
@@ -171,6 +179,30 @@ export function useAdminMenu() {
                     label: $gettext("Rocket Streaming Audio Server (RSAS)"),
                     url: {
                         name: "admin:install_rsas:index",
+                    },
+                    visible: () => userAllowed(GlobalPermissions.Settings),
+                },
+                {
+                    key: "nginx_rtmp",
+                    label: $gettext("Nginx RTMP"),
+                    url: {
+                        name: "admin:install_nginx_rtmp:index",
+                    },
+                    visible: () => userAllowed(GlobalPermissions.Settings),
+                },
+                {
+                    key: "flussonic",
+                    label: $gettext("Flussonic (BYO)"),
+                    url: {
+                        name: "admin:install_flussonic:index",
+                    },
+                    visible: () => userAllowed(GlobalPermissions.Settings),
+                },
+                {
+                    key: "wowza",
+                    label: $gettext("Wowza (BYO)"),
+                    url: {
+                        name: "admin:install_wowza:index",
                     },
                     visible: () => userAllowed(GlobalPermissions.Settings),
                 },

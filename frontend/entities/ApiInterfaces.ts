@@ -71,7 +71,11 @@ export enum HlsStreamProfiles {
 export enum FrontendAdapters {
     Icecast = "icecast",
     Shoutcast = "shoutcast2",
+    Shoutcast1 = "shoutcast1",
     Rsas = "rsas",
+    NginxRtmp = "nginx_rtmp",
+    Flussonic = "flussonic",
+    Wowza = "wowza",
     Remote = "remote",
 }
 
@@ -621,6 +625,10 @@ export interface ApiAdminVueStationsFormProps {
     countries: Record<string, string>;
     isRsasInstalled: boolean;
     isShoutcastInstalled: boolean;
+    isShoutcast1Installed: boolean;
+    isNginxRtmpInstalled: boolean;
+    isFlussonicInstalled: boolean;
+    isWowzaInstalled: boolean;
     isStereoToolInstalled: boolean;
     resellers: Record<string, string>;
     customers: Record<string, string>;

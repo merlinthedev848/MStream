@@ -799,7 +799,12 @@ final class ConfigWriter implements EventSubscriberInterface
     {
         $station = $event->getStation();
 
-        if (FrontendAdapters::Remote === $station->frontend_type) {
+        // Remote and live-video frontends are not Liquidsoap → Icecast/SHOUTcast push targets.
+        // Video services ingest from OBS/FFmpeg; audio AutoDJ stays on audio frontends only.
+        if (
+            FrontendAdapters::Remote === $station->frontend_type
+            || $station->frontend_type->isVideo()
+        ) {
             return;
         }
 
@@ -1333,6 +1338,7 @@ final class ConfigWriter implements EventSubscriberInterface
 
         $password = $source->password;
         $adapterType = $source->adapterType;
+        // DNAS 2 multi-stream auth; classic SHOUTcast 1 uses the bare source password.
         if (FrontendAdapters::Shoutcast === $adapterType) {
             $password .= ':#' . $id;
         }
