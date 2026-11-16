@@ -1,0 +1,1 @@
+import{a as e,t}from"./identity-DKKgtSee.js";import{t as n}from"./range-CYTESHT1.js";import{t as r}from"./iteratee-v4qMOW5N.js";import{t as i}from"./toInteger-BViN9EIK.js";function a(a,o=t,s=0){if(!a)return;let c=r(o),l=e(a)?n(0,a.length):Object.keys(a);s=i(s),s||=0,s<0&&(s=Math.max(l.length+s,0));for(let e=s;e<l.length;e++){let t=l[e],n=a[t];if(c(n,t,a))return n}}export{a as t};

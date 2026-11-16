@@ -1,0 +1,1 @@
+import{i as e}from"./identity-DKKgtSee.js";import{t}from"./iteratee-v4qMOW5N.js";import{n,r,t as i}from"./getSymbolsIn-50k_3lye.js";function a(a,o){if(a==null)return{};let s={},c=t(o??r),l=[...n(a),...i(a)];for(let t=0;t<l.length;t++){let n=e(l[t])?l[t]:l[t].toString(),r=a[n];c(r,n,a)||(s[n]=r)}return s}export{a as t};

@@ -464,6 +464,18 @@
     padding: 0.3rem 0.45rem;
   }
 
+  .listener-url-row {
+    .listener-url-value {
+      display: block;
+      padding: 0.45rem 0.65rem;
+      background: var(--bs-tertiary-bg, #0f1420);
+      border: 1px solid var(--border-color-dark, #242f44);
+      border-radius: 3px;
+      word-break: break-all;
+      font-size: 0.9rem;
+    }
+  }
+
   .scheduled {
     .schedule-table {
       min-height: 3.25rem;

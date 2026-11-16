@@ -1,0 +1,1 @@
+function e(e){return Number.isSafeInteger(e)&&e>=0}function t(t){return t!=null&&typeof t!=`function`&&e(t.length)}function n(e){return typeof e==`symbol`||e instanceof Symbol}function r(e){return e===`__proto__`}var i=Object.prototype.hasOwnProperty;function a(e,t){return i.call(e,t)}function o(e){return e}export{t as a,n as i,a as n,r,o as t};

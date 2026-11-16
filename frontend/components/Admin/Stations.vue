@@ -191,6 +191,15 @@
                 </data-table>
             </card-page>
 
+            <admin-stations-create-wizard-modal
+                v-if="props"
+                v-bind="props.formProps"
+                ref="$createModal"
+                :create-url="listUrl"
+                @relist="() => relist()"
+                @created="onCreated"
+            />
+
             <admin-stations-edit-modal
                 v-if="props"
                 v-bind="props.formProps"
@@ -211,6 +220,7 @@
 import { useQuery } from "@tanstack/vue-query";
 import { computed, ref, useTemplateRef } from "vue";
 import AdminStationsCloneModal from "~/components/Admin/Stations/CloneModal.vue";
+import AdminStationsCreateWizardModal from "~/components/Admin/Stations/CreateWizardModal.vue";
 import AdminStationsEditModal from "~/components/Admin/Stations/EditModal.vue";
 import AddButton from "~/components/Common/AddButton.vue";
 import CardPage from "~/components/Common/CardPage.vue";
@@ -339,7 +349,19 @@ const relist = () => {
 };
 
 const $editModal = useTemplateRef("$editModal");
-const { doCreate, doEdit } = useHasEditModal($editModal);
+const { doEdit } = useHasEditModal($editModal);
+
+const $createModal = useTemplateRef("$createModal");
+const doCreate = () => {
+    $createModal.value?.create();
+};
+
+const onCreated = (station: Station & HasLinks) => {
+    const manageUrl = station.links?.manage;
+    if (manageUrl) {
+        window.location.assign(manageUrl);
+    }
+};
 
 const $cloneModal = useTemplateRef("$cloneModal");
 

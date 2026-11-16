@@ -1,0 +1,1 @@
+import{i as e}from"./identity-DKKgtSee.js";function t(t){return e(t)?NaN:Number(t)}export{t};

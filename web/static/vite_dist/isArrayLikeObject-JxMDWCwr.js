@@ -1,0 +1,1 @@
+import{a as e}from"./identity-DKKgtSee.js";function t(e){return typeof e==`object`&&!!e}function n(n){return t(n)&&e(n)}export{t as n,n as t};
