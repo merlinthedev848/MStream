@@ -13,6 +13,7 @@ use App\Radio\Configuration;
 use App\Radio\Enums\BackendAdapters;
 use App\Radio\Enums\FrontendAdapters;
 use Codeception\Test\Unit;
+use Doctrine\ORM\Query;
 use Mockery;
 use ReflectionProperty;
 use Supervisor\SupervisorInterface;
@@ -107,7 +108,7 @@ final class ConfigurationPortAllocationTest extends Unit
      */
     public function testGetUsedPortsAcceptsEnumAdapterTypesFromDatabase(): void
     {
-        $query = Mockery::mock();
+        $query = Mockery::mock(Query::class);
         $query->shouldReceive('getArrayResult')->once()->andReturn([
             [
                 'id' => 1,
