@@ -180,7 +180,7 @@ const advancedLinks = computed((): AdvancedLink[] => {
     ) {
         links.push({
             key: "remotes",
-            label: $gettext("Remote Streams"),
+            label: $gettext("External Destinations"),
             to: { name: "stations:remotes:index" },
         });
     }

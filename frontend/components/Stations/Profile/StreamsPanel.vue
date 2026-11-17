@@ -67,7 +67,7 @@
                 <thead>
                     <tr>
                         <th colspan="2">
-                            {{ $gettext('Remote Relays') }}
+                            {{ $gettext('External Destinations') }}
                         </th>
                         <th class="text-end">
                             {{ $gettext('Listeners') }}

@@ -120,7 +120,7 @@ const cloneOptions = computed(() => {
             value: "mounts",
         },
         {
-            text: $gettext("Remote Relays"),
+            text: $gettext("External Destinations"),
             value: "remotes",
         },
         {
