@@ -11,7 +11,7 @@
                         id="hdr_playlists"
                         class="card-title"
                     >
-                        {{ $gettext('Playlists') }}
+                        {{ pageTitle }}
                     </h2>
                 </div>
                 <div class="col-md-6 text-end">
@@ -544,6 +544,12 @@ const router = useRouter();
 
 const activeTab = ref(
     route.query.tab === "schedule_view" ? "schedule_view" : "all_playlists",
+);
+
+const pageTitle = computed(() =>
+    activeTab.value === "schedule_view"
+        ? $gettext("Schedule")
+        : $gettext("Playlists"),
 );
 
 watch(

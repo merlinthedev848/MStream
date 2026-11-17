@@ -37,6 +37,11 @@ release channel, you can take advantage of these new features and fixes.
 
 - Logged in users can now only see stations that are public or that they have direct access to in public data sets.
 
+- **AutoDJ reliability / calm UX (MST-51)**: Overview distinguishes AutoDJ on-air vs stopped vs empty-queue dead-air
+  vs live-DJ yield (no talkover). Schedule leaf titles/empty guidance and Media “tracks ready → Start AutoDJ” clarify
+  the 24/7 path. Queue fill logs when no playable tracks; missing custom fallback audio falls back to packaged
+  `error.mp3` with a warning; Liquidsoap empty-queue soft-fail comments emphasize dead-air protection.
+
 ## Bug Fixes
 
 - Fixed the media search & filters failing when a file is missing from the media storage.

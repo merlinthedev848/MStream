@@ -150,6 +150,25 @@ final class Queue
             $nextSongs = $event->getNextSongs();
 
             if (empty($nextSongs)) {
+                if (0 === $queueLength) {
+                    $this->logger->warning(
+                        'AutoDJ queue is empty: no playable tracks available. '
+                        . 'Liquidsoap will use dead-air fallback until media or playlists are available.',
+                        [
+                            'station' => (string) $station,
+                        ]
+                    );
+                } else {
+                    $this->logger->info(
+                        'AutoDJ queue fill stopped early; no additional playable tracks available.',
+                        [
+                            'station' => (string) $station,
+                            'queue_length' => $queueLength,
+                            'target_length' => $maxQueueLength,
+                        ]
+                    );
+                }
+
                 $this->em->flush();
                 break;
             }

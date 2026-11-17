@@ -36,6 +36,24 @@
                 }}
             </p>
         </info-card>
+        <info-card v-else-if="showStartAutodjGuide">
+            <p class="mb-1 fw-semibold">
+                {{ $gettext('Tracks are ready for AutoDJ') }}
+            </p>
+            <p class="mb-2">
+                {{
+                    $gettext(
+                        'Uploaded songs join the default playlist automatically. Open Overview and Start AutoDJ to keep the station on the air 24/7.',
+                    )
+                }}
+            </p>
+            <router-link
+                class="btn btn-primary btn-sm"
+                :to="{ name: 'stations:index' }"
+            >
+                {{ $gettext('Open Overview') }}
+            </router-link>
+        </info-card>
 
         <div class="card-body border-bottom py-2">
             <div class="d-flex flex-wrap gap-2 align-items-center">
@@ -314,6 +332,7 @@ import MediaToolbar from "~/components/Stations/Media/MediaToolbar.vue";
 import MoveFilesModal from "~/components/Stations/Media/MoveFilesModal.vue";
 import NewDirectoryModal from "~/components/Stations/Media/NewDirectoryModal.vue";
 import RenameModal from "~/components/Stations/Media/RenameModal.vue";
+import { useStationProfileData } from "~/components/Stations/Profile/useProfileQuery.ts";
 import {
     ApiStationMediaPlaylist,
     ApiStationQuota,
@@ -351,6 +370,7 @@ export type MediaSelectedItems = {
 };
 
 const stationData = useStationData();
+const profileData = useStationProfileData();
 const showSftp = computed(() => stationData.value.features.sftp ?? false);
 const showAdvanced = ref(false);
 
@@ -373,6 +393,19 @@ const showEmptyLibraryGuide = computed(
         mediaFileCount.value !== null &&
         mediaFileCount.value === 0,
 );
+const showStartAutodjGuide = computed(() => {
+    if (currentDirectory.value !== "") {
+        return false;
+    }
+    if (mediaFileCount.value === null || mediaFileCount.value === 0) {
+        return false;
+    }
+    if (!stationData.value.isEnabled) {
+        return false;
+    }
+    // Guide only when AutoDJ is not already running.
+    return !(profileData.value.services?.backendRunning ?? false);
+});
 
 const isFilterString = (str: string) =>
     str.substring(0, 9) === "playlist:" || str.substring(0, 8) === "special:";

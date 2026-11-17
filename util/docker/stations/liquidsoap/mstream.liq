@@ -377,6 +377,9 @@ AutoDJ
 ----->#
 
 # AutoDJ Next Song Script
+# Empty PHP queue → empty uri soft-fail → null request (retry). Safe fallback
+# (mstream.add_fallback / error.mp3) covers dead air until the queue refills.
+# Live DJs take over via harbor fallback([live, radio]); AutoDJ yields — no duck.
 def mstream.autodj_next_song() =
     try
         api_response = mstream.api_call(
@@ -399,7 +402,7 @@ def mstream.autodj_next_song() =
                 log(
                     level=2,
                     label="mstream.autodj",
-                    "AutoDJ queue empty; waiting for nextsong."
+                    "AutoDJ queue empty; waiting for nextsong (dead-air fallback active)."
                 )
                 null
             else
@@ -711,6 +714,8 @@ end
 Fallback
 ----->#
 
+# Last-resort dead-air protection: when AutoDJ/live sources are unavailable,
+# play the packaged (or station-custom) error.mp3 so the mount never goes silent.
 def mstream.add_fallback(s) =
     error_file = single(id="error_jingle", "annotate:liq_disable_autocue=\"true\":#{settings.mstream.fallback_path()}")
 

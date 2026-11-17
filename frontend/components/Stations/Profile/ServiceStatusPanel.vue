@@ -18,10 +18,28 @@
                     {{ $gettext('SUSPENDED') }}
                 </span>
                 <span
-                    v-else-if="np.is_online"
+                    v-else-if="isLiveDj"
                     class="badge broadcast-tally-onair"
                 >
-                    {{ $gettext('SOURCE: CONNECTED') }}
+                    {{ $gettext('LIVE DJ') }}
+                </span>
+                <span
+                    v-else-if="backendRunning && np.is_online"
+                    class="badge broadcast-tally-onair"
+                >
+                    {{ $gettext('AUTODJ: ON AIR') }}
+                </span>
+                <span
+                    v-else-if="backendRunning"
+                    class="badge broadcast-tally-standby"
+                >
+                    {{ $gettext('AUTODJ: STARTING') }}
+                </span>
+                <span
+                    v-else-if="stationData.hasStarted"
+                    class="badge broadcast-tally-standby"
+                >
+                    {{ $gettext('AUTODJ: STOPPED') }}
                 </span>
                 <span
                     v-else
@@ -41,17 +59,34 @@
                         )
                     }}
                 </template>
-                <template v-else-if="np.is_online">
+                <template v-else-if="isLiveDj">
+                    {{ liveDjMessage }}
+                </template>
+                <template v-else-if="backendRunning && queueIsEmpty">
                     {{
                         $gettext(
-                            'AutoDJ or a live encoder is connected. Share the listener URL below.',
+                            'AutoDJ is running but the queue is empty. Upload tracks or check playlists — dead-air protection plays until songs are available.',
+                        )
+                    }}
+                </template>
+                <template v-else-if="backendRunning && np.is_online">
+                    {{
+                        $gettext(
+                            'AutoDJ is on the air. Share the listener URL below.',
+                        )
+                    }}
+                </template>
+                <template v-else-if="backendRunning">
+                    {{
+                        $gettext(
+                            'AutoDJ is starting. Wait a moment, or restart if the source stays disconnected.',
                         )
                     }}
                 </template>
                 <template v-else-if="stationData.hasStarted">
                     {{
                         $gettext(
-                            'Broadcasting is configured but the source is not connected. Start AutoDJ or connect an encoder.',
+                            'AutoDJ is stopped. Start AutoDJ to keep the station on the air 24/7.',
                         )
                     }}
                 </template>
@@ -75,7 +110,7 @@
                     {{ startLabel }}
                 </button>
                 <router-link
-                    v-if="canManageMedia && !stationData.hasStarted"
+                    v-if="showUploadLink"
                     class="btn btn-link btn-sm"
                     :to="{ name: 'stations:files:index' }"
                 >
@@ -123,10 +158,41 @@ const canManageMedia = computed(() =>
     userAllowedForStation(StationPermissions.Media),
 );
 
+const backendRunning = computed(
+    () => profileData.value.services?.backendRunning ?? false,
+);
+const queueIsEmpty = computed(
+    () => (profileData.value.ops?.queueDepth ?? 0) === 0,
+);
+const isLiveDj = computed(() => profileData.value.ops?.isStreamerLive ?? false);
+const connectedStreamer = computed(
+    () => profileData.value.ops?.connectedStreamer ?? null,
+);
+
+const liveDjMessage = computed(() => {
+    const name = connectedStreamer.value;
+    if (name) {
+        return $gettext(
+            "%{dj} is live. AutoDJ yields until the DJ disconnects.",
+            { dj: name },
+        );
+    }
+    return $gettext(
+        "A live DJ is connected. AutoDJ yields until they disconnect.",
+    );
+});
+
 const startLabel = computed(() =>
-    stationData.value.hasStarted
+    backendRunning.value
         ? $gettext("Restart AutoDJ")
         : $gettext("Start AutoDJ"),
+);
+
+const showUploadLink = computed(
+    () =>
+        canManageMedia.value &&
+        (!stationData.value.hasStarted ||
+            (backendRunning.value && queueIsEmpty.value)),
 );
 
 const { getStationApiUrl } = useApiRouter();
@@ -139,7 +205,7 @@ const starting = ref(false);
 
 const doStart = async () => {
     const { value } = await showAlert({
-        title: stationData.value.hasStarted
+        title: backendRunning.value
             ? $gettext("Restart AutoDJ?")
             : $gettext("Start AutoDJ?"),
         confirmButtonClass: "btn-primary",
