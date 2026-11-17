@@ -20,6 +20,19 @@
                     )
                 }}
             </p>
+            <p
+                v-if="showExternalDestinationsLink"
+                class="text-muted mb-3"
+            >
+                {{
+                    $gettext(
+                        'Need to push this station elsewhere?',
+                    )
+                }}
+                <router-link :to="{ name: 'stations:remotes:index' }">
+                    {{ $gettext('External Destinations') }}
+                </router-link>
+            </p>
             <loading :loading="propsLoading" lazy>
                 <admin-stations-form
                     v-if="props"
@@ -35,12 +48,18 @@
 
 <script setup lang="ts">
 import { useQuery } from "@tanstack/vue-query";
+import { computed } from "vue";
 import { useRouter } from "vue-router";
 import AdminStationsForm from "~/components/Admin/Stations/StationForm.vue";
 import Loading from "~/components/Common/Loading.vue";
-import { ApiAdminVueStationsFormProps } from "~/entities/ApiInterfaces.ts";
+import {
+    ApiAdminVueStationsFormProps,
+    StationPermissions,
+} from "~/entities/ApiInterfaces.ts";
 import { QueryKeys, queryKeyWithStation } from "~/entities/Queries.ts";
 import { useApiRouter } from "~/functions/useApiRouter.ts";
+import { useStationData } from "~/functions/useStationQuery.ts";
+import { useUserAllowedForStation } from "~/functions/useUserallowedForStation.ts";
 import { useAxios } from "~/vendor/axios.ts";
 
 const { getStationApiUrl } = useApiRouter();
@@ -60,6 +79,15 @@ const { data: props, isLoading: propsLoading } =
             return data;
         },
     });
+
+const station = useStationData();
+const { userAllowedForStation } = useUserAllowedForStation();
+
+const showExternalDestinationsLink = computed(
+    () =>
+        userAllowedForStation(StationPermissions.RemoteRelays) &&
+        station.value.features.remoteRelays,
+);
 
 const router = useRouter();
 

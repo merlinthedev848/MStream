@@ -1,15 +1,17 @@
 <template>
-    <card-page :title="$gettext('Remote Relays')">
+    <card-page :title="$gettext('External Destinations')">
         <template #info>
             <p class="card-text">
                 {{
-                    $gettext('Remote relays let you work with broadcasting software outside this server. Any relay you include here will be included in your station\'s statistics. You can also broadcast from this server to remote relays.')
+                    $gettext(
+                        'Push this station to Icecast or SHOUTcast servers elsewhere. Destinations can receive AutoDJ audio and count toward listener statistics.',
+                    )
                 }}
             </p>
         </template>
         <template #actions>
             <add-button
-                :text="$gettext('Add Remote Relay')"
+                :text="$gettext('Add Destination')"
                 @click="doCreate"
             />
         </template>
@@ -123,7 +125,7 @@ const { doCreate, doEdit } = useHasEditModal($editModal);
 const { mayNeedRestart } = useMayNeedRestart();
 
 const { doDelete } = useConfirmAndDelete(
-    $gettext("Delete Remote Relay?"),
+    $gettext("Delete External Destination?"),
     () => {
         mayNeedRestart();
         relist();

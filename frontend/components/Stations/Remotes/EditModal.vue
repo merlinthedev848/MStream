@@ -85,8 +85,8 @@ const { $gettext } = useTranslate();
 
 const langTitle = computed(() => {
     return isEditMode.value
-        ? $gettext("Edit Remote Relay")
-        : $gettext("Add Remote Relay");
+        ? $gettext("Edit External Destination")
+        : $gettext("Add External Destination");
 });
 
 defineExpose({

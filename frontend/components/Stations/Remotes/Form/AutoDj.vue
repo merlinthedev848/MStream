@@ -8,8 +8,8 @@
                 id="edit_form_enable_autodj"
                 class="col-md-12"
                 :field="r$.enable_autodj"
-                :label="$gettext('Broadcast AutoDJ to Remote Station')"
-                :description="$gettext('If enabled, the AutoDJ on this installation will automatically play music to this mount point.')"
+                :label="$gettext('Broadcast AutoDJ to Destination')"
+                :description="$gettext('If enabled, AutoDJ on this station pushes audio to this external destination.')"
             />
         </div>
 

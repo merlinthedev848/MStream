@@ -26,6 +26,7 @@ import IconIcPublic from "~icons/ic/baseline-public";
 import IconIcQueueMusic from "~icons/ic/baseline-queue-music";
 import IconIcSchedule from "~icons/ic/baseline-schedule";
 import IconIcSettingsApplication from "~icons/ic/baseline-settings-applications";
+import IconIcShare from "~icons/ic/baseline-share";
 import IconIcUpdate from "~icons/ic/baseline-update";
 
 export type StationsMenuOptions = {
@@ -34,7 +35,7 @@ export type StationsMenuOptions = {
 
 /**
  * MediaCP-like service console IA:
- * Overview → Configure → Media → Playlists → … → Reporting
+ * Overview → Configure → Media → Playlists → … → Mounts → External Destinations → …
  * Extras (Commercials, Podcasts, Alerts, Logs, Server Tools) fold under More.
  * Server tools stay superadmin-only.
  */
@@ -142,6 +143,17 @@ export function useStationsMenu(options: StationsMenuOptions = {}) {
             visible: () =>
                 userAllowedForStation(StationPermissions.MountPoints) &&
                 station.value.features.mountPoints,
+        },
+        {
+            key: "remotes",
+            label: $gettext("External Destinations"),
+            icon: () => IconIcShare,
+            url: {
+                name: "stations:remotes:index",
+            },
+            visible: () =>
+                userAllowedForStation(StationPermissions.RemoteRelays) &&
+                station.value.features.remoteRelays,
         },
         {
             key: "streaming",
