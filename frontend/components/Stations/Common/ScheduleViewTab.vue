@@ -3,6 +3,15 @@
         id="schedule_view"
         :label="$gettext('Schedule View')"
     >
+        <div class="card-body pb-2">
+            <p class="text-muted small mb-0">
+                {{
+                    $gettext(
+                        'Schedule windows are optional. With none set, AutoDJ keeps rotating your playlists around the clock. Add a window on a playlist to pin a show.',
+                    )
+                }}
+            </p>
+        </div>
         <div class="card-body-flush">
             <schedule
                 ref="$schedule"
