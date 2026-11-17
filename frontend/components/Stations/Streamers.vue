@@ -1,5 +1,12 @@
 <template>
-    <div class="row row-of-cards">
+    <div
+        id="dj-manager"
+        class="row row-of-cards"
+    >
+        <div class="col-12">
+            <operator-studio-panel/>
+        </div>
+
         <div class="col-md-8">
             <card-page header-id="hdr_streamer_accounts">
                 <template #header="{id}">
@@ -9,20 +16,11 @@
                                 :id="id"
                                 class="card-title"
                             >
-                                {{ $gettext('DJ Manager') }}
+                                {{ $gettext('DJ Accounts') }}
                             </h2>
                         </div>
                         <div class="col-md-6 text-end">
                             <div class="d-inline-flex flex-wrap gap-2 align-items-center justify-content-end">
-                                <a
-                                    v-if="stationData.enableStreamers && stationData.webDjUrl"
-                                    class="btn btn-sm btn-outline-primary"
-                                    :href="stationData.webDjUrl"
-                                    target="_blank"
-                                    rel="noopener"
-                                >
-                                    {{ $gettext('Browser DJ') }}
-                                </a>
                                 <loading :loading="propsLoading" lazy>
                                     <stations-common-quota
                                         v-if="props && props.recordStreams"
@@ -140,6 +138,7 @@ import TimeZone from "~/components/Stations/Common/TimeZone.vue";
 import BroadcastsModal from "~/components/Stations/Streamers/BroadcastsModal.vue";
 import ConnectionInfo from "~/components/Stations/Streamers/ConnectionInfo.vue";
 import EditModal from "~/components/Stations/Streamers/EditModal.vue";
+import OperatorStudioPanel from "~/components/Stations/Streamers/OperatorStudioPanel.vue";
 import {
     ApiStationsVueStreamersProps,
     StorageLocationTypes,
@@ -149,12 +148,10 @@ import { useApiItemProvider } from "~/functions/dataTable/useApiItemProvider.ts"
 import { useApiRouter } from "~/functions/useApiRouter.ts";
 import useConfirmAndDelete from "~/functions/useConfirmAndDelete";
 import useHasEditModal from "~/functions/useHasEditModal";
-import { useStationData } from "~/functions/useStationQuery.ts";
 import { useAxios } from "~/vendor/axios.ts";
 import { useTranslate } from "~/vendor/gettext";
 
 const { getStationApiUrl } = useApiRouter();
-const stationData = useStationData();
 
 const propsUrl = getStationApiUrl("/vue/streamers");
 const listUrl = getStationApiUrl("/streamers");

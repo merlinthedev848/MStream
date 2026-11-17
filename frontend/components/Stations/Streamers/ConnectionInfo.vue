@@ -77,6 +77,13 @@
             </dl>
         </div>
         <div class="card-body">
+            <p class="card-text text-muted mb-3">
+                {{
+                    $gettext(
+                        'When a DJ connects live, AutoDJ yields the stream until that connection ends.',
+                    )
+                }}
+            </p>
             <p class="card-text">
                 {{ $gettext('Setup instructions for broadcasting software are available on the MStream wiki.') }}
                 <br>
